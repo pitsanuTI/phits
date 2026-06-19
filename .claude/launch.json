@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "alpha-trader",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "alpha-trader"],
+      "port": 3000,
+      "autoPort": true
+    }
+  ]
+}

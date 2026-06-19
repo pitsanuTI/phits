@@ -1,0 +1,293 @@
+export interface Staff {
+  id: string;
+  name: string;
+  role: 'Technician' | 'Senior Technician' | 'Manager' | 'Customer Service';
+  status: 'Active' | 'On Leave' | 'Training';
+  certLevel: 'L1' | 'L2' | 'L3';
+  joinDate: string;
+  specialty: string;
+  phone: string;
+}
+
+export interface ServiceCenter {
+  id: string;
+  province: string;
+  provinceEn: string;
+  centerName: string;
+  address: string;
+  phone: string;
+  openHours: string;
+  totalStaff: number;
+  activeStaff: number;
+  x: number; // SVG x position (0-100 scale)
+  y: number; // SVG y position (0-100 scale)
+  region: 'North' | 'Northeast' | 'Central' | 'East' | 'West' | 'South';
+  staff: Staff[];
+}
+
+export const serviceCenters: ServiceCenter[] = [
+  {
+    id: 'bkk-1',
+    province: 'กรุงเทพมหานคร',
+    provinceEn: 'Bangkok',
+    centerName: 'Samsung Service Center - เซ็นทรัลเวิลด์',
+    address: '999/9 ถ.พระราม 1 แขวงปทุมวัน กรุงเทพฯ 10330',
+    phone: '02-100-9999',
+    openHours: 'จ-อา 10:00-21:00',
+    totalStaff: 18,
+    activeStaff: 16,
+    x: 42,
+    y: 64,
+    region: 'Central',
+    staff: [
+      { id: 's1', name: 'ธนวัฒน์ สุขใจ', role: 'Manager', status: 'Active', certLevel: 'L3', joinDate: '2020-03-15', specialty: 'Galaxy S Series', phone: '091-111-1111' },
+      { id: 's2', name: 'ปิยะ มีสุข', role: 'Senior Technician', status: 'Active', certLevel: 'L3', joinDate: '2019-07-01', specialty: 'Galaxy Fold/Flip', phone: '091-111-1112' },
+      { id: 's3', name: 'วรรณา ดีงาม', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2022-01-10', specialty: 'Galaxy A Series', phone: '091-111-1113' },
+      { id: 's4', name: 'สมชาย แสนดี', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2021-06-20', specialty: 'Tablet', phone: '091-111-1114' },
+      { id: 's5', name: 'นภา รักดี', role: 'Customer Service', status: 'Active', certLevel: 'L1', joinDate: '2023-03-01', specialty: 'Warranty & Support', phone: '091-111-1115' },
+      { id: 's6', name: 'อนุชา พรทิพย์', role: 'Technician', status: 'On Leave', certLevel: 'L2', joinDate: '2021-11-05', specialty: 'Galaxy S Series', phone: '091-111-1116' },
+      { id: 's7', name: 'กนกวรรณ ใจดี', role: 'Customer Service', status: 'Active', certLevel: 'L1', joinDate: '2022-08-15', specialty: 'Warranty & Support', phone: '091-111-1117' },
+    ],
+  },
+  {
+    id: 'bkk-2',
+    province: 'กรุงเทพมหานคร',
+    provinceEn: 'Bangkok (Lat Phrao)',
+    centerName: 'Samsung Service Center - เซ็นทรัลลาดพร้าว',
+    address: '1693 ถ.พหลโยธิน แขวงลาดยาว กรุงเทพฯ 10900',
+    phone: '02-541-1234',
+    openHours: 'จ-อา 10:00-21:00',
+    totalStaff: 14,
+    activeStaff: 13,
+    x: 44,
+    y: 62,
+    region: 'Central',
+    staff: [
+      { id: 's8', name: 'ชาญชัย วงษ์ดี', role: 'Manager', status: 'Active', certLevel: 'L3', joinDate: '2018-05-20', specialty: 'All Devices', phone: '092-222-2221' },
+      { id: 's9', name: 'ศิริพร เพ็ชรงาม', role: 'Senior Technician', status: 'Active', certLevel: 'L3', joinDate: '2020-02-14', specialty: 'Galaxy S Series', phone: '092-222-2222' },
+      { id: 's10', name: 'ภูเบศร์ สมบูรณ์', role: 'Technician', status: 'Training', certLevel: 'L1', joinDate: '2025-11-01', specialty: 'Basic Repair', phone: '092-222-2223' },
+      { id: 's11', name: 'จิตรา มงคล', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2022-04-01', specialty: 'Galaxy A Series', phone: '092-222-2224' },
+      { id: 's12', name: 'วิชัย ทองดี', role: 'Customer Service', status: 'Active', certLevel: 'L1', joinDate: '2023-09-10', specialty: 'Warranty & Support', phone: '092-222-2225' },
+    ],
+  },
+  {
+    id: 'cnx',
+    province: 'เชียงใหม่',
+    provinceEn: 'Chiang Mai',
+    centerName: 'Samsung Service Center - เซ็นทรัลเชียงใหม่แอร์พอร์ต',
+    address: '2 ถ.มหิดล ต.หายยา อ.เมือง เชียงใหม่ 50100',
+    phone: '053-201-234',
+    openHours: 'จ-อา 10:00-21:00',
+    totalStaff: 12,
+    activeStaff: 11,
+    x: 28,
+    y: 20,
+    region: 'North',
+    staff: [
+      { id: 's13', name: 'เกียรติศักดิ์ ล้านนา', role: 'Manager', status: 'Active', certLevel: 'L3', joinDate: '2019-01-10', specialty: 'All Devices', phone: '093-333-3331' },
+      { id: 's14', name: 'พิมพ์ใจ ดอกคำ', role: 'Senior Technician', status: 'Active', certLevel: 'L3', joinDate: '2020-07-20', specialty: 'Galaxy S Series', phone: '093-333-3332' },
+      { id: 's15', name: 'อาทิตย์ ดาวเหนือ', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2021-03-15', specialty: 'Tablet & PC', phone: '093-333-3333' },
+      { id: 's16', name: 'นลินี สวยงาม', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2022-06-01', specialty: 'Galaxy A Series', phone: '093-333-3334' },
+      { id: 's17', name: 'บุญมา มีโชค', role: 'Customer Service', status: 'On Leave', certLevel: 'L1', joinDate: '2023-01-20', specialty: 'Warranty & Support', phone: '093-333-3335' },
+    ],
+  },
+  {
+    id: 'cri',
+    province: 'เชียงราย',
+    provinceEn: 'Chiang Rai',
+    centerName: 'Samsung Service Center - เชียงราย',
+    address: '590/1 ถ.บรรพปราการ ต.เวียง อ.เมือง เชียงราย 57000',
+    phone: '053-715-678',
+    openHours: 'จ-ส 09:00-18:00',
+    totalStaff: 8,
+    activeStaff: 8,
+    x: 33,
+    y: 12,
+    region: 'North',
+    staff: [
+      { id: 's18', name: 'ประสิทธิ์ ชาติล้านนา', role: 'Manager', status: 'Active', certLevel: 'L3', joinDate: '2021-05-01', specialty: 'All Devices', phone: '094-444-4441' },
+      { id: 's19', name: 'สุนิสา ทองแดง', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2022-02-10', specialty: 'Galaxy S Series', phone: '094-444-4442' },
+      { id: 's20', name: 'ณัฐวุฒิ ดีมาก', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2022-08-01', specialty: 'Galaxy A Series', phone: '094-444-4443' },
+      { id: 's21', name: 'ลัดดา ขวัญดี', role: 'Customer Service', status: 'Active', certLevel: 'L1', joinDate: '2023-04-15', specialty: 'Warranty & Support', phone: '094-444-4444' },
+    ],
+  },
+  {
+    id: 'kkn',
+    province: 'ขอนแก่น',
+    provinceEn: 'Khon Kaen',
+    centerName: 'Samsung Service Center - เซ็นทรัลขอนแก่น',
+    address: '99/9 ถ.ศรีจันทร์ ต.ในเมือง อ.เมือง ขอนแก่น 40000',
+    phone: '043-224-456',
+    openHours: 'จ-อา 10:00-21:00',
+    totalStaff: 11,
+    activeStaff: 10,
+    x: 52,
+    y: 38,
+    region: 'Northeast',
+    staff: [
+      { id: 's22', name: 'วีรชัย อีสานรัก', role: 'Manager', status: 'Active', certLevel: 'L3', joinDate: '2019-09-01', specialty: 'All Devices', phone: '095-555-5551' },
+      { id: 's23', name: 'จิราพร ขยันดี', role: 'Senior Technician', status: 'Active', certLevel: 'L3', joinDate: '2020-03-10', specialty: 'Galaxy S Series', phone: '095-555-5552' },
+      { id: 's24', name: 'สุรศักดิ์ ทุ่งกว้าง', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2021-07-01', specialty: 'Galaxy Fold/Flip', phone: '095-555-5553' },
+      { id: 's25', name: 'มณีรัตน์ งามพร้อม', role: 'Technician', status: 'On Leave', certLevel: 'L2', joinDate: '2022-01-15', specialty: 'Tablet', phone: '095-555-5554' },
+      { id: 's26', name: 'ดวงใจ รักษ์ดี', role: 'Customer Service', status: 'Active', certLevel: 'L1', joinDate: '2023-06-01', specialty: 'Warranty & Support', phone: '095-555-5555' },
+    ],
+  },
+  {
+    id: 'udn',
+    province: 'อุดรธานี',
+    provinceEn: 'Udon Thani',
+    centerName: 'Samsung Service Center - อุดรธานี',
+    address: '277/1 ถ.ประจักษ์ศิลปาคม ต.หมากแข้ง อ.เมือง อุดรธานี 41000',
+    phone: '042-245-678',
+    openHours: 'จ-ส 09:00-18:00',
+    totalStaff: 9,
+    activeStaff: 9,
+    x: 48,
+    y: 30,
+    region: 'Northeast',
+    staff: [
+      { id: 's27', name: 'กิตติพงษ์ ภาคอีสาน', role: 'Manager', status: 'Active', certLevel: 'L3', joinDate: '2020-11-01', specialty: 'All Devices', phone: '096-666-6661' },
+      { id: 's28', name: 'ยุพา รักชาติ', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2021-04-20', specialty: 'Galaxy S Series', phone: '096-666-6662' },
+      { id: 's29', name: 'ไพโรจน์ โคกสูง', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2022-09-01', specialty: 'Galaxy A Series', phone: '096-666-6663' },
+      { id: 's30', name: 'สาวิตรี ดีชนะ', role: 'Customer Service', status: 'Active', certLevel: 'L1', joinDate: '2023-02-10', specialty: 'Warranty & Support', phone: '096-666-6664' },
+    ],
+  },
+  {
+    id: 'nma',
+    province: 'นครราชสีมา',
+    provinceEn: 'Nakhon Ratchasima',
+    centerName: 'Samsung Service Center - เซ็นทรัลโคราช',
+    address: '44/1 ถ.มิตรภาพ ต.ในเมือง อ.เมือง นครราชสีมา 30000',
+    phone: '044-256-789',
+    openHours: 'จ-อา 10:00-21:00',
+    totalStaff: 13,
+    activeStaff: 12,
+    x: 55,
+    y: 48,
+    region: 'Northeast',
+    staff: [
+      { id: 's31', name: 'ณัฐพล โคราชสุข', role: 'Manager', status: 'Active', certLevel: 'L3', joinDate: '2018-08-01', specialty: 'All Devices', phone: '097-777-7771' },
+      { id: 's32', name: 'ศิริลักษณ์ สีเขียว', role: 'Senior Technician', status: 'Active', certLevel: 'L3', joinDate: '2019-05-10', specialty: 'Galaxy S Series', phone: '097-777-7772' },
+      { id: 's33', name: 'อนุวัตร แสนดี', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2021-02-01', specialty: 'Galaxy Fold/Flip', phone: '097-777-7773' },
+      { id: 's34', name: 'ปณิธาน มั่นคง', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2022-03-15', specialty: 'Tablet & PC', phone: '097-777-7774' },
+      { id: 's35', name: 'วัชรี สดใส', role: 'Customer Service', status: 'Training', certLevel: 'L1', joinDate: '2025-12-01', specialty: 'Basic Support', phone: '097-777-7775' },
+      { id: 's36', name: 'ธีรวัฒน์ กล้าหาญ', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2021-10-01', specialty: 'Galaxy A Series', phone: '097-777-7776' },
+    ],
+  },
+  {
+    id: 'ubn',
+    province: 'อุบลราชธานี',
+    provinceEn: 'Ubon Ratchathani',
+    centerName: 'Samsung Service Center - อุบลราชธานี',
+    address: '155 ถ.ชยางกูร ต.ในเมือง อ.เมือง อุบลราชธานี 34000',
+    phone: '045-312-456',
+    openHours: 'จ-ส 09:00-18:00',
+    totalStaff: 8,
+    activeStaff: 7,
+    x: 64,
+    y: 46,
+    region: 'Northeast',
+    staff: [
+      { id: 's37', name: 'ชลธิชา อุบลรัก', role: 'Manager', status: 'Active', certLevel: 'L3', joinDate: '2020-06-01', specialty: 'All Devices', phone: '098-888-8881' },
+      { id: 's38', name: 'วิทยา ลุ่มน้ำมูล', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2021-09-10', specialty: 'Galaxy S Series', phone: '098-888-8882' },
+      { id: 's39', name: 'สมหญิง ดีเสมอ', role: 'Technician', status: 'On Leave', certLevel: 'L2', joinDate: '2022-05-20', specialty: 'Galaxy A Series', phone: '098-888-8883' },
+      { id: 's40', name: 'ณัฐกิตติ์ ทุ่งอีสาน', role: 'Customer Service', status: 'Active', certLevel: 'L1', joinDate: '2023-07-01', specialty: 'Warranty & Support', phone: '098-888-8884' },
+    ],
+  },
+  {
+    id: 'pkt',
+    province: 'ภูเก็ต',
+    provinceEn: 'Phuket',
+    centerName: 'Samsung Service Center - เซ็นทรัลภูเก็ต',
+    address: '130-130/1 ถ.เฉลิมพระเกียรติร.9 ต.วิชิต อ.เมือง ภูเก็ต 83000',
+    phone: '076-290-123',
+    openHours: 'จ-อา 10:00-21:00',
+    totalStaff: 10,
+    activeStaff: 10,
+    x: 28,
+    y: 90,
+    region: 'South',
+    staff: [
+      { id: 's41', name: 'ภูวิศ อันดามัน', role: 'Manager', status: 'Active', certLevel: 'L3', joinDate: '2019-03-01', specialty: 'All Devices', phone: '089-999-9991' },
+      { id: 's42', name: 'กัลยา สมุทรงาม', role: 'Senior Technician', status: 'Active', certLevel: 'L3', joinDate: '2020-08-01', specialty: 'Galaxy S Series', phone: '089-999-9992' },
+      { id: 's43', name: 'ธนภัทร ทะเลใส', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2021-05-10', specialty: 'Galaxy Fold/Flip', phone: '089-999-9993' },
+      { id: 's44', name: 'อรอนงค์ ริมหาด', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2022-07-01', specialty: 'Tablet', phone: '089-999-9994' },
+      { id: 's45', name: 'ปราโมทย์ ซันไชน์', role: 'Customer Service', status: 'Active', certLevel: 'L1', joinDate: '2023-03-15', specialty: 'Warranty & Support', phone: '089-999-9995' },
+    ],
+  },
+  {
+    id: 'sni',
+    province: 'สงขลา (หาดใหญ่)',
+    provinceEn: 'Hat Yai (Songkhla)',
+    centerName: 'Samsung Service Center - เซ็นทรัลหาดใหญ่',
+    address: '55 ถ.สนามบิน ต.หาดใหญ่ อ.หาดใหญ่ สงขลา 90110',
+    phone: '074-233-456',
+    openHours: 'จ-อา 10:00-21:00',
+    totalStaff: 11,
+    activeStaff: 10,
+    x: 36,
+    y: 97,
+    region: 'South',
+    staff: [
+      { id: 's46', name: 'อภิชาต ใต้ฟ้า', role: 'Manager', status: 'Active', certLevel: 'L3', joinDate: '2018-12-01', specialty: 'All Devices', phone: '081-000-0001' },
+      { id: 's47', name: 'ลดาวัลย์ ดีสม', role: 'Senior Technician', status: 'Active', certLevel: 'L3', joinDate: '2019-10-10', specialty: 'Galaxy S Series', phone: '081-000-0002' },
+      { id: 's48', name: 'ศุภกิจ ฝั่งใต้', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2021-03-01', specialty: 'Galaxy A Series', phone: '081-000-0003' },
+      { id: 's49', name: 'สุพรรณี ทองใต้', role: 'Technician', status: 'On Leave', certLevel: 'L2', joinDate: '2022-06-15', specialty: 'Tablet', phone: '081-000-0004' },
+      { id: 's50', name: 'จตุพร มั่งมี', role: 'Customer Service', status: 'Active', certLevel: 'L1', joinDate: '2023-05-01', specialty: 'Warranty & Support', phone: '081-000-0005' },
+    ],
+  },
+  {
+    id: 'chb',
+    province: 'ชลบุรี (พัทยา)',
+    provinceEn: 'Chonburi (Pattaya)',
+    centerName: 'Samsung Service Center - เซ็นทรัลพัทยา',
+    address: '333/99 ถ.พัทยาสาย2 ต.นาเกลือ อ.บางละมุง ชลบุรี 20150',
+    phone: '038-411-234',
+    openHours: 'จ-อา 10:00-21:00',
+    totalStaff: 10,
+    activeStaff: 9,
+    x: 52,
+    y: 66,
+    region: 'East',
+    staff: [
+      { id: 's51', name: 'ทวีศักดิ์ อ่าวไทย', role: 'Manager', status: 'Active', certLevel: 'L3', joinDate: '2020-04-01', specialty: 'All Devices', phone: '082-111-1111' },
+      { id: 's52', name: 'อุไรวรรณ ชายทะเล', role: 'Senior Technician', status: 'Active', certLevel: 'L3', joinDate: '2021-01-10', specialty: 'Galaxy S Series', phone: '082-111-1112' },
+      { id: 's53', name: 'สมศักดิ์ พัทยาดี', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2022-02-01', specialty: 'Galaxy Fold/Flip', phone: '082-111-1113' },
+      { id: 's54', name: 'ปิ่นมณี ตะวันออก', role: 'Technician', status: 'Training', certLevel: 'L1', joinDate: '2025-10-15', specialty: 'Basic Repair', phone: '082-111-1114' },
+      { id: 's55', name: 'เอกชัย ทะเลสวย', role: 'Customer Service', status: 'Active', certLevel: 'L1', joinDate: '2023-08-01', specialty: 'Warranty & Support', phone: '082-111-1115' },
+    ],
+  },
+  {
+    id: 'srt',
+    province: 'สุราษฎร์ธานี',
+    provinceEn: 'Surat Thani',
+    centerName: 'Samsung Service Center - สุราษฎร์ธานี',
+    address: '222/1 ถ.ดอนนก ต.ตลาด อ.เมือง สุราษฎร์ธานี 84000',
+    phone: '077-272-345',
+    openHours: 'จ-ส 09:00-18:00',
+    totalStaff: 7,
+    activeStaff: 7,
+    x: 32,
+    y: 84,
+    region: 'South',
+    staff: [
+      { id: 's56', name: 'สราวุธ คีรีวรรณ', role: 'Manager', status: 'Active', certLevel: 'L3', joinDate: '2021-07-01', specialty: 'All Devices', phone: '083-222-2221' },
+      { id: 's57', name: 'ปรีดา ใจซื่อ', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2022-04-10', specialty: 'Galaxy S Series', phone: '083-222-2222' },
+      { id: 's58', name: 'กาญจนา ทักษิณ', role: 'Technician', status: 'Active', certLevel: 'L2', joinDate: '2022-10-01', specialty: 'Galaxy A Series', phone: '083-222-2223' },
+      { id: 's59', name: 'นิพนธ์ ทะเลใต้', role: 'Customer Service', status: 'Active', certLevel: 'L1', joinDate: '2023-11-01', specialty: 'Warranty & Support', phone: '083-222-2224' },
+    ],
+  },
+];
+
+export const summaryStats = {
+  totalCenters: serviceCenters.length,
+  totalStaff: serviceCenters.reduce((s, c) => s + c.totalStaff, 0),
+  activeStaff: serviceCenters.reduce((s, c) => s + c.activeStaff, 0),
+  regions: {
+    North: serviceCenters.filter(c => c.region === 'North').length,
+    Northeast: serviceCenters.filter(c => c.region === 'Northeast').length,
+    Central: serviceCenters.filter(c => c.region === 'Central').length,
+    East: serviceCenters.filter(c => c.region === 'East').length,
+    South: serviceCenters.filter(c => c.region === 'South').length,
+  },
+};

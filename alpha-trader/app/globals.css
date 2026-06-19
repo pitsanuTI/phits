@@ -1,0 +1,530 @@
+@import "tailwindcss";
+
+/* Enable class-based dark mode (toggle `.dark` on <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #f5f3ff;
+  --foreground: #1e1b4b;
+  --color-primary: #7c5cbf;
+  --color-primary-light: #ede9ff;
+  --color-mint: #10b981;
+  --color-coral: #f43f5e;
+  --color-orange: #f97316;
+  --color-sky: #38bdf8;
+  --color-muted: #6b7280;
+  --primary-gradient: linear-gradient(135deg, #7c3aed, #a78bfa);
+  --primary-gradient-soft: linear-gradient(135deg, #a78bfa, #c4b5fd);
+
+  /* Premium font stack: Inter for Latin, Noto Sans Thai for Thai */
+  --font-sans: var(--font-plus-jakarta, 'Plus Jakarta Sans'), var(--font-inter, 'Inter'), 'Noto Sans Thai', ui-sans-serif,
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Number / stat font — tabular figures */
+  --font-num: var(--font-plus-jakarta, 'Plus Jakarta Sans'), var(--font-inter, 'Inter'), 'Noto Sans Thai', tabular-nums, sans-serif;
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { font-size: 15px; }   /* slightly smaller root so dashboard feels denser */
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Tabular numbers everywhere (keeps charts from jiggling) ─────────────── */
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* ── Stat / KPI numbers ─────────────────────────────────────────────────── */
+.stat-num {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar          { width: 5px; height: 5px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { background: #d1c4e9; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #a78bfa; }
+
+/* ── Recharts tooltip global fix ─────────────────────────────────────────── */
+.recharts-tooltip-wrapper { outline: none; }
+.recharts-default-tooltip {
+  border-radius: 12px !important;
+  border: 1px solid #ede9ff !important;
+  box-shadow: 0 8px 24px rgba(124,92,191,0.12) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 11px !important;
+}
+
+/* ── Card base ───────────────────────────────────────────────────────────── */
+.card {
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid #ede9ff;
+  box-shadow: 0 1px 3px rgba(124,92,191,0.06);
+}
+
+/* ── Responsive overflow guard ───────────────────────────────────────────── */
+.overflow-x-safe { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ── Framer Motion GPU hint ──────────────────────────────────────────────── */
+[data-framer-motion] { will-change: transform; }
+
+/* Trading module polish */
+.trading-premium {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  letter-spacing: -0.005em;
+  color: #151a3d;
+  font-optical-sizing: auto;
+}
+
+.trading-premium .recharts-wrapper text,
+.trading-premium .recharts-cartesian-axis-tick-value {
+  font-family: var(--font-sans) !important;
+  font-size: 9.5px;
+  font-weight: 600;
+  fill: #7a83a8;
+}
+
+.trading-premium .recharts-cartesian-grid line {
+  stroke: rgba(124, 92, 191, 0.08);
+}
+
+.trading-premium .recharts-line-curve,
+.trading-premium .recharts-area-curve {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.trading-premium .recharts-bar-rectangle path {
+  shape-rendering: geometricPrecision;
+}
+
+.trading-premium button,
+.trading-premium select,
+.trading-premium input,
+.trading-premium textarea {
+  font-family: var(--font-sans);
+}
+
+.trading-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(124, 58, 237, 0.28) transparent;
+}
+
+.trading-scrollbar::-webkit-scrollbar {
+  height: 5px;
+}
+
+.trading-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.trading-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(124, 58, 237, 0.25);
+  border-radius: 999px;
+}
+
+/* ── Vivid gradient cards (colorful theme) ───────────────────────────────── */
+.vivid-card {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  isolation: isolate;
+}
+/* glossy diagonal sheen */
+.vivid-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 90% at 85% 8%, rgba(255, 255, 255, 0.38) 0%, transparent 42%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, transparent 38%);
+  pointer-events: none;
+  z-index: 0;
+}
+/* soft inner top highlight */
+.vivid-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -18px 40px rgba(0, 0, 0, 0.08);
+  pointer-events: none;
+  z-index: 0;
+}
+.vivid-card > * { position: relative; z-index: 1; }
+
+/* force lucide icons white inside a frosted chip */
+.icon-frost svg { stroke: #fff; }
+
+/* ── Sparkle twinkle animation ───────────────────────────────────────────── */
+@keyframes sparkle-twinkle {
+  0%, 100% { opacity: 0;   transform: scale(0.2) rotate(0deg);   }
+  45%       { opacity: 1;   transform: scale(1)   rotate(72deg);  }
+  55%       { opacity: 0.9; transform: scale(0.9) rotate(90deg);  }
+}
+
+/* tiny sparkle accents */
+.spark-dot {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+  animation: sparkle-twinkle var(--sp-dur, 2.8s) ease-in-out infinite;
+  animation-delay: var(--sp-delay, 0s);
+  opacity: 0;
+}
+
+/* ── Dark mode ───────────────────────────────────────────────────────────────
+   Retrofit dark theme onto utility-based surfaces. Vivid gradient cards keep
+   their inline gradients (they don't use bg-white), so they stay colorful. */
+
+/* Override CSS variables so inline style={{ background: 'var(--background)' }} goes dark */
+.dark {
+  --background: #0c0d1a;
+  --foreground: #e7e8f3;
+}
+
+.dark body { background: #0c0d1a; color: #e7e8f3; }
+
+/* Surfaces */
+.dark .bg-white { background-color: #181a2c !important; }
+.dark .bg-white\/80,
+.dark .bg-white\/78,
+.dark .bg-white\/86 { background-color: rgba(24, 26, 44, 0.86) !important; }
+.dark .bg-slate-50,
+.dark .bg-slate-50\/50,
+.dark .bg-slate-50\/60,
+.dark .bg-gray-50 { background-color: #14162a !important; }
+.dark .bg-purple-50 { background-color: rgba(124, 58, 237, 0.12) !important; }
+.dark .bg-purple-100 { background-color: rgba(124, 58, 237, 0.20) !important; }
+.dark .bg-gray-100,
+.dark .bg-slate-100 { background-color: rgba(255, 255, 255, 0.09) !important; }
+
+/* Borders */
+.dark .border-purple-50,
+.dark .border-purple-100,
+.dark .border-purple-100\/70,
+.dark .border-gray-50,
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-slate-100,
+.dark .border-slate-200 { border-color: rgba(255, 255, 255, 0.08) !important; }
+
+/* Text */
+.dark .text-gray-900,
+.dark .text-slate-900,
+.dark .text-purple-900,
+.dark .text-gray-800,
+.dark .text-slate-800 { color: #eef0fb !important; }
+.dark .text-gray-700,
+.dark .text-slate-700,
+.dark .text-gray-600,
+.dark .text-slate-600 { color: #c7cae0 !important; }
+.dark .text-gray-500,
+.dark .text-slate-500,
+.dark .text-gray-400,
+.dark .text-slate-400,
+.dark .text-gray-300 { color: #8b8fb0 !important; }
+
+/* Inputs */
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: #14162a !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  color: #e7e8f3 !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder { color: #6b6f93 !important; }
+
+/* Chart grid + axis a touch dimmer */
+.dark .recharts-cartesian-grid line { stroke: rgba(255, 255, 255, 0.06) !important; }
+
+/* Scrollbar */
+.dark ::-webkit-scrollbar-thumb { background: #3a3d63; }
+
+/* Keep vivid cards & their white text vivid (guard against overrides) */
+.dark .vivid-card .text-white { color: #fff !important; }
+.dark .vivid-card { color: #fff; }
+
+/* ── Dark mode — extended surface coverage ──────────────────────────────── */
+/* translucent white panels */
+.dark .bg-white\/90,
+.dark .bg-white\/70,
+.dark .bg-white\/75 { background-color: rgba(24, 26, 44, 0.86) !important; }
+.dark .bg-white\/55 { background-color: rgba(24, 26, 44, 0.5) !important; }
+.dark .bg-slate-50\/70 { background-color: #14162a !important; }
+
+/* pastel chip / badge backgrounds → soft translucent tints */
+.dark .bg-emerald-50,
+.dark .bg-emerald-50\/60,
+.dark .bg-emerald-50\/70,
+.dark .bg-teal-50,
+.dark .bg-green-50 { background-color: rgba(16, 185, 129, 0.14) !important; }
+.dark .bg-rose-50,
+.dark .bg-red-50 { background-color: rgba(244, 63, 94, 0.14) !important; }
+.dark .bg-blue-50,
+.dark .bg-sky-50,
+.dark .bg-cyan-50 { background-color: rgba(56, 189, 248, 0.14) !important; }
+.dark .bg-orange-50,
+.dark .bg-amber-50,
+.dark .bg-yellow-50 { background-color: rgba(245, 158, 11, 0.14) !important; }
+.dark .bg-violet-50,
+.dark .bg-indigo-50 { background-color: rgba(124, 58, 237, 0.16) !important; }
+
+/* hardcoded hex text colors → light */
+.dark .text-\[\#151a3d\],
+.dark .text-\[\#151A3D\],
+.dark .text-\[\#111827\],
+.dark .text-\[\#101a3d\],
+.dark .text-\[\#101A3D\] { color: #eef0fb !important; }
+
+/* chip / accent text a touch lighter for contrast on dark bg */
+.dark .text-emerald-800,
+.dark .text-emerald-700,
+.dark .text-emerald-600 { color: #6ee7b7 !important; }
+.dark .text-purple-900,
+.dark .text-purple-800,
+.dark .text-purple-700,
+.dark .text-purple-600 { color: #c4b5fd !important; }
+.dark .text-rose-600,
+.dark .text-rose-500,
+.dark .text-red-600,
+.dark .text-red-500 { color: #fda4af !important; }
+.dark .text-blue-700,
+.dark .text-blue-600,
+.dark .text-sky-600,
+.dark .text-cyan-600,
+.dark .text-indigo-600 { color: #93c5fd !important; }
+.dark .text-orange-600,
+.dark .text-orange-500,
+.dark .text-amber-600,
+.dark .text-yellow-600 { color: #fbbf24 !important; }
+.dark .text-\[\#1e1b4b\],
+.dark .text-\[\#1E1B4B\] { color: #eef0fb !important; }
+
+/* premium font wrappers keep light text */
+.dark .trading-premium,
+.dark .investment-premium { color: #e7e8f3; }
+
+/* recharts axis labels readable on dark */
+.dark .recharts-text { fill: #9aa0c4 !important; }
+
+/* ── Dark mode — opacity-suffix utility fixes ───────────────────────────────
+   Tailwind generates separate classes for each opacity variant (bg-gray-50/70
+   ≠ bg-gray-50), so the base rule above doesn't catch them. Fix them here. */
+
+/* Gray / slate opacity variants */
+.dark .bg-gray-50\/70,
+.dark .bg-gray-50\/80 { background-color: #0e0f1e !important; }   /* outside-month calendar cells — darker than card surface */
+.dark .bg-gray-50\/60,
+.dark .bg-gray-50\/50,
+.dark .bg-gray-50\/30 { background-color: rgba(255,255,255,0.025) !important; }
+.dark .bg-slate-50\/30,
+.dark .bg-slate-50\/40 { background-color: rgba(255,255,255,0.02) !important; }
+
+/* Violet / purple opacity variants — calendar weekend tint & hover */
+.dark .bg-violet-50\/20 { background-color: rgba(124,58,237,0.07) !important; }
+.dark .bg-violet-50\/50 { background-color: rgba(124,58,237,0.14) !important; }
+.dark .bg-violet-50\/40 { background-color: rgba(124,58,237,0.10) !important; }
+
+/* Purple opacity variants — table row hover, section tints */
+.dark .bg-purple-50\/30,
+.dark .bg-purple-50\/40 { background-color: rgba(124,58,237,0.08) !important; }
+.dark .bg-purple-100\/50 { background-color: rgba(124,58,237,0.15) !important; }
+
+/* White opacity variants — backdrop panels, event popup overlays */
+.dark .bg-white\/15,
+.dark .bg-white\/20,
+.dark .bg-white\/25 { background-color: rgba(255,255,255,0.08) !important; }
+.dark .bg-white\/30,
+.dark .bg-white\/35 { background-color: rgba(255,255,255,0.12) !important; }
+
+/* Hover utility overrides — keeps hover states themed in dark mode */
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-50\/80:hover { background-color: rgba(255,255,255,0.04) !important; }
+.dark .hover\:bg-violet-50:hover,
+.dark .hover\:bg-violet-50\/40:hover { background-color: rgba(124,58,237,0.10) !important; }
+.dark .hover\:bg-violet-50\/50:hover { background-color: rgba(124,58,237,0.14) !important; }
+.dark .hover\:bg-purple-50:hover { background-color: rgba(124,58,237,0.09) !important; }
+.dark .hover\:bg-white:hover { background-color: rgba(255,255,255,0.15) !important; }
+.dark .hover\:bg-white\/25:hover { background-color: rgba(255,255,255,0.12) !important; }
+.dark .hover\:bg-white\/35:hover { background-color: rgba(255,255,255,0.15) !important; }
+
+/* divide / border opacity variants */
+.dark .divide-gray-50 > * + * { border-color: rgba(255,255,255,0.05) !important; }
+.dark .divide-gray-100 > * + * { border-color: rgba(255,255,255,0.07) !important; }
+
+/* Shadow softening — harsh white glow looks wrong on dark */
+.dark .shadow-sm  { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
+.dark .shadow-md  { box-shadow: 0 4px 12px rgba(0,0,0,0.45) !important; }
+.dark .shadow-lg  { box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important; }
+.dark .shadow-xl  { box-shadow: 0 12px 32px rgba(0,0,0,0.55) !important; }
+.dark .shadow-2xl { box-shadow: 0 20px 48px rgba(0,0,0,0.6) !important; }
+
+/* Ring (focus / selected state) */
+.dark .ring-purple-100 { --tw-ring-color: rgba(124,58,237,0.25) !important; }
+.dark .ring-violet-100 { --tw-ring-color: rgba(139,92,246,0.25) !important; }
+
+/* Backdrop-blur panels that use semi-transparent white */
+.dark .backdrop-blur-sm { backdrop-filter: blur(8px); }
+
+/* sky / teal badge chips */
+.dark .bg-sky-100  { background-color: rgba(56,189,248,0.16) !important; }
+.dark .bg-teal-100 { background-color: rgba(20,184,166,0.16) !important; }
+.dark .bg-amber-100 { background-color: rgba(245,158,11,0.16) !important; }
+.dark .bg-rose-100  { background-color: rgba(244,63,94,0.16) !important; }
+.dark .bg-violet-100 { background-color: rgba(124,58,237,0.22) !important; }
+.dark .bg-emerald-100 { background-color: rgba(16,185,129,0.16) !important; }
+.dark .bg-fuchsia-100 { background-color: rgba(217,70,239,0.16) !important; }
+.dark .bg-pink-100  { background-color: rgba(236,72,153,0.16) !important; }
+.dark .bg-orange-100 { background-color: rgba(249,115,22,0.16) !important; }
+
+/* badge text colors */
+.dark .text-sky-700,
+.dark .text-sky-600 { color: #7dd3fc !important; }
+.dark .text-teal-700 { color: #5eead4 !important; }
+.dark .text-amber-700,
+.dark .text-amber-600 { color: #fcd34d !important; }
+.dark .text-violet-700,
+.dark .text-violet-600 { color: #c4b5fd !important; }
+.dark .text-emerald-700 { color: #6ee7b7 !important; }
+.dark .text-fuchsia-700 { color: #f0abfc !important; }
+.dark .text-pink-700 { color: #f9a8d4 !important; }
+.dark .text-orange-700 { color: #fdba74 !important; }
+.dark .text-rose-700 { color: #fda4af !important; }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   COLOR THEMES  —  applied via  data-color-theme="mono|blue|green|orange"
+   on <html>. The default (purple) needs no overrides — it's the :root above.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Mono (ดำขาว) ──────────────────────────────────────────────────────────── */
+[data-color-theme="mono"] {
+  --background: linear-gradient(160deg,#f7f8fa 0%,#e9ecf0 100%);
+  --color-primary: #374151;
+  --color-primary-light: #f3f4f6;
+  --primary-gradient: linear-gradient(135deg,#1f2937,#6b7280);
+  --primary-gradient-soft: linear-gradient(135deg,#6b7280,#9ca3af);
+}
+[data-color-theme="mono"] body { background: linear-gradient(160deg,#f7f8fa 0%,#e9ecf0 100%) fixed; }
+[data-color-theme="mono"] .bg-purple-50                { background-color: #f3f4f6 !important; }
+[data-color-theme="mono"] .bg-purple-50\/50,
+[data-color-theme="mono"] .bg-purple-50\/30            { background-color: rgba(243,244,246,0.5) !important; }
+[data-color-theme="mono"] .bg-purple-100               { background-color: #e5e7eb !important; }
+[data-color-theme="mono"] .bg-purple-200\/60           { background-color: rgba(209,213,219,0.65) !important; }
+[data-color-theme="mono"] .text-purple-900             { color: #111827 !important; }
+[data-color-theme="mono"] .text-purple-700             { color: #374151 !important; }
+[data-color-theme="mono"] .text-purple-600             { color: #4b5563 !important; }
+[data-color-theme="mono"] .text-purple-400             { color: #9ca3af !important; }
+[data-color-theme="mono"] .text-purple-300             { color: #d1d5db !important; }
+[data-color-theme="mono"] .border-purple-50            { border-color: #e5e7eb !important; }
+[data-color-theme="mono"] .border-purple-100           { border-color: #d1d5db !important; }
+[data-color-theme="mono"] .hover\:bg-purple-50:hover,
+[data-color-theme="mono"] .hover\:bg-purple-50\/50:hover { background-color: rgba(243,244,246,0.7) !important; }
+[data-color-theme="mono"] .bg-purple-600               { background-color: #374151 !important; }
+[data-color-theme="mono"] .hover\:bg-purple-700:hover  { background-color: #1f2937 !important; }
+[data-color-theme="mono"] ::-webkit-scrollbar-thumb    { background: #9ca3af; }
+[data-color-theme="mono"] ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+/* ── Blue (ฟ้า) ────────────────────────────────────────────────────────────── */
+[data-color-theme="blue"] {
+  --background: linear-gradient(160deg,#f0f6ff 0%,#dbeafe 100%);
+  --color-primary: #2563eb;
+  --color-primary-light: #dbeafe;
+  --primary-gradient: linear-gradient(135deg,#1d4ed8,#38bdf8);
+  --primary-gradient-soft: linear-gradient(135deg,#60a5fa,#93c5fd);
+}
+[data-color-theme="blue"] body { background: linear-gradient(160deg,#f0f6ff 0%,#dbeafe 100%) fixed; }
+[data-color-theme="blue"] .bg-purple-50               { background-color: #eff6ff !important; }
+[data-color-theme="blue"] .bg-purple-50\/50,
+[data-color-theme="blue"] .bg-purple-50\/30           { background-color: rgba(239,246,255,0.5) !important; }
+[data-color-theme="blue"] .bg-purple-100              { background-color: #dbeafe !important; }
+[data-color-theme="blue"] .bg-purple-200\/60          { background-color: rgba(191,219,254,0.65) !important; }
+[data-color-theme="blue"] .text-purple-900            { color: #1e3a8a !important; }
+[data-color-theme="blue"] .text-purple-700            { color: #1d4ed8 !important; }
+[data-color-theme="blue"] .text-purple-600            { color: #2563eb !important; }
+[data-color-theme="blue"] .text-purple-400            { color: #60a5fa !important; }
+[data-color-theme="blue"] .text-purple-300            { color: #93c5fd !important; }
+[data-color-theme="blue"] .border-purple-50           { border-color: #dbeafe !important; }
+[data-color-theme="blue"] .border-purple-100          { border-color: #bfdbfe !important; }
+[data-color-theme="blue"] .hover\:bg-purple-50:hover,
+[data-color-theme="blue"] .hover\:bg-purple-50\/50:hover { background-color: rgba(239,246,255,0.7) !important; }
+[data-color-theme="blue"] .bg-purple-600              { background-color: #2563eb !important; }
+[data-color-theme="blue"] .hover\:bg-purple-700:hover { background-color: #1d4ed8 !important; }
+[data-color-theme="blue"] ::-webkit-scrollbar-thumb   { background: #93c5fd; }
+[data-color-theme="blue"] ::-webkit-scrollbar-thumb:hover { background: #60a5fa; }
+
+/* ── Green (เขียว) ─────────────────────────────────────────────────────────── */
+[data-color-theme="green"] {
+  --background: linear-gradient(160deg,#f0fdf6 0%,#d1fae5 100%);
+  --color-primary: #059669;
+  --color-primary-light: #d1fae5;
+  --primary-gradient: linear-gradient(135deg,#047857,#34d399);
+  --primary-gradient-soft: linear-gradient(135deg,#34d399,#6ee7b7);
+}
+[data-color-theme="green"] body { background: linear-gradient(160deg,#f0fdf6 0%,#d1fae5 100%) fixed; }
+[data-color-theme="green"] .bg-purple-50              { background-color: #f0fdf4 !important; }
+[data-color-theme="green"] .bg-purple-50\/50,
+[data-color-theme="green"] .bg-purple-50\/30          { background-color: rgba(240,253,244,0.5) !important; }
+[data-color-theme="green"] .bg-purple-100             { background-color: #dcfce7 !important; }
+[data-color-theme="green"] .bg-purple-200\/60         { background-color: rgba(187,247,208,0.65) !important; }
+[data-color-theme="green"] .text-purple-900           { color: #052e16 !important; }
+[data-color-theme="green"] .text-purple-700           { color: #047857 !important; }
+[data-color-theme="green"] .text-purple-600           { color: #059669 !important; }
+[data-color-theme="green"] .text-purple-400           { color: #34d399 !important; }
+[data-color-theme="green"] .text-purple-300           { color: #6ee7b7 !important; }
+[data-color-theme="green"] .border-purple-50          { border-color: #d1fae5 !important; }
+[data-color-theme="green"] .border-purple-100         { border-color: #a7f3d0 !important; }
+[data-color-theme="green"] .hover\:bg-purple-50:hover,
+[data-color-theme="green"] .hover\:bg-purple-50\/50:hover { background-color: rgba(240,253,244,0.7) !important; }
+[data-color-theme="green"] .bg-purple-600             { background-color: #059669 !important; }
+[data-color-theme="green"] .hover\:bg-purple-700:hover { background-color: #047857 !important; }
+[data-color-theme="green"] ::-webkit-scrollbar-thumb  { background: #6ee7b7; }
+[data-color-theme="green"] ::-webkit-scrollbar-thumb:hover { background: #34d399; }
+
+/* ── Orange (ส้ม) ──────────────────────────────────────────────────────────── */
+[data-color-theme="orange"] {
+  --background: linear-gradient(160deg,#fff8f0 0%,#ffedd5 100%);
+  --color-primary: #ea580c;
+  --color-primary-light: #fed7aa;
+  --primary-gradient: linear-gradient(135deg,#c2410c,#fb923c);
+  --primary-gradient-soft: linear-gradient(135deg,#fb923c,#fbbf24);
+}
+[data-color-theme="orange"] body { background: linear-gradient(160deg,#fff8f0 0%,#ffedd5 100%) fixed; }
+[data-color-theme="orange"] .bg-purple-50             { background-color: #fff7ed !important; }
+[data-color-theme="orange"] .bg-purple-50\/50,
+[data-color-theme="orange"] .bg-purple-50\/30         { background-color: rgba(255,247,237,0.5) !important; }
+[data-color-theme="orange"] .bg-purple-100            { background-color: #ffedd5 !important; }
+[data-color-theme="orange"] .bg-purple-200\/60        { background-color: rgba(254,215,170,0.65) !important; }
+[data-color-theme="orange"] .text-purple-900          { color: #7c2d12 !important; }
+[data-color-theme="orange"] .text-purple-700          { color: #c2410c !important; }
+[data-color-theme="orange"] .text-purple-600          { color: #ea580c !important; }
+[data-color-theme="orange"] .text-purple-400          { color: #fb923c !important; }
+[data-color-theme="orange"] .text-purple-300          { color: #fdba74 !important; }
+[data-color-theme="orange"] .border-purple-50         { border-color: #fed7aa !important; }
+[data-color-theme="orange"] .border-purple-100        { border-color: #fdba74 !important; }
+[data-color-theme="orange"] .hover\:bg-purple-50:hover,
+[data-color-theme="orange"] .hover\:bg-purple-50\/50:hover { background-color: rgba(255,247,237,0.7) !important; }
+[data-color-theme="orange"] .bg-purple-600            { background-color: #ea580c !important; }
+[data-color-theme="orange"] .hover\:bg-purple-700:hover { background-color: #c2410c !important; }
+[data-color-theme="orange"] ::-webkit-scrollbar-thumb { background: #fdba74; }
+[data-color-theme="orange"] ::-webkit-scrollbar-thumb:hover { background: #fb923c; }
+
+/* ── Login page animations ─────────────────────────────────────────────────── */
+@keyframes marker-blink {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(251,191,36,0.35), 0 0 10px rgba(251,191,36,0.55); opacity: 1; }
+  50%       { box-shadow: 0 0 0 8px rgba(251,191,36,0.10), 0 0 24px rgba(251,191,36,0.90); opacity: 0.82; }
+}
+.marker-blink { animation: marker-blink 1.6s ease-in-out infinite; }
