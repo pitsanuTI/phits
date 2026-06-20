@@ -4597,7 +4597,7 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            {/* CONTENT DISPLAY */}
+                            {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
                               <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
@@ -4607,16 +4607,10 @@ function CourseDetailModal({
                                 <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
                             ) : (
-                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <AlignLeft size={13} className="text-gray-400" />
-                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
-                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
-                                </div>
-                                <textarea value={content} onChange={e => setContent(e.target.value)}
-                                  placeholder="วางเนื้อหาที่นี่..."
-                                  rows={6}
-                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
+                                <FileText size={28} className="text-gray-200 mx-auto mb-2" />
+                                <p className="text-[13px] font-semibold text-gray-400">ยังไม่มีเนื้อหา</p>
+                                <p className="text-[11px] text-gray-300 mt-1">กด Edit เพื่อเพิ่มเนื้อหาจาก Add Learning</p>
                               </div>
                             )}
 
@@ -4877,7 +4871,7 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            {/* CONTENT DISPLAY */}
+                            {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
                               <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
@@ -4887,16 +4881,10 @@ function CourseDetailModal({
                                 <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
                             ) : (
-                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <AlignLeft size={13} className="text-gray-400" />
-                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
-                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
-                                </div>
-                                <textarea value={content} onChange={e => setContent(e.target.value)}
-                                  placeholder="วางเนื้อหาที่นี่..."
-                                  rows={6}
-                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
+                                <FileText size={28} className="text-gray-200 mx-auto mb-2" />
+                                <p className="text-[13px] font-semibold text-gray-400">ยังไม่มีเนื้อหา</p>
+                                <p className="text-[11px] text-gray-300 mt-1">กด Edit เพื่อเพิ่มเนื้อหาจาก Add Learning</p>
                               </div>
                             )}
 
@@ -5176,7 +5164,7 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            {/* CONTENT DISPLAY */}
+                            {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
                               <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
@@ -5186,16 +5174,10 @@ function CourseDetailModal({
                                 <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
                             ) : (
-                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <AlignLeft size={13} className="text-gray-400" />
-                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
-                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
-                                </div>
-                                <textarea value={content} onChange={e => setContent(e.target.value)}
-                                  placeholder="วางเนื้อหาที่นี่..."
-                                  rows={6}
-                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
+                                <FileText size={28} className="text-gray-200 mx-auto mb-2" />
+                                <p className="text-[13px] font-semibold text-gray-400">ยังไม่มีเนื้อหา</p>
+                                <p className="text-[11px] text-gray-300 mt-1">กด Edit เพื่อเพิ่มเนื้อหาจาก Add Learning</p>
                               </div>
                             )}
 
@@ -5490,7 +5472,7 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            {/* CONTENT DISPLAY */}
+                            {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
                               <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
@@ -5500,16 +5482,10 @@ function CourseDetailModal({
                                 <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
                             ) : (
-                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <AlignLeft size={13} className="text-gray-400" />
-                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
-                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
-                                </div>
-                                <textarea value={content} onChange={e => setContent(e.target.value)}
-                                  placeholder="วางเนื้อหาที่นี่..."
-                                  rows={6}
-                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
+                                <FileText size={28} className="text-gray-200 mx-auto mb-2" />
+                                <p className="text-[13px] font-semibold text-gray-400">ยังไม่มีเนื้อหา</p>
+                                <p className="text-[11px] text-gray-300 mt-1">กด Edit เพื่อเพิ่มเนื้อหาจาก Add Learning</p>
                               </div>
                             )}
 
@@ -5775,7 +5751,7 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            {/* CONTENT DISPLAY */}
+                            {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
                               <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
@@ -5785,16 +5761,10 @@ function CourseDetailModal({
                                 <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
                             ) : (
-                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <AlignLeft size={13} className="text-gray-400" />
-                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
-                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
-                                </div>
-                                <textarea value={content} onChange={e => setContent(e.target.value)}
-                                  placeholder="วางเนื้อหาที่นี่..."
-                                  rows={6}
-                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
+                                <FileText size={28} className="text-gray-200 mx-auto mb-2" />
+                                <p className="text-[13px] font-semibold text-gray-400">ยังไม่มีเนื้อหา</p>
+                                <p className="text-[11px] text-gray-300 mt-1">กด Edit เพื่อเพิ่มเนื้อหาจาก Add Learning</p>
                               </div>
                             )}
 
@@ -5991,7 +5961,7 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            {/* CONTENT DISPLAY */}
+                            {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
                               <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
@@ -6001,16 +5971,10 @@ function CourseDetailModal({
                                 <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
                             ) : (
-                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <AlignLeft size={13} className="text-gray-400" />
-                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
-                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
-                                </div>
-                                <textarea value={content} onChange={e => setContent(e.target.value)}
-                                  placeholder="วางเนื้อหาที่นี่..."
-                                  rows={6}
-                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
+                                <FileText size={28} className="text-gray-200 mx-auto mb-2" />
+                                <p className="text-[13px] font-semibold text-gray-400">ยังไม่มีเนื้อหา</p>
+                                <p className="text-[11px] text-gray-300 mt-1">กด Edit เพื่อเพิ่มเนื้อหาจาก Add Learning</p>
                               </div>
                             )}
 
@@ -6214,7 +6178,7 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            {/* CONTENT DISPLAY */}
+                            {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
                               <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
@@ -6224,16 +6188,10 @@ function CourseDetailModal({
                                 <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
                             ) : (
-                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <AlignLeft size={13} className="text-gray-400" />
-                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
-                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
-                                </div>
-                                <textarea value={content} onChange={e => setContent(e.target.value)}
-                                  placeholder="วางเนื้อหาที่นี่..."
-                                  rows={6}
-                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
+                                <FileText size={28} className="text-gray-200 mx-auto mb-2" />
+                                <p className="text-[13px] font-semibold text-gray-400">ยังไม่มีเนื้อหา</p>
+                                <p className="text-[11px] text-gray-300 mt-1">กด Edit เพื่อเพิ่มเนื้อหาจาก Add Learning</p>
                               </div>
                             )}
 
@@ -6646,7 +6604,7 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            {/* CONTENT DISPLAY */}
+                            {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
                               <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
@@ -6656,16 +6614,10 @@ function CourseDetailModal({
                                 <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
                             ) : (
-                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <AlignLeft size={13} className="text-gray-400" />
-                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
-                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
-                                </div>
-                                <textarea value={content} onChange={e => setContent(e.target.value)}
-                                  placeholder="วางเนื้อหาที่นี่..."
-                                  rows={6}
-                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
+                                <FileText size={28} className="text-gray-200 mx-auto mb-2" />
+                                <p className="text-[13px] font-semibold text-gray-400">ยังไม่มีเนื้อหา</p>
+                                <p className="text-[11px] text-gray-300 mt-1">กด Edit เพื่อเพิ่มเนื้อหาจาก Add Learning</p>
                               </div>
                             )}
 
