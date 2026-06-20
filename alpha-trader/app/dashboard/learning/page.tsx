@@ -4166,7 +4166,6 @@ function CourseDetailModal({
 
         {/* ══ PANEL 1: Left Info ═══════════════════════════════════════ */}
         <AnimatePresence initial={false}>
-        {!readingMode && (
         <motion.div
           key="panel1"
           initial={{ width: 0, opacity: 0 }}
@@ -4329,7 +4328,6 @@ function CourseDetailModal({
             </div>
           </div>
         </motion.div>
-        )}
         </AnimatePresence>
 
         {/* ══ PANEL 2: Center Reading ══════════════════════════════════ */}
