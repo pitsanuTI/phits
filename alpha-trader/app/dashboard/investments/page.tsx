@@ -2302,17 +2302,6 @@ export default function InvestmentsPage() {
         </div>
       </div>
 
-      <div className="mb-4 rounded-2xl border border-purple-100/70 bg-white/70 p-4 shadow-sm">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="mr-auto">
-            <h2 className="text-[24px] font-extrabold leading-tight tracking-[-0.03em] text-[#151a3d]">{activeTab === 'Overview' ? 'Investment Portfolio Planner' : activeTab}</h2>
-            <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">{tabSubtitles[activeTab]}</p>
-          </div>
-          <div className="rounded-xl border border-purple-100 bg-white px-3 py-2 text-[11px] font-bold text-slate-500">
-            {selectedMonth === 'all-months' ? '📊 All Months' : selectedMonthMeta.label}: <span className="text-emerald-600">{showTHB(monthSnapshot.portfolio)}</span>
-          </div>
-        </div>
-      </div>
 
       <motion.div
         key={activeTab}

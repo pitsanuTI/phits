@@ -543,10 +543,48 @@ export default function CompoundingPage() {
       {pageTab === 'overview' && (
         <div>
 
+          {/* KPI row */}
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6"
+          >
+            <KpiCard label="Current Balance" value={`$${fmt2(balance)}`} accent="teal"
+              icon={<DollarSign size={20} />}
+              sub={lastGain > 0 ? `+$${fmt2(lastGain)} last month` : 'No records yet'}
+              spark={history.length ? history.slice().reverse().map(r => r.end) : [100]}
+            />
+            <KpiCard label="Monthly Growth Rate" value={history.length ? `+${avgReturn6.toFixed(2)}%` : `${returnTarget}% target`} accent="green"
+              icon={<TrendingUp size={20} />}
+              sub={history.length ? `Avg last ${Math.min(6, history.length)} months` : 'No records yet'}
+              spark={history.length ? history.slice(0, 6).map(r => r.pct).reverse() : [returnTarget]}
+            />
+            <KpiCard label="Progress to Goal" value={`${progressPct.toFixed(3)}%`} accent="coral"
+              icon={<Target size={20} />}
+              sub={`$${fmt0(balance)} of $1M`}
+              spark={[progressPct, progressPct * 1.05, progressPct * 1.1]}
+            />
+            <KpiCard label="Est. Time Remaining" value={Number.isFinite(yearsTo1M) ? `${yearsTo1M.toFixed(1)} Yrs` : '∞'} accent="indigo"
+              icon={<Hourglass size={20} />}
+              sub={Number.isFinite(monthsTo1M) ? `${Math.round(monthsTo1M)} months · ${reachDate}` : 'Set return target'}
+              spark={[10, 9, 8, 7, 6, 5, 4]}
+            />
+            <KpiCard label="Compounding Streak" value={`${streak} Months`} accent="pink"
+              icon={<Flame size={20} />}
+              sub="Consecutive profitable months"
+              spark={streak > 0 ? Array.from({ length: Math.min(streak, 7) }, (_, i) => i + 1) : [0]}
+            />
+            <KpiCard label="Monthly Add-on" value={`$${fmt0(effAddon)}`} accent="amber"
+              icon={<ArrowUpRight size={20} />}
+              sub="Reinvested each month"
+              spark={[effAddon * 0.8, effAddon * 0.9, effAddon, effAddon, effAddon]}
+            />
+          </motion.div>
+
           {/* Account header band */}
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 overflow-hidden rounded-2xl border border-teal-100/70 dark:border-white/10 bg-gradient-to-r from-teal-50 via-white to-emerald-50 dark:from-teal-900/20 dark:via-[#181a2c] dark:to-emerald-900/20 px-5 py-3.5 shadow-sm">
             <div className="flex items-center gap-3">
-              {/* Exness badge */}
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-400 shadow-md">
                 <DollarSign size={18} className="text-white" />
               </div>
@@ -597,45 +635,6 @@ export default function CompoundingPage() {
               </motion.button>
             </div>
           </div>
-
-          {/* KPI row */}
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-            className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6"
-          >
-            <KpiCard label="Current Balance" value={`$${fmt2(balance)}`} accent="teal"
-              icon={<DollarSign size={20} />}
-              sub={lastGain > 0 ? `+$${fmt2(lastGain)} last month` : 'No records yet'}
-              spark={history.length ? history.slice().reverse().map(r => r.end) : [100]}
-            />
-            <KpiCard label="Monthly Growth Rate" value={history.length ? `+${avgReturn6.toFixed(2)}%` : `${returnTarget}% target`} accent="green"
-              icon={<TrendingUp size={20} />}
-              sub={history.length ? `Avg last ${Math.min(6, history.length)} months` : 'No records yet'}
-              spark={history.length ? history.slice(0, 6).map(r => r.pct).reverse() : [returnTarget]}
-            />
-            <KpiCard label="Progress to Goal" value={`${progressPct.toFixed(3)}%`} accent="coral"
-              icon={<Target size={20} />}
-              sub={`$${fmt0(balance)} of $1M`}
-              spark={[progressPct, progressPct * 1.05, progressPct * 1.1]}
-            />
-            <KpiCard label="Est. Time Remaining" value={Number.isFinite(yearsTo1M) ? `${yearsTo1M.toFixed(1)} Yrs` : '∞'} accent="indigo"
-              icon={<Hourglass size={20} />}
-              sub={Number.isFinite(monthsTo1M) ? `${Math.round(monthsTo1M)} months · ${reachDate}` : 'Set return target'}
-              spark={[10, 9, 8, 7, 6, 5, 4]}
-            />
-            <KpiCard label="Compounding Streak" value={`${streak} Months`} accent="pink"
-              icon={<Flame size={20} />}
-              sub="Consecutive profitable months"
-              spark={streak > 0 ? Array.from({ length: Math.min(streak, 7) }, (_, i) => i + 1) : [0]}
-            />
-            <KpiCard label="Monthly Add-on" value={`$${fmt0(effAddon)}`} accent="amber"
-              icon={<ArrowUpRight size={20} />}
-              sub="Reinvested each month"
-              spark={[effAddon * 0.8, effAddon * 0.9, effAddon, effAddon, effAddon]}
-            />
-          </motion.div>
 
           {/* Main grid */}
           <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-12">

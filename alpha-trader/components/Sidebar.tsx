@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { SidebarContext } from './SidebarContext';
 import {
   Home, Briefcase, Heart, BookOpen, BarChart3,
-  Wallet, Smile, Settings, ChevronLeft, Sparkles,
+  Wallet, Smile, Settings, ChevronLeft, Sparkles, TrendingUp,
 } from 'lucide-react';
 
 const MENU_ITEMS = [
@@ -17,6 +17,7 @@ const MENU_ITEMS = [
   { label: 'Trading', href: '/dashboard/trading', icon: BarChart3 },
   { label: 'Compounding', href: '/dashboard/compounding', icon: Sparkles },
   { label: 'Money', href: '/dashboard/money', icon: Wallet },
+  { label: 'Investments', href: '/dashboard/investments', icon: TrendingUp },
   { label: 'Mood & Journal', href: '/dashboard/mood', icon: Smile },
 ];
 

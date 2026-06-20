@@ -4166,7 +4166,6 @@ function CourseDetailModal({
 
         {/* ══ PANEL 1: Left Info ═══════════════════════════════════════ */}
         <AnimatePresence initial={false}>
-        {!readingMode && (
         <motion.div
           key="panel1"
           initial={{ width: 0, opacity: 0 }}
@@ -4329,9 +4328,88 @@ function CourseDetailModal({
             </div>
           </div>
         </motion.div>
-        )}
         </AnimatePresence>
 
+        {/* ══ PANEL 3: Right Pomodoro (Reading Mode) ══════════════════════ */}
+        {readingMode && (
+        <motion.div
+          key="panel3"
+          initial={{ width: 0, opacity: 0 }}
+          animate={{ width: 320, opacity: 1 }}
+          exit={{ width: 0, opacity: 0 }}
+          transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1], opacity: { delay: 0.18, duration: 0.28 } }}
+          style={{ flexShrink: 0 }}
+          className="border-l border-violet-100/50 flex flex-col bg-white/70 overflow-y-auto"
+        >
+          <div className="p-4 space-y-6">
+            {/* Pomodoro Timer Header */}
+            <div className="flex items-center gap-2">
+              <Flame size={16} className="text-orange-400" />
+              <h3 className="text-sm font-semibold text-gray-900">Pomodoro Timer</h3>
+            </div>
+
+            {/* Tone Selector */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">Tone</label>
+              <select
+                value={timerMode}
+                onChange={(e) => setTimerMode(e.target.value as 'focus' | 'shortBreak' | 'longBreak')}
+                disabled={timerActive}
+                className="w-full px-3 py-2 bg-white border border-violet-100 rounded-lg text-sm text-gray-900 hover:bg-violet-50/50 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-violet-400/50"
+              >
+                <option value="focus">Focus (25 min)</option>
+                <option value="shortBreak">Break (5 min)</option>
+                <option value="longBreak">Long Break (15 min)</option>
+              </select>
+            </div>
+
+            {/* Timer Display */}
+            <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100 rounded-xl p-6 text-center">
+              <div className="text-4xl font-bold text-orange-600 font-mono">
+                {String(Math.floor(remaining / 60)).padStart(2, '0')}:{String(remaining % 60).padStart(2, '0')}
+              </div>
+              <div className="text-xs text-gray-600 mt-2 uppercase tracking-wide">
+                {timerMode === 'focus' ? 'Stay Focused' : 'Take a Break'}
+              </div>
+            </div>
+
+            {/* Time Until Recap */}
+            <div className="bg-violet-50/50 border border-violet-100 rounded-lg p-3 text-center">
+              <div className="text-xs text-gray-600 mb-1">Session ends in</div>
+              <div className="text-sm font-semibold text-violet-700">{Math.ceil(remaining / 60)} minutes</div>
+            </div>
+
+            {/* Control Buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setTimerActive(!timerActive)}
+                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  timerActive
+                    ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                }`}
+              >
+                {timerActive ? 'Pause' : 'Start'}
+              </button>
+              <button
+                onClick={() => {
+                  setTimerActive(false);
+                  if (timerMode === 'focus') {
+                    setRemaining(pomodoroMin * 60);
+                  } else if (timerMode === 'shortBreak') {
+                    setRemaining(shortBreakMin * 60);
+                  } else {
+                    setRemaining(longBreakMin * 60);
+                  }
+                }}
+                className="flex-1 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-lg text-sm font-medium transition-all"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </motion.div>
+        )}
 
         {/* ══ PANEL 2: Center Reading ══════════════════════════════════ */}
         <div className={readingMode ? 'flex-1 flex items-center justify-center py-4 px-3 overflow-hidden' : 'relative flex min-w-0 flex-1 flex-col bg-white'}>
