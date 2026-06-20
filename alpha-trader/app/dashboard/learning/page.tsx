@@ -4257,31 +4257,39 @@ function CourseDetailModal({
                         {steps.map((step, idx) => {
                           const isCompleted = !!step.value;
                           const canAccess = idx === 0 || steps.slice(0, idx).every(s => s.value);
+                          const isCurrentRequired = idx > 0 && !canAccess; // Show hint for locked steps
                           return (
-                            <div key={idx} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border transition-all ${
-                              isCompleted
-                                ? 'bg-violet-50 border-violet-200'
-                                : canAccess
-                                ? 'bg-gray-50 border-gray-200'
-                                : 'bg-gray-100/50 border-gray-100'
-                            }`}>
-                              <div className={`flex-shrink-0 w-2 h-2 rounded-full ${
+                            <div key={idx}>
+                              <div className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border transition-all ${
                                 isCompleted
-                                  ? 'bg-violet-600'
+                                  ? 'bg-violet-50 border-violet-200'
                                   : canAccess
-                                  ? 'bg-gray-400'
-                                  : 'bg-gray-300'
-                              }`} />
-
-                              <span className={`text-xs font-medium ${
-                                isCompleted
-                                  ? 'text-violet-700'
-                                  : canAccess
-                                  ? 'text-gray-700'
-                                  : 'text-gray-400'
+                                  ? 'bg-gray-50 border-gray-200'
+                                  : 'bg-gray-100/50 border-gray-100'
                               }`}>
-                                {step.label}
-                              </span>
+                                <div className={`flex-shrink-0 w-2 h-2 rounded-full ${
+                                  isCompleted
+                                    ? 'bg-violet-600'
+                                    : canAccess
+                                    ? 'bg-gray-400'
+                                    : 'bg-gray-300'
+                                }`} />
+
+                                <span className={`text-xs font-medium ${
+                                  isCompleted
+                                    ? 'text-violet-700'
+                                    : canAccess
+                                    ? 'text-gray-700'
+                                    : 'text-gray-400'
+                                }`}>
+                                  {step.label}
+                                </span>
+                              </div>
+                              {isCurrentRequired && (
+                                <div className="text-[10px] text-gray-400 px-3 py-1.5 italic">
+                                  ต้องเสร็จ step ก่อนหน้าก่อนจึงจะไปต่อได้
+                                </div>
+                              )}
                             </div>
                           );
                         })}
