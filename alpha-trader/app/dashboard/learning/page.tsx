@@ -5589,29 +5589,36 @@ function CourseDetailModal({
                               <div className="flex items-center gap-2 mb-3">
                                 <Bookmark size={13} className={isStep2Complete ? 'text-violet-500' : 'text-gray-400'} />
                                 <span className={`text-[11px] font-black uppercase tracking-wide ${isStep2Complete ? 'text-violet-700' : 'text-gray-500'}`}>WHY I SAVED THIS</span>
+                                <span className={`text-[10px] ml-auto font-semibold ${isStep2Complete ? 'text-violet-400' : 'text-gray-400'}`}>{quotesList.length} saved</span>
                                 {!isStep2Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 2 ก่อน</span>}
                               </div>
-                              <div className="flex gap-2 mb-3">
+                              <div className="flex gap-2 mb-4">
                                 <input disabled={!isStep2Complete} value={newQuote} onChange={e => setNewQuote(e.target.value)}
                                   onKeyDown={e => { if (e.key === 'Enter' && newQuote.trim() && isStep2Complete) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); e.preventDefault(); }}}
                                   placeholder={isStep2Complete ? '"Paste a memorable line... ↵"' : 'Complete Step 2 first...'}
                                   className={`flex-1 px-3 py-2 border rounded-xl text-[13px] focus:outline-none bg-white ${isStep2Complete ? 'border-violet-200 focus:border-violet-400' : 'border-gray-200 cursor-not-allowed text-gray-400 placeholder:text-gray-300'}`} />
                                 <button disabled={!isStep2Complete} onClick={() => { if (newQuote.trim() && isStep2Complete) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); }}}
                                   className={`px-4 py-2 rounded-xl text-[12px] font-bold transition flex items-center gap-1 ${isStep2Complete ? 'bg-violet-500 text-white hover:bg-violet-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
-                                  <Plus size={13} /> Add
+                                  <Plus size={13} />
                                 </button>
                               </div>
-                              <div className="space-y-2">
-                                {quotesList.map((q, i) => (
-                                  <div key={i} className="flex items-start gap-2.5 p-3 bg-white rounded-xl border border-violet-100 group hover:border-violet-200 transition">
-                                    <span className="text-violet-300 text-2xl font-serif leading-none mt-0.5">&ldquo;</span>
-                                    <p className="flex-1 text-[13px] text-violet-900 italic leading-relaxed">{q}</p>
-                                    <button disabled={!isStep2Complete} onClick={() => setQuotesList(ql => ql.filter((_, j) => j !== i))}
-                                      className={`shrink-0 mt-0.5 transition ${isStep2Complete ? 'opacity-0 group-hover:opacity-100 text-gray-300 hover:text-rose-400 cursor-pointer' : 'opacity-0'}`}><X size={12} /></button>
+                              <div className={`max-h-[320px] overflow-y-auto space-y-3 p-3 rounded-xl ${isStep2Complete ? 'bg-white/50' : 'bg-gray-100/30'}`}>
+                                {quotesList.length > 0 ? (
+                                  quotesList.map((q, i) => (
+                                    <div key={i} className="flex items-start gap-2.5 p-3 bg-white rounded-lg border border-violet-100 group hover:border-violet-300 transition">
+                                      <span className="text-violet-300 text-2xl font-serif leading-none mt-0.5 shrink-0">&ldquo;</span>
+                                      <p className="flex-1 text-[13px] text-violet-900 italic leading-relaxed">{q}</p>
+                                      <button disabled={!isStep2Complete} onClick={() => setQuotesList(ql => ql.filter((_, j) => j !== i))}
+                                        className={`shrink-0 mt-0.5 transition ${isStep2Complete ? 'opacity-0 group-hover:opacity-100 text-gray-300 hover:text-rose-400 cursor-pointer' : 'opacity-0'}`}><X size={12} /></button>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                                    <Bookmark size={24} className="text-violet-200 mb-2" />
+                                    <p className={`text-[11px] font-medium ${isStep2Complete ? 'text-violet-400' : 'text-gray-400'}`}>
+                                      {isStep2Complete ? 'Save memorable quotes here' : 'Complete Step 2 first'}
+                                    </p>
                                   </div>
-                                ))}
-                                {quotesList.length === 0 && (
-                                  <p className={`text-[11px] italic text-center py-2 ${isStep2Complete ? 'text-violet-300' : 'text-gray-300'}`}>No quotes yet</p>
                                 )}
                               </div>
                             </div>
