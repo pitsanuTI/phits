@@ -4589,29 +4589,7 @@ function CourseDetailModal({
                         <p className="text-[11px] font-black text-violet-600 uppercase tracking-widest">Reflection &amp; Application</p>
                       </div>
 
-                      <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Sparkles size={13} className="text-sky-500" />
-                          <span className="text-[11px] font-black text-sky-700 uppercase tracking-wide">AI Summary</span>
-                          <span className="text-[10px] text-sky-400 ml-auto italic">Key takeaway</span>
-                        </div>
-                        <textarea value={keyTakeaways} onChange={e => setKeyTakeaways(e.target.value)}
-                          placeholder="แก่นหลักของหนังสือเล่มนี้ในย่อหน้าเดียว..."
-                          rows={3}
-                          className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
-                      </div>
-
-                      <div className="rounded-2xl border border-amber-100 bg-amber-50/40 p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Lightbulb size={13} className="text-amber-500" />
-                          <span className="text-[11px] font-black text-amber-700 uppercase tracking-wide">Key Ideas / Chapter Notes</span>
-                        </div>
-                        <textarea value={typeNotes} onChange={e => setTypeNotes(e.target.value)}
-                          placeholder="ไอเดียหลัก กรอบแนวคิด จุดเด่นแต่ละบท... (เริ่มบรรทัดด้วย 'Chapter X:' เพื่อสร้างสารบัญ)"
-                          rows={5}
-                          className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
-                      </div>
-
+                      {/* Key Quotes - Supporting Material */}
                       <div className="rounded-2xl border border-violet-100 bg-violet-50/30 p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
@@ -4645,32 +4623,48 @@ function CourseDetailModal({
                         </div>
                       </div>
 
+                      {/* Step 2: Understand — จับใจความสำคัญ */}
                       <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
                         <div className="flex items-center gap-2 mb-2">
                           <Brain size={13} className="text-emerald-500" />
-                          <span className="text-[11px] font-black text-emerald-700 uppercase tracking-wide">My Understanding</span>
-                          <span className="text-[10px] text-emerald-400 ml-auto italic">In my own words</span>
+                          <span className="text-[11px] font-black text-emerald-700 uppercase tracking-wide">Understand — จับใจความสำคัญ</span>
+                          <span className="text-[10px] text-emerald-400 ml-auto italic">ใจความ</span>
                         </div>
                         <textarea value={understanding} onChange={e => setUnderstanding(e.target.value)}
-                          placeholder="ถ้าต้องสอนหนังสือเล่มนี้ให้เพื่อน ฉันจะบอกว่า..."
+                          placeholder="จุดสำคัญที่ได้เรียนรู้ สรุปใจความหลัก..."
                           rows={3}
                           className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
                       </div>
 
+                      {/* Step 3: Connect — เชื่อมกับชีวิตจริง */}
+                      <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Sparkles size={13} className="text-sky-500" />
+                          <span className="text-[11px] font-black text-sky-700 uppercase tracking-wide">Connect — เชื่อมกับชีวิตจริง</span>
+                          <span className="text-[10px] text-sky-400 ml-auto italic">เชื่อมโยง</span>
+                        </div>
+                        <textarea value={keyTakeaways} onChange={e => setKeyTakeaways(e.target.value)}
+                          placeholder="เชื่อมกับประสบการณ์ของเรา วิธีที่ใช้ได้จริงในชีวิต..."
+                          rows={3}
+                          className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
+                      </div>
+
+                      {/* Step 4: Apply — วางแผนใช้ยังไง */}
                       <div className="rounded-2xl border border-orange-100 bg-orange-50/40 p-4">
                         <div className="flex items-center gap-2 mb-2">
                           <Target size={13} className="text-orange-500" />
-                          <span className="text-[11px] font-black text-orange-700 uppercase tracking-wide">How I Can Apply This</span>
+                          <span className="text-[11px] font-black text-orange-700 uppercase tracking-wide">Apply — วางแผนใช้ยังไง</span>
                         </div>
                         <textarea value={application} onChange={e => setApplication(e.target.value)}
                           placeholder="วิธีที่จะนำไอเดียเหล่านี้ไปใช้จริง..."
                           rows={3}
                           className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed mb-3" />
+                        {/* Step 5: Act — action เล็กๆ */}
                         <div className="flex items-center gap-2 pt-3 border-t border-orange-200/60">
                           <Zap size={13} className="text-orange-500 shrink-0" />
-                          <span className="text-[11px] font-black text-orange-700 uppercase tracking-wide shrink-0">Action Idea:</span>
+                          <span className="text-[11px] font-black text-orange-700 uppercase tracking-wide shrink-0">Act:</span>
                           <input value={nextAction} onChange={e => setNextAction(e.target.value)}
-                            placeholder="สิ่งหนึ่งที่จะทำในสัปดาห์นี้..."
+                            placeholder="action เล็กๆ ที่จะทำ..."
                             className="flex-1 px-2 py-1 text-[12px] focus:outline-none bg-transparent placeholder:text-orange-300 text-gray-800" />
                         </div>
                       </div>
@@ -5625,11 +5619,12 @@ function CourseDetailModal({
                           placeholder="วิธีที่จะนำข้อคิดนี้ไปใช้จริง..."
                           rows={3}
                           className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed mb-3" />
+                        {/* Step 5: Act — action เล็กๆ */}
                         <div className="flex items-center gap-2 pt-3 border-t border-orange-200/60">
                           <Zap size={13} className="text-orange-500 shrink-0" />
-                          <span className="text-[11px] font-black text-orange-700 uppercase tracking-wide shrink-0">Action Idea:</span>
+                          <span className="text-[11px] font-black text-orange-700 uppercase tracking-wide shrink-0">Act:</span>
                           <input value={nextAction} onChange={e => setNextAction(e.target.value)}
-                            placeholder="สิ่งหนึ่งที่จะทำในสัปดาห์นี้..."
+                            placeholder="action เล็กๆ ที่จะทำ..."
                             className="flex-1 px-2 py-1 text-[12px] focus:outline-none bg-transparent placeholder:text-orange-300 text-gray-800" />
                         </div>
                       </div>
