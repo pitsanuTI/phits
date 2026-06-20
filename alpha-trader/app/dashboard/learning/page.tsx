@@ -4597,18 +4597,28 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            {/* AI SUMMARY (Support - not locked) */}
-                            <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Sparkles size={13} className="text-sky-500" />
-                                <span className="text-[11px] font-black text-sky-700 uppercase tracking-wide">AI SUMMARY</span>
-                                <span className="text-[10px] text-sky-400 ml-auto italic">Supporting material</span>
+                            {/* CONTENT DISPLAY */}
+                            {!isRichTextEmpty(content) ? (
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                </div>
+                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
-                              <textarea value={understanding} onChange={e => setUnderstanding(e.target.value)}
-                                placeholder="แก่นหลักของหนังสือเล่มนี้..."
-                                rows={2}
-                                className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
-                            </div>
+                            ) : (
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
+                                </div>
+                                <textarea value={content} onChange={e => setContent(e.target.value)}
+                                  placeholder="วางเนื้อหาที่นี่..."
+                                  rows={6}
+                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              </div>
+                            )}
 
                             {/* Step 2: KEY INSIGHT (Understand) */}
                             <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
@@ -4867,17 +4877,28 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Sparkles size={13} className="text-sky-500" />
-                                <span className="text-[11px] font-black text-sky-700 uppercase tracking-wide">AI SUMMARY</span>
-                                <span className="text-[10px] text-sky-400 ml-auto italic">Supporting material</span>
+                            {/* CONTENT DISPLAY */}
+                            {!isRichTextEmpty(content) ? (
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                </div>
+                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
-                              <textarea value={understanding} onChange={e => setUnderstanding(e.target.value)}
-                                placeholder="แก่นหลักของเอกสารนี้..."
-                                rows={2}
-                                className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
-                            </div>
+                            ) : (
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
+                                </div>
+                                <textarea value={content} onChange={e => setContent(e.target.value)}
+                                  placeholder="วางเนื้อหาที่นี่..."
+                                  rows={6}
+                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              </div>
+                            )}
 
                             <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
                               <div className="flex items-center gap-2 mb-2">
@@ -5155,17 +5176,28 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Sparkles size={13} className="text-sky-500" />
-                                <span className="text-[11px] font-black text-sky-700 uppercase tracking-wide">AI SUMMARY</span>
-                                <span className="text-[10px] text-sky-400 ml-auto italic">Supporting material</span>
+                            {/* CONTENT DISPLAY */}
+                            {!isRichTextEmpty(content) ? (
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                </div>
+                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
-                              <textarea value={understanding} onChange={e => setUnderstanding(e.target.value)}
-                                placeholder="แนวคิดหลักที่ครอบคลุมในคอร์สนี้..."
-                                rows={2}
-                                className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
-                            </div>
+                            ) : (
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
+                                </div>
+                                <textarea value={content} onChange={e => setContent(e.target.value)}
+                                  placeholder="วางเนื้อหาที่นี่..."
+                                  rows={6}
+                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              </div>
+                            )}
 
                             <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
                               <div className="flex items-center gap-2 mb-2">
@@ -5458,17 +5490,28 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Sparkles size={13} className="text-sky-500" />
-                                <span className="text-[11px] font-black text-sky-700 uppercase tracking-wide">AI SUMMARY</span>
-                                <span className="text-[10px] text-sky-400 ml-auto italic">Supporting material</span>
+                            {/* CONTENT DISPLAY */}
+                            {!isRichTextEmpty(content) ? (
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                </div>
+                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
-                              <textarea value={understanding} onChange={e => setUnderstanding(e.target.value)}
-                                placeholder="แก่นหลักของวิดีโอนี้..."
-                                rows={2}
-                                className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
-                            </div>
+                            ) : (
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
+                                </div>
+                                <textarea value={content} onChange={e => setContent(e.target.value)}
+                                  placeholder="วางเนื้อหาที่นี่..."
+                                  rows={6}
+                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              </div>
+                            )}
 
                             <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
                               <div className="flex items-center gap-2 mb-2">
@@ -5732,18 +5775,28 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            {/* AI SUMMARY (Support - not locked) */}
-                            <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Sparkles size={13} className="text-sky-500" />
-                                <span className="text-[11px] font-black text-sky-700 uppercase tracking-wide">AI SUMMARY</span>
-                                <span className="text-[10px] text-sky-400 ml-auto italic">Supporting material</span>
+                            {/* CONTENT DISPLAY */}
+                            {!isRichTextEmpty(content) ? (
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                </div>
+                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
-                              <textarea value={typeNotes} onChange={e => setTypeNotes(e.target.value)}
-                                placeholder="บทความนี้พูดถึง..."
-                                rows={2}
-                                className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
-                            </div>
+                            ) : (
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
+                                </div>
+                                <textarea value={content} onChange={e => setContent(e.target.value)}
+                                  placeholder="วางเนื้อหาที่นี่..."
+                                  rows={6}
+                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              </div>
+                            )}
 
                             {/* Step 2: KEY INSIGHT (Understand) */}
                             <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
@@ -5938,18 +5991,28 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            {/* AI SUMMARY (Support - not locked) */}
-                            <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Sparkles size={13} className="text-sky-500" />
-                                <span className="text-[11px] font-black text-sky-700 uppercase tracking-wide">AI SUMMARY</span>
-                                <span className="text-[10px] text-sky-400 ml-auto italic">Supporting material</span>
+                            {/* CONTENT DISPLAY */}
+                            {!isRichTextEmpty(content) ? (
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                </div>
+                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
-                              <textarea value={typeNotes} onChange={e => setTypeNotes(e.target.value)}
-                                placeholder="บทความนี้พูดถึง..."
-                                rows={2}
-                                className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
-                            </div>
+                            ) : (
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
+                                </div>
+                                <textarea value={content} onChange={e => setContent(e.target.value)}
+                                  placeholder="วางเนื้อหาที่นี่..."
+                                  rows={6}
+                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              </div>
+                            )}
 
                             {/* Step 2: KEY INSIGHT (Understand) */}
                             <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
@@ -6151,18 +6214,28 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            {/* AI SUMMARY (Support - not locked) */}
-                            <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Sparkles size={13} className="text-sky-500" />
-                                <span className="text-[11px] font-black text-sky-700 uppercase tracking-wide">AI SUMMARY</span>
-                                <span className="text-[10px] text-sky-400 ml-auto italic">Supporting material</span>
+                            {/* CONTENT DISPLAY */}
+                            {!isRichTextEmpty(content) ? (
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                </div>
+                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
-                              <textarea value={keyTakeaways} onChange={e => setKeyTakeaways(e.target.value)}
-                                placeholder="โพสต์นี้กำลังบอกอะไรจริงๆ?"
-                                rows={2}
-                                className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
-                            </div>
+                            ) : (
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
+                                </div>
+                                <textarea value={content} onChange={e => setContent(e.target.value)}
+                                  placeholder="วางเนื้อหาที่นี่..."
+                                  rows={6}
+                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              </div>
+                            )}
 
                             {/* Step 2: KEY INSIGHT (Understand) */}
                             <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
@@ -6573,17 +6646,28 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Sparkles size={13} className="text-sky-500" />
-                                <span className="text-[11px] font-black text-sky-700 uppercase tracking-wide">AI SUMMARY</span>
-                                <span className="text-[10px] text-sky-400 ml-auto italic">Supporting material</span>
+                            {/* CONTENT DISPLAY */}
+                            {!isRichTextEmpty(content) ? (
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                </div>
+                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
-                              <textarea value={understanding} onChange={e => setUnderstanding(e.target.value)}
-                                placeholder="แก่นหลักของตอนนี้..."
-                                rows={2}
-                                className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
-                            </div>
+                            ) : (
+                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <AlignLeft size={13} className="text-gray-400" />
+                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                  <span className="text-[10px] text-gray-400 ml-auto italic">วางเนื้อหา หรือ paste ข้อความ</span>
+                                </div>
+                                <textarea value={content} onChange={e => setContent(e.target.value)}
+                                  placeholder="วางเนื้อหาที่นี่..."
+                                  rows={6}
+                                  className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none bg-transparent leading-relaxed" />
+                              </div>
+                            )}
 
                             <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
                               <div className="flex items-center gap-2 mb-2">
