@@ -4232,10 +4232,11 @@ function CourseDetailModal({
               <div className="space-y-2.5">
                 {(() => {
                   const steps = [
-                    { label: 'ค้นพบสิ่งสำคัญ', value: card.keyInsight?.trim() },
-                    { label: 'ทำไมฉันถึงเก็บมันไว้', value: card.whySaved?.trim() },
-                    { label: 'ฉันจะนำไปใช้ได้อย่างไร', value: card.application?.trim() && card.application !== 'Application not added yet.' },
-                    { label: 'แนวทางการปฏิบัติ', value: card.actionIdea?.trim() },
+                    { emoji: '🔖', label: 'กำลังอ่าน', value: status === 'Reading' },
+                    { emoji: '💡', label: 'Understand — จับใจความสำคัญ', value: card.understanding?.trim() && card.understanding !== 'Notes not added yet.' },
+                    { emoji: '🔗', label: 'Connect — เชื่อมกับชีวิตจริง', value: card.keyTakeaways?.trim() },
+                    { emoji: '🎯', label: 'Apply — วางแผนใช้ยังไง', value: card.application?.trim() && card.application !== 'Application not added yet.' },
+                    { emoji: '⚡', label: 'Act — action เล็กๆ', value: card.nextAction?.trim() },
                   ];
                   const completedSteps = steps.filter(s => s.value).length;
                   const totalSteps = steps.length;
@@ -4258,6 +4259,7 @@ function CourseDetailModal({
                                 ? 'bg-gray-50 border-gray-200'
                                 : 'bg-gray-100/50 border-gray-100'
                             }`}>
+                              <span className="text-sm flex-shrink-0">{step.emoji}</span>
                               <div className={`flex-shrink-0 w-2 h-2 rounded-full ${
                                 isCompleted
                                   ? 'bg-violet-600'
