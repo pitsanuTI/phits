@@ -5545,145 +5545,147 @@ function CourseDetailModal({
 
                     {/* ═══ 3. Reflection & Application ═══ */}
                     <div className="space-y-5 pt-8 border-t-2 border-emerald-100">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-4">
                         <Brain size={14} className="text-emerald-500" />
                         <p className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">Reflection &amp; Application</p>
                       </div>
 
-                      {/* AI Summary */}
-                      <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Sparkles size={13} className="text-sky-500" />
-                          <span className="text-[11px] font-black text-sky-700 uppercase tracking-wide">AI Summary</span>
-                          <span className="text-[10px] text-sky-400 ml-auto italic">1-sentence summary</span>
-                        </div>
-                        <textarea value={typeNotes} onChange={e => setTypeNotes(e.target.value)}
-                          placeholder="บทความนี้พูดถึง..."
-                          rows={2}
-                          className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
-                      </div>
+                      {(() => {
+                        const isStep1Complete = status === 'Reading';
+                        const isStep2Complete = typeNotes?.trim();
+                        const isStep3Complete = keyTakeaways?.trim();
+                        const isStep4Complete = application?.trim() && application !== 'Application not added yet.';
 
-                      {/* Key Takeaways */}
-                      <div className="rounded-2xl border border-amber-100 bg-amber-50/40 p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Lightbulb size={13} className="text-amber-500" />
-                          <span className="text-[11px] font-black text-amber-700 uppercase tracking-wide">Key Takeaways</span>
-                        </div>
-                        <textarea value={keyTakeaways} onChange={e => setKeyTakeaways(e.target.value)}
-                          placeholder="เรียนรู้อะไรบ้าง? (แบบ bullet points)"
-                          rows={4}
-                          className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
-                      </div>
-
-                      {/* Highlighted Quotes */}
-                      <div className="rounded-2xl border border-violet-100 bg-violet-50/30 p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <Bookmark size={13} className="text-violet-500" />
-                            <span className="text-[11px] font-black text-violet-700 uppercase tracking-wide">Highlighted Quotes</span>
-                          </div>
-                          <span className="text-[10px] text-violet-400 font-bold">{quotesList.length} saved</span>
-                        </div>
-                        <div className="flex gap-2 mb-3">
-                          <input value={newQuote} onChange={e => setNewQuote(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter' && newQuote.trim()) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); e.preventDefault(); }}}
-                            placeholder='"Paste a memorable line... ↵"'
-                            className="flex-1 px-3 py-2 border border-violet-200 rounded-xl text-[13px] focus:outline-none focus:border-violet-400 bg-white" />
-                          <button onClick={() => { if (newQuote.trim()) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); }}}
-                            className="px-4 py-2 bg-violet-500 text-white rounded-xl text-[12px] font-bold hover:bg-violet-600 transition flex items-center gap-1">
-                            <Plus size={13} /> Add
-                          </button>
-                        </div>
-                        <div className="space-y-2">
-                          {quotesList.map((q, i) => (
-                            <div key={i} className="flex items-start gap-2.5 p-3 bg-white rounded-xl border border-violet-100 group hover:border-violet-200 transition">
-                              <span className="text-violet-300 text-2xl font-serif leading-none mt-0.5">&ldquo;</span>
-                              <p className="flex-1 text-[13px] text-violet-900 italic leading-relaxed">{q}</p>
-                              <button onClick={() => setQuotesList(ql => ql.filter((_, j) => j !== i))}
-                                className="opacity-0 group-hover:opacity-100 transition text-gray-300 hover:text-rose-400 shrink-0 mt-0.5"><X size={12} /></button>
+                        return (
+                          <>
+                            {/* AI SUMMARY (Support - not locked) */}
+                            <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Sparkles size={13} className="text-sky-500" />
+                                <span className="text-[11px] font-black text-sky-700 uppercase tracking-wide">AI SUMMARY</span>
+                                <span className="text-[10px] text-sky-400 ml-auto italic">Supporting material</span>
+                              </div>
+                              <textarea value={typeNotes} onChange={e => setTypeNotes(e.target.value)}
+                                placeholder="บทความนี้พูดถึง..."
+                                rows={2}
+                                className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
                             </div>
-                          ))}
-                          {quotesList.length === 0 && (
-                            <p className="text-[11px] text-violet-300 italic text-center py-2">No quotes yet — highlight what stood out</p>
-                          )}
-                        </div>
-                      </div>
 
-                      {/* My Understanding */}
-                      <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Brain size={13} className="text-emerald-500" />
-                          <span className="text-[11px] font-black text-emerald-700 uppercase tracking-wide">My Understanding</span>
-                          <span className="text-[10px] text-emerald-400 ml-auto italic">In my own words</span>
-                        </div>
-                        <textarea value={understanding} onChange={e => setUnderstanding(e.target.value)}
-                          placeholder="ไอเดียหลักของบทความนี้ อธิบายแบบเรียบง่าย..."
-                          rows={3}
-                          className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
-                      </div>
+                            {/* Step 2: KEY INSIGHT (Understand) */}
+                            <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <Lightbulb size={13} className={isStep1Complete ? 'text-amber-500' : 'text-gray-400'} />
+                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep1Complete ? 'text-amber-700' : 'text-gray-500'}`}>KEY INSIGHT</span>
+                                {!isStep1Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องอ่านให้เสร็จก่อน</span>}
+                              </div>
+                              <textarea disabled={!isStep1Complete} value={keyTakeaways} onChange={e => setKeyTakeaways(e.target.value)}
+                                placeholder="เรียนรู้อะไรบ้าง? (แบบ bullet points)"
+                                rows={3}
+                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep1Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
+                            </div>
 
-                      {/* How I Can Apply This + Action Idea */}
-                      <div className="rounded-2xl border border-orange-100 bg-orange-50/40 p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Target size={13} className="text-orange-500" />
-                          <span className="text-[11px] font-black text-orange-700 uppercase tracking-wide">How I Can Apply This</span>
-                        </div>
-                        <textarea value={application} onChange={e => setApplication(e.target.value)}
-                          placeholder="วิธีที่จะนำข้อคิดนี้ไปใช้จริง..."
-                          rows={3}
-                          className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed mb-3" />
-                        {/* Step 5: Act — action เล็กๆ */}
-                        <div className="flex items-center gap-2 pt-3 border-t border-orange-200/60">
-                          <Zap size={13} className="text-orange-500 shrink-0" />
-                          <span className="text-[11px] font-black text-orange-700 uppercase tracking-wide shrink-0">Act:</span>
-                          <input value={nextAction} onChange={e => setNextAction(e.target.value)}
-                            placeholder="action เล็กๆ ที่จะทำ..."
-                            className="flex-1 px-2 py-1 text-[12px] focus:outline-none bg-transparent placeholder:text-orange-300 text-gray-800" />
-                        </div>
-                      </div>
+                            {/* Step 3: WHY I SAVED THIS (Connect) */}
+                            <div className={`rounded-2xl border p-4 transition ${isStep2Complete ? 'border-violet-100 bg-violet-50/30' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
+                              <div className="flex items-center gap-2 mb-3">
+                                <Bookmark size={13} className={isStep2Complete ? 'text-violet-500' : 'text-gray-400'} />
+                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep2Complete ? 'text-violet-700' : 'text-gray-500'}`}>WHY I SAVED THIS</span>
+                                {!isStep2Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 2 ก่อน</span>}
+                              </div>
+                              <div className="flex gap-2 mb-3">
+                                <input disabled={!isStep2Complete} value={newQuote} onChange={e => setNewQuote(e.target.value)}
+                                  onKeyDown={e => { if (e.key === 'Enter' && newQuote.trim() && isStep2Complete) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); e.preventDefault(); }}}
+                                  placeholder={isStep2Complete ? '"Paste a memorable line... ↵"' : 'Complete Step 2 first...'}
+                                  className={`flex-1 px-3 py-2 border rounded-xl text-[13px] focus:outline-none bg-white ${isStep2Complete ? 'border-violet-200 focus:border-violet-400' : 'border-gray-200 cursor-not-allowed text-gray-400 placeholder:text-gray-300'}`} />
+                                <button disabled={!isStep2Complete} onClick={() => { if (newQuote.trim() && isStep2Complete) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); }}}
+                                  className={`px-4 py-2 rounded-xl text-[12px] font-bold transition flex items-center gap-1 ${isStep2Complete ? 'bg-violet-500 text-white hover:bg-violet-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
+                                  <Plus size={13} /> Add
+                                </button>
+                              </div>
+                              <div className="space-y-2">
+                                {quotesList.map((q, i) => (
+                                  <div key={i} className="flex items-start gap-2.5 p-3 bg-white rounded-xl border border-violet-100 group hover:border-violet-200 transition">
+                                    <span className="text-violet-300 text-2xl font-serif leading-none mt-0.5">&ldquo;</span>
+                                    <p className="flex-1 text-[13px] text-violet-900 italic leading-relaxed">{q}</p>
+                                    <button disabled={!isStep2Complete} onClick={() => setQuotesList(ql => ql.filter((_, j) => j !== i))}
+                                      className={`shrink-0 mt-0.5 transition ${isStep2Complete ? 'opacity-0 group-hover:opacity-100 text-gray-300 hover:text-rose-400 cursor-pointer' : 'opacity-0'}`}><X size={12} /></button>
+                                  </div>
+                                ))}
+                                {quotesList.length === 0 && (
+                                  <p className={`text-[11px] italic text-center py-2 ${isStep2Complete ? 'text-violet-300' : 'text-gray-300'}`}>No quotes yet</p>
+                                )}
+                              </div>
+                            </div>
 
-                      {/* Review Questions (clarity Q1/Q2) */}
-                      <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <FileQuestion size={13} className="text-fuchsia-500" />
-                          <span className="text-[11px] font-black text-fuchsia-700 uppercase tracking-wide">Review Questions</span>
-                          <span className="text-[10px] text-fuchsia-400 ml-auto italic">Self-test</span>
-                        </div>
-                        <div className="space-y-2">
-                          <div>
-                            <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q1. What's the key insight in one line?</label>
-                            <input value={clarityQ1} onChange={e => setClarityQ1(e.target.value)}
-                              placeholder="คำตอบของคุณ..."
-                              className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q2. If I had to act on this tomorrow, what would I do?</label>
-                            <input value={clarityQ2} onChange={e => setClarityQ2(e.target.value)}
-                              placeholder="คำตอบของคุณ..."
-                              className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                          </div>
-                        </div>
-                      </div>
+                            {/* Step 4: HOW I CAN APPLY THIS (Apply) */}
+                            <div className={`rounded-2xl border p-4 transition ${isStep3Complete ? 'border-orange-100 bg-orange-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <Target size={13} className={isStep3Complete ? 'text-orange-500' : 'text-gray-400'} />
+                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep3Complete ? 'text-orange-700' : 'text-gray-500'}`}>HOW I CAN APPLY THIS</span>
+                                {!isStep3Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 3 ก่อน</span>}
+                              </div>
+                              <textarea disabled={!isStep3Complete} value={application} onChange={e => setApplication(e.target.value)}
+                                placeholder="วิธีที่จะนำข้อคิดนี้ไปใช้จริง..."
+                                rows={3}
+                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep3Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
+                            </div>
 
-                      {/* Review reminder */}
-                      <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
-                        <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
-                          <Calendar size={16} className="text-rose-500" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-[12px] font-black text-rose-700">Review Reminder</div>
-                          <div className="text-[11px] text-rose-500 mt-0.5">
-                            {card.nextReviewAt ? `Next review: ${card.nextReviewAt}` : `Review in ${card.reviewDays} days`}
-                            {card.reviewCount != null && card.reviewCount > 0 && ` · reviewed ${card.reviewCount}x`}
-                          </div>
-                        </div>
-                        {card.sourceUrl && (
-                          <a href={card.sourceUrl} target="_blank" rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-emerald-200 text-emerald-600 rounded-xl text-[11px] font-bold hover:bg-emerald-50 transition shrink-0">
-                            <ExternalLink size={11} /> Original
-                          </a>
-                        )}
-                      </div>
+                            {/* Step 5: ACTION IDEA (Act) */}
+                            <div className={`rounded-2xl border p-4 transition ${isStep4Complete ? 'border-emerald-100 bg-emerald-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <Zap size={13} className={isStep4Complete ? 'text-emerald-500' : 'text-gray-400'} />
+                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep4Complete ? 'text-emerald-700' : 'text-gray-500'}`}>ACTION IDEA</span>
+                                {!isStep4Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 4 ก่อน</span>}
+                              </div>
+                              <input disabled={!isStep4Complete} value={nextAction} onChange={e => setNextAction(e.target.value)}
+                                placeholder="action เล็กๆ ที่จะทำ..."
+                                className={`w-full px-3 py-2 text-[12px] focus:outline-none bg-transparent ${isStep4Complete ? 'text-gray-800 placeholder:text-emerald-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
+                            </div>
+
+                            {/* REVIEW QUESTIONS (Support - not locked) */}
+                            <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
+                              <div className="flex items-center gap-2 mb-3">
+                                <FileQuestion size={13} className="text-fuchsia-500" />
+                                <span className="text-[11px] font-black text-fuchsia-700 uppercase tracking-wide">REVIEW QUESTIONS</span>
+                                <span className="text-[10px] text-fuchsia-400 ml-auto italic">Supporting material</span>
+                              </div>
+                              <div className="space-y-2">
+                                <div>
+                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q1. What's the key insight in one line?</label>
+                                  <input value={clarityQ1} onChange={e => setClarityQ1(e.target.value)}
+                                    placeholder="คำตอบของคุณ..."
+                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
+                                </div>
+                                <div>
+                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q2. If I had to act on this tomorrow, what would I do?</label>
+                                  <input value={clarityQ2} onChange={e => setClarityQ2(e.target.value)}
+                                    placeholder="คำตอบของคุณ..."
+                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Review reminder */}
+                            <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
+                              <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
+                                <Calendar size={16} className="text-rose-500" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="text-[12px] font-black text-rose-700">Review Reminder</div>
+                                <div className="text-[11px] text-rose-500 mt-0.5">
+                                  {card.nextReviewAt ? `Next review: ${card.nextReviewAt}` : `Review in ${card.reviewDays} days`}
+                                  {card.reviewCount != null && card.reviewCount > 0 && ` · reviewed ${card.reviewCount}x`}
+                                </div>
+                              </div>
+                              {card.sourceUrl && (
+                                <a href={card.sourceUrl} target="_blank" rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-emerald-200 text-emerald-600 rounded-xl text-[11px] font-bold hover:bg-emerald-50 transition shrink-0">
+                                  <ExternalLink size={11} /> Original
+                                </a>
+                              )}
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 );
@@ -5741,30 +5743,128 @@ function CourseDetailModal({
                       )}
                     </div>
 
-                    <div className="border-t border-gray-100 pt-6 max-w-[640px] mx-auto space-y-3">
-                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">My Notes</p>
-                      <div>
-                        <p className="text-[11px] font-semibold text-gray-500 mb-1.5">1-Sentence Summary</p>
-                        <input value={typeNotes} onChange={e => setTypeNotes(e.target.value)}
-                          placeholder="บทความนี้พูดถึง..."
-                          className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-400 bg-white" />
+                    <div className="border-t border-gray-100 pt-6 max-w-[640px] mx-auto space-y-4">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Brain size={14} className="text-emerald-500" />
+                        <p className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">Reflection &amp; Application</p>
                       </div>
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <p className="text-[11px] font-semibold text-gray-500">Highlight a Quote</p>
-                          <span className="text-[10px] text-emerald-400">{quotesList.length} saved</span>
-                        </div>
-                        <div className="flex gap-2">
-                          <input value={newQuote} onChange={e => setNewQuote(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter' && newQuote.trim()) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); e.preventDefault(); }}}
-                            placeholder="วาง quote ที่ชอบ แล้วกด Enter..."
-                            className="flex-1 px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-400 bg-white" />
-                          <button onClick={() => { if (newQuote.trim()) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); }}}
-                            className="px-3 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-xl text-xs font-bold hover:bg-emerald-100 transition">
-                            <Plus size={13} />
-                          </button>
-                        </div>
-                      </div>
+
+                      {(() => {
+                        const isStep1Complete = status === 'Reading';
+                        const isStep2Complete = typeNotes?.trim();
+                        const isStep3Complete = keyTakeaways?.trim();
+                        const isStep4Complete = application?.trim() && application !== 'Application not added yet.';
+
+                        return (
+                          <>
+                            {/* AI SUMMARY (Support - not locked) */}
+                            <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Sparkles size={13} className="text-sky-500" />
+                                <span className="text-[11px] font-black text-sky-700 uppercase tracking-wide">AI SUMMARY</span>
+                                <span className="text-[10px] text-sky-400 ml-auto italic">Supporting material</span>
+                              </div>
+                              <textarea value={typeNotes} onChange={e => setTypeNotes(e.target.value)}
+                                placeholder="บทความนี้พูดถึง..."
+                                rows={2}
+                                className="w-full text-[13px] text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none bg-transparent leading-relaxed" />
+                            </div>
+
+                            {/* Step 2: KEY INSIGHT (Understand) */}
+                            <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <Lightbulb size={13} className={isStep1Complete ? 'text-amber-500' : 'text-gray-400'} />
+                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep1Complete ? 'text-amber-700' : 'text-gray-500'}`}>KEY INSIGHT</span>
+                                {!isStep1Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องอ่านให้เสร็จก่อน</span>}
+                              </div>
+                              <textarea disabled={!isStep1Complete} value={keyTakeaways} onChange={e => setKeyTakeaways(e.target.value)}
+                                placeholder="เรียนรู้อะไรบ้าง? (แบบ bullet points)"
+                                rows={3}
+                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep1Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
+                            </div>
+
+                            {/* Step 3: WHY I SAVED THIS (Connect) */}
+                            <div className={`rounded-2xl border p-4 transition ${isStep2Complete ? 'border-violet-100 bg-violet-50/30' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
+                              <div className="flex items-center gap-2 mb-3">
+                                <Bookmark size={13} className={isStep2Complete ? 'text-violet-500' : 'text-gray-400'} />
+                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep2Complete ? 'text-violet-700' : 'text-gray-500'}`}>WHY I SAVED THIS</span>
+                                {!isStep2Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 2 ก่อน</span>}
+                              </div>
+                              <div className="flex gap-2 mb-3">
+                                <input disabled={!isStep2Complete} value={newQuote} onChange={e => setNewQuote(e.target.value)}
+                                  onKeyDown={e => { if (e.key === 'Enter' && newQuote.trim() && isStep2Complete) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); e.preventDefault(); }}}
+                                  placeholder={isStep2Complete ? '"Paste a memorable line... ↵"' : 'Complete Step 2 first...'}
+                                  className={`flex-1 px-3 py-2 border rounded-xl text-[13px] focus:outline-none bg-white ${isStep2Complete ? 'border-violet-200 focus:border-violet-400' : 'border-gray-200 cursor-not-allowed text-gray-400 placeholder:text-gray-300'}`} />
+                                <button disabled={!isStep2Complete} onClick={() => { if (newQuote.trim() && isStep2Complete) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); }}}
+                                  className={`px-4 py-2 rounded-xl text-[12px] font-bold transition flex items-center gap-1 ${isStep2Complete ? 'bg-violet-500 text-white hover:bg-violet-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
+                                  <Plus size={13} />
+                                </button>
+                              </div>
+                              <div className="space-y-2">
+                                {quotesList.map((q, i) => (
+                                  <div key={i} className="flex items-start gap-2.5 p-3 bg-white rounded-xl border border-violet-100 group hover:border-violet-200 transition">
+                                    <span className="text-violet-300 text-2xl font-serif leading-none mt-0.5">&ldquo;</span>
+                                    <p className="flex-1 text-[13px] text-violet-900 italic leading-relaxed">{q}</p>
+                                    <button disabled={!isStep2Complete} onClick={() => setQuotesList(ql => ql.filter((_, j) => j !== i))}
+                                      className={`shrink-0 mt-0.5 transition ${isStep2Complete ? 'opacity-0 group-hover:opacity-100 text-gray-300 hover:text-rose-400 cursor-pointer' : 'opacity-0'}`}><X size={12} /></button>
+                                  </div>
+                                ))}
+                                {quotesList.length === 0 && (
+                                  <p className={`text-[11px] italic text-center py-2 ${isStep2Complete ? 'text-violet-300' : 'text-gray-300'}`}>No quotes yet</p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Step 4: HOW I CAN APPLY THIS (Apply) */}
+                            <div className={`rounded-2xl border p-4 transition ${isStep3Complete ? 'border-orange-100 bg-orange-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <Target size={13} className={isStep3Complete ? 'text-orange-500' : 'text-gray-400'} />
+                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep3Complete ? 'text-orange-700' : 'text-gray-500'}`}>HOW I CAN APPLY THIS</span>
+                                {!isStep3Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 3 ก่อน</span>}
+                              </div>
+                              <textarea disabled={!isStep3Complete} value={application} onChange={e => setApplication(e.target.value)}
+                                placeholder="วิธีที่จะนำข้อคิดนี้ไปใช้จริง..."
+                                rows={3}
+                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep3Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
+                            </div>
+
+                            {/* Step 5: ACTION IDEA (Act) */}
+                            <div className={`rounded-2xl border p-4 transition ${isStep4Complete ? 'border-emerald-100 bg-emerald-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <Zap size={13} className={isStep4Complete ? 'text-emerald-500' : 'text-gray-400'} />
+                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep4Complete ? 'text-emerald-700' : 'text-gray-500'}`}>ACTION IDEA</span>
+                                {!isStep4Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 4 ก่อน</span>}
+                              </div>
+                              <input disabled={!isStep4Complete} value={nextAction} onChange={e => setNextAction(e.target.value)}
+                                placeholder="action เล็กๆ ที่จะทำ..."
+                                className={`w-full px-3 py-2 text-[12px] focus:outline-none bg-transparent ${isStep4Complete ? 'text-gray-800 placeholder:text-emerald-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
+                            </div>
+
+                            {/* REVIEW QUESTIONS (Support - not locked) */}
+                            <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
+                              <div className="flex items-center gap-2 mb-3">
+                                <FileQuestion size={13} className="text-fuchsia-500" />
+                                <span className="text-[11px] font-black text-fuchsia-700 uppercase tracking-wide">REVIEW QUESTIONS</span>
+                                <span className="text-[10px] text-fuchsia-400 ml-auto italic">Supporting material</span>
+                              </div>
+                              <div className="space-y-2">
+                                <div>
+                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q1. What's the key insight in one line?</label>
+                                  <input value={clarityQ1} onChange={e => setClarityQ1(e.target.value)}
+                                    placeholder="คำตอบของคุณ..."
+                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
+                                </div>
+                                <div>
+                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q2. If I had to act on this tomorrow, what would I do?</label>
+                                  <input value={clarityQ2} onChange={e => setClarityQ2(e.target.value)}
+                                    placeholder="คำตอบของคุณ..."
+                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 );
