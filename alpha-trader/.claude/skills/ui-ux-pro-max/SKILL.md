@@ -309,8 +309,7 @@ These are frequently overlooked issues that make UI look unprofessional:
 
 | Rule | Do | Don't |
 |------|----|----- |
-| **No emoji icons** | Use SVG icons (Heroicons, Lucide, Simple Icons) | Use emojis like 🎨 🚀 ⚙️ as UI icons |
-| **No emoji in indicators** | Use dot (●/○), checkmark (✓), or SVG badges for progress/stepper | Use emojis in stepper steps (🔖 💡 🔗) or progress indicators |
+| **No emoji in UI** | Use SVG icons (Heroicons, Lucide, Simple Icons) & dots/checkmarks for indicators | Use emojis in any UI component (icons, steppers, badges, etc.) — EXCEPTION: Only if user explicitly requests |
 | **Stable hover states** | Use color/opacity transitions on hover | Use scale transforms that shift layout |
 | **Correct brand logos** | Research official SVG from Simple Icons | Guess or use incorrect logo paths |
 | **Consistent icon sizing** | Use fixed viewBox (24x24) with w-6 h-6 | Mix different icon sizes randomly |
@@ -347,8 +346,7 @@ These are frequently overlooked issues that make UI look unprofessional:
 Before delivering UI code, verify these items:
 
 ### Visual Quality
-- [ ] No emojis used as icons (use SVG instead)
-- [ ] No emojis in progress/stepper indicators (use dots ●/○ or checkmarks instead)
+- [ ] **NO emojis in UI** (use SVG icons, dots ●/○, or checkmarks instead) — EXCEPTION: Only if user explicitly requested
 - [ ] All icons from consistent icon set (Heroicons/Lucide)
 - [ ] Brand logos are correct (verified from Simple Icons)
 - [ ] Hover states don't cause layout shift
