@@ -4239,13 +4239,19 @@ function CourseDetailModal({
                     { label: 'Act — action เล็กๆ', value: card.nextAction?.trim() },
                   ];
                   const completedSteps = steps.filter(s => s.value).length;
-                  const totalSteps = steps.length;
+                  const progressPercent = completedSteps * 20; // 20% per step (5 steps = 100%)
 
                   return (
                     <>
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide">ความคืบหน้า</span>
-                        <span className="text-xs font-bold text-violet-600">{completedSteps}/{totalSteps}</span>
+                        <span className="text-xs font-bold text-violet-600">{progressPercent}%</span>
+                      </div>
+                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mb-3">
+                        <div
+                          className="h-full bg-gradient-to-r from-violet-400 to-violet-600 rounded-full transition-all duration-300"
+                          style={{ width: `${progressPercent}%` }}
+                        />
                       </div>
                       <div className="space-y-1.5">
                         {steps.map((step, idx) => {
