@@ -4258,15 +4258,14 @@ function CourseDetailModal({
                                 ? 'bg-gray-50 border-gray-200'
                                 : 'bg-gray-100/50 border-gray-100'
                             }`}>
-                              <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                              <div className={`flex-shrink-0 w-2 h-2 rounded-full ${
                                 isCompleted
-                                  ? 'bg-violet-500 text-white'
+                                  ? 'bg-violet-600'
                                   : canAccess
-                                  ? 'bg-gray-300 text-gray-600'
-                                  : 'bg-gray-200 text-gray-400'
-                              }`}>
-                                {isCompleted ? '✓' : idx + 1}
-                              </div>
+                                  ? 'bg-gray-400'
+                                  : 'bg-gray-300'
+                              }`} />
+
                               <span className={`text-xs font-medium ${
                                 isCompleted
                                   ? 'text-violet-700'
