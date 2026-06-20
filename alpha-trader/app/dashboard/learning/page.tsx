@@ -4228,15 +4228,61 @@ function CourseDetailModal({
                 ))}
               </div>
 
-              {/* Progress bar always visible */}
-              <div>
-                <div className="flex justify-between text-[10px] mb-1 text-gray-500">
-                  <span>Progress</span>
-                  <span className="font-bold text-violet-600">{progress}%</span>
-                </div>
-                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div className={`h-full ${card.progressColor} rounded-full transition-all duration-300`} style={{ width: `${progress}%` }} />
-                </div>
+              {/* Stepper Progress */}
+              <div className="space-y-2.5">
+                {(() => {
+                  const steps = [
+                    { label: 'ค้นพบสิ่งสำคัญ', value: card.keyInsight?.trim() },
+                    { label: 'ทำไมฉันถึงเก็บมันไว้', value: card.whySaved?.trim() },
+                    { label: 'ฉันจะนำไปใช้ได้อย่างไร', value: card.application?.trim() && card.application !== 'Application not added yet.' },
+                    { label: 'แนวทางการปฏิบัติ', value: card.actionIdea?.trim() },
+                  ];
+                  const completedSteps = steps.filter(s => s.value).length;
+                  const totalSteps = steps.length;
+
+                  return (
+                    <>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide">ความคืบหน้า</span>
+                        <span className="text-xs font-bold text-violet-600">{completedSteps}/{totalSteps}</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        {steps.map((step, idx) => {
+                          const isCompleted = !!step.value;
+                          const canAccess = idx === 0 || steps.slice(0, idx).every(s => s.value);
+                          return (
+                            <div key={idx} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border transition-all ${
+                              isCompleted
+                                ? 'bg-violet-50 border-violet-200'
+                                : canAccess
+                                ? 'bg-gray-50 border-gray-200'
+                                : 'bg-gray-100/50 border-gray-100'
+                            }`}>
+                              <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                                isCompleted
+                                  ? 'bg-violet-500 text-white'
+                                  : canAccess
+                                  ? 'bg-gray-300 text-gray-600'
+                                  : 'bg-gray-200 text-gray-400'
+                              }`}>
+                                {isCompleted ? '✓' : idx + 1}
+                              </div>
+                              <span className={`text-xs font-medium ${
+                                isCompleted
+                                  ? 'text-violet-700'
+                                  : canAccess
+                                  ? 'text-gray-700'
+                                  : 'text-gray-400'
+                              }`}>
+                                {step.label}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
 
               {/* Progress input — only when Reading */}
