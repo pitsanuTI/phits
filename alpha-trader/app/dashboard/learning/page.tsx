@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import TopBar from '@/components/TopBar';
@@ -473,9 +473,11 @@ const INIT_LEARNING_CARDS: LearningCard[] = [
     providerColor: 'bg-blue-500',
     tags: ['#Product Design', '#UX', '#User Research', '#Design Systems'],
     status: 'Reading',
-    progress: 62,
+    progress: 50,
     understanding: 'Great products solve real problems with clarity and empathy.',
-    application: 'Run more user interviews and iterate based on feedback.',
+    keyTakeaways: 'Focus on user needs first, then iterate with data.',
+    application: '',
+    nextAction: '',
     reviewDays: 3,
     coverGradient: 'from-violet-400 via-purple-300 to-indigo-200',
     coverEmoji: '🖥️',
@@ -495,7 +497,9 @@ const INIT_LEARNING_CARDS: LearningCard[] = [
     status: 'Done',
     progress: 100,
     understanding: 'AI learns patterns from data to make predictions or decisions.',
+    keyTakeaways: 'Neural networks mimic the brain — layers of pattern recognition.',
     application: 'Explore AI tools that can automate and enhance my workflow.',
+    nextAction: 'Build a simple classifier with Python this week.',
     reviewDays: 5,
     coverGradient: 'from-teal-300 via-emerald-200 to-cyan-200',
     coverEmoji: '🤖',
@@ -513,16 +517,17 @@ const INIT_LEARNING_CARDS: LearningCard[] = [
     providerColor: 'bg-sky-500',
     tags: ['#Finance', '#Investing', '#Wealth', '#Basics'],
     status: 'Reading',
-    progress: 48,
+    progress: 33,
     understanding: 'Investing is about time in the market, not timing the market.',
-    application: 'Start a monthly SIP and build a long-term portfolio.',
+    keyTakeaways: '',
+    application: '',
+    nextAction: '',
     reviewDays: 3,
     coverGradient: 'from-sky-300 via-blue-200 to-indigo-100',
     coverEmoji: '💰',
     progressColor: 'bg-sky-500',
     role: 'Finance · Investing',
     postedAgo: '5h ago',
-    // อ่านแล้วแต่ยังไม่ได้ Recap → 30%
     stages: { read: true, recap: false, apply: false, review: false },
     contentType: 'course',
   },
@@ -534,9 +539,11 @@ const INIT_LEARNING_CARDS: LearningCard[] = [
     providerColor: 'bg-orange-400',
     tags: ['#Psychology', '#Habits', '#Mindset'],
     status: 'Reading',
-    progress: 36,
+    progress: 50,
     understanding: 'Habits are identity-based and shaped by tiny, consistent actions.',
+    keyTakeaways: 'The habit loop: Cue → Craving → Response → Reward.',
     application: 'Focus on 1% daily improvements and track my habits.',
+    nextAction: '',
     reviewDays: 5,
     coverGradient: 'from-orange-200 via-amber-100 to-rose-100',
     coverEmoji: '🧠',
@@ -556,8 +563,9 @@ const INIT_LEARNING_CARDS: LearningCard[] = [
     status: 'Done',
     progress: 100,
     understanding: 'Capture everything, clarify, and focus on what matters most.',
-    contentType: 'book',
+    keyTakeaways: 'GTD = Capture → Clarify → Organize → Reflect → Engage.',
     application: 'Use my inbox system and weekly review every Sunday.',
+    nextAction: 'Set up weekly review ritual every Sunday 9 AM.',
     reviewDays: 3,
     coverGradient: 'from-pink-300 via-rose-200 to-pink-100',
     coverEmoji: '📅',
@@ -565,6 +573,7 @@ const INIT_LEARNING_CARDS: LearningCard[] = [
     role: 'Productivity · GTD',
     postedAgo: '3d ago',
     stages: { read: true, recap: true, apply: true, review: true },
+    contentType: 'book',
   },
   {
     id: 6,
@@ -575,8 +584,10 @@ const INIT_LEARNING_CARDS: LearningCard[] = [
     tags: ['#Learning', '#Study Skills', '#Meta Learning'],
     status: 'Unread',
     progress: 0,
-    understanding: 'Learn by focusing, testing, and spacing — not just reading.',
-    application: 'Use active recall and spaced repetition daily.',
+    understanding: '',
+    keyTakeaways: '',
+    application: '',
+    nextAction: '',
     reviewDays: 5,
     coverGradient: 'from-purple-600 via-violet-500 to-indigo-400',
     coverEmoji: '📚',
@@ -3180,8 +3191,13 @@ function AddLearningModal({ onClose, onAdd, onUpdate, initialCard }: {
       <div><label className={labelCls}>Creator / Page</label><input className={inputCls} value={form.authorCreator} onChange={e => update('authorCreator', e.target.value)} /></div>
       <div><label className={labelCls}>Post URL</label><input className={inputCls} value={form.sourceUrl} onChange={e => update('sourceUrl', e.target.value)} /></div>
       <div className="col-span-2">
-        <label className={labelCls}>Post Text / Caption <span className="text-gray-400 font-normal">(วางข้อความจากโพส)</span></label>
-        <textarea className={`${inputCls} resize-y`} rows={4} value={form.extractedPostText} onChange={e => update('extractedPostText', e.target.value)} placeholder="วางข้อความ caption หรือ text จากโพส..." />
+        <label className={labelCls}>Post Text / Caption <span className="text-gray-400 font-normal">(วางข้อความจากโพส แล้ว Highlight ส่วนสำคัญ)</span></label>
+        <RichTextEditor
+          value={form.extractedPostText}
+          onChange={v => update('extractedPostText', v)}
+          placeholder="วางข้อความ caption หรือ text จากโพส แล้ว Highlight ส่วนที่สำคัญ..."
+          minHeight={120}
+        />
       </div>
       <div className="col-span-2">
         <label className={labelCls}>Page / Creator Icon</label>
@@ -3646,6 +3662,10 @@ function CourseDetailModal({
   const [volumeLevel, setVolumeLevel] = useState(60);
   const [customAudio, setCustomAudio] = useState<Array<{ name: string; url: string }>>([]);
   const [selectedCustomAudio, setSelectedCustomAudio] = useState(0);
+  const [audioCurrentTime, setAudioCurrentTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+  const [customImages, setCustomImages] = useState<Array<{ name: string; url: string }>>([]);
+  const [selectedCustomImage, setSelectedCustomImage] = useState(0);
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [youtubeVideoId, setYoutubeVideoId] = useState('');
   const [showAddMusic, setShowAddMusic] = useState(false);
@@ -3726,6 +3746,8 @@ function CourseDetailModal({
     else setRemaining(longBreakMin * 60);
   };
 
+  const scrollAtOpen = useRef(0);
+  const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
   const isReadingType = card.contentType === 'article' || card.contentType === 'social' || card.contentType === 'book';
   const [readingMode, setReadingMode] = useState(isReadingType);
@@ -3733,6 +3755,19 @@ function CourseDetailModal({
   const fitImage = shouldFitLearningImage(card.contentType);
   const showReadingUtilityRail = true;
   useEffect(() => { setMounted(true); }, []);
+
+  // Lock scroll and animate in on mount
+  useLayoutEffect(() => {
+    const scrollY = window.scrollY;
+    scrollAtOpen.current = scrollY;
+    document.documentElement.style.overflow = 'hidden';
+    window.scrollTo(0, scrollY);
+    requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
+    return () => {
+      document.documentElement.style.overflow = '';
+      window.scrollTo(0, scrollAtOpen.current);
+    };
+  }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
@@ -3832,11 +3867,59 @@ function CourseDetailModal({
     audioNodesRef.current = { disconnect: () => { try { oL.stop(); oR.stop(); merger.disconnect(); } catch {} } };
   };
 
+  // Load persisted audio from IndexedDB on mount
+  useEffect(() => {
+    const req = indexedDB.open('PomodoroAudio', 1);
+    req.onupgradeneeded = (e: IDBVersionChangeEvent) => {
+      (e.target as IDBOpenDBRequest).result.createObjectStore('tracks', { keyPath: 'name' });
+    };
+    req.onsuccess = () => {
+      const db = req.result;
+      const tx = db.transaction('tracks', 'readonly');
+      const store = tx.objectStore('tracks');
+      const getAll = store.getAll();
+      getAll.onsuccess = () => {
+        const rows = getAll.result as Array<{ name: string; blob: Blob }>;
+        if (rows.length > 0) {
+          const tracks = rows.map(r => ({ name: r.name, url: URL.createObjectURL(r.blob) }));
+          setCustomAudio(tracks);
+          setMusicType('file');
+        }
+      };
+    };
+  }, []);
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files; if (!files || files.length === 0) return;
-    const newTracks = Array.from(files).map(f => ({ name: f.name.replace(/\.[^.]+$/, ''), url: URL.createObjectURL(f) }));
-    setCustomAudio(prev => { const next = [...prev, ...newTracks]; setSelectedCustomAudio(next.length - 1); return next; });
-    setMusicType('file'); setShowAddMusic(false);
+    const fileArr = Array.from(files);
+    const newTracks = fileArr.map(f => ({ name: f.name.replace(/\.[^.]+$/, ''), url: URL.createObjectURL(f) }));
+    setCustomAudio(prev => {
+      const next = [...prev, ...newTracks];
+      setSelectedCustomAudio(next.length - 1);
+      // Persist to IndexedDB
+      const req = indexedDB.open('PomodoroAudio', 1);
+      req.onupgradeneeded = (e: IDBVersionChangeEvent) => {
+        (e.target as IDBOpenDBRequest).result.createObjectStore('tracks', { keyPath: 'name' });
+      };
+      req.onsuccess = () => {
+        const db = req.result;
+        const tx = db.transaction('tracks', 'readwrite');
+        const store = tx.objectStore('tracks');
+        fileArr.forEach(f => {
+          const name = f.name.replace(/\.[^.]+$/, '');
+          store.put({ name, blob: f });
+        });
+      };
+      return next;
+    });
+    setMusicType('file');
+    setShowAddMusic(false);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files; if (!files || files.length === 0) return;
+    const newImages = Array.from(files).map(f => ({ name: f.name.replace(/\.[^.]+$/, ''), url: URL.createObjectURL(f) }));
+    setCustomImages(prev => { const next = [...prev, ...newImages]; setSelectedCustomImage(next.length - 1); return next; });
   };
 
   const prevTrack = () => {
@@ -3882,11 +3965,24 @@ function CourseDetailModal({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     stopAudio();
+    if (!timerActive) return;
     if (musicType === 'off' || musicType === 'youtube') { audioCtxRef.current?.close(); audioCtxRef.current = null; return; }
     if (musicType === 'file' && customAudio[selectedCustomAudio]) {
-      audioFileRef.current = new Audio(); audioFileRef.current.src = customAudio[selectedCustomAudio].url;
-      audioFileRef.current.loop = true; audioFileRef.current.volume = volumeLevel / 100;
-      audioFileRef.current.play().catch(() => {}); return;
+      const audio = new Audio();
+      audio.src = customAudio[selectedCustomAudio].url;
+      audio.loop = false;
+      audio.volume = volumeLevel / 100;
+      audioFileRef.current = audio;
+      const onTime = () => { setAudioCurrentTime(audio.currentTime); setAudioDuration(audio.duration || 0); };
+      const onMeta = () => setAudioDuration(audio.duration || 0);
+      audio.addEventListener('timeupdate', onTime);
+      audio.addEventListener('loadedmetadata', onMeta);
+      audio.play().catch(() => {});
+      return () => {
+        audio.removeEventListener('timeupdate', onTime);
+        audio.removeEventListener('loadedmetadata', onMeta);
+        stopAudio();
+      };
     }
     if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') audioCtxRef.current = new AudioContext();
     const ctx = audioCtxRef.current;
@@ -3895,7 +3991,7 @@ function CourseDetailModal({
     else if (musicType === 'brown') startBrownNoise(ctx);
     else if (musicType === 'binaural') startBinaural(ctx);
     return () => stopAudio();
-  }, [musicType, selectedCustomAudio, customAudio, volumeLevel]);
+  }, [musicType, selectedCustomAudio, customAudio, volumeLevel, timerActive]);
 
   useEffect(() => {
     return () => {
@@ -3905,7 +4001,14 @@ function CourseDetailModal({
     };
   }, []);
 
-  const fmtTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  const fmtTime = (s: number) => {
+    s = Math.floor(Math.max(0, s));
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+    return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  };
 
   const handleStatusChange = (s: 'Reading' | 'Done' | 'Unread') => {
     setStatus(s);
@@ -4161,8 +4264,16 @@ function CourseDetailModal({
 
   if (!mounted) return null;
   return createPortal(
-    <div className="fixed inset-0 z-50 flex">
-      <div className={`flex h-full w-full overflow-hidden transition-colors duration-500 ${readingMode ? 'bg-[#f4f6fb]' : 'bg-gray-50'}`}>
+    <div
+      className="fixed inset-0 z-50 flex"
+      style={{
+        backgroundColor: 'rgba(0,0,0,0.45)',
+        backdropFilter: 'blur(6px)',
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 0.22s ease-out',
+        transform: visible ? 'translateY(0)' : 'translateY(8px)',
+      }}
+    ><div className={`flex h-full w-full overflow-hidden transition-colors duration-500 ${readingMode ? 'bg-[#f4f6fb]' : 'bg-gray-50'}`}>
 
         {/* ══ PANEL 1: Left Info ═══════════════════════════════════════ */}
         <AnimatePresence initial={false}>
@@ -4211,150 +4322,113 @@ function CourseDetailModal({
               )}
             </div>
 
-            {/* Status + Progress — Option B */}
+            {/* Stepper Progress */}
             <div className="space-y-2.5">
-              <div className="grid grid-cols-3 gap-1.5">
-                {([
-                  { s: 'Unread'  as const, Icon: Circle,       label: 'Unread',  sub: 'Not started', activeClass: 'bg-gray-100 border-gray-300 text-gray-700',   idleClass: 'bg-white border-gray-200 text-gray-400' },
-                  { s: 'Reading' as const, Icon: BookOpen,      label: 'Reading', sub: `${progress}%`, activeClass: 'bg-violet-500 border-violet-500 text-white',   idleClass: 'bg-white border-gray-200 text-gray-400' },
-                  { s: 'Done'    as const, Icon: CheckCircle2,  label: 'Done',    sub: 'Completed',   activeClass: 'bg-emerald-500 border-emerald-500 text-white',  idleClass: 'bg-white border-gray-200 text-gray-400' },
-                ]).map(({ s, Icon, label, sub, activeClass, idleClass }) => (
-                  <button key={s} type="button" onClick={() => handleStatusChange(s)}
-                    className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border-2 transition-all ${status === s ? activeClass : idleClass + ' hover:border-violet-200'}`}>
-                    <Icon size={16} />
-                    <span className="text-[10px] font-bold leading-none">{label}</span>
-                    <span className={`text-[9px] leading-none ${status === s ? 'opacity-80' : 'text-gray-400'}`}>{sub}</span>
-                  </button>
-                ))}
-              </div>
+              {(() => {
+                const steps = [
+                  { label: 'บันทึกในคลัง', value: true },
+                  { label: 'กำลังอ่าน', value: status === 'Reading' || status === 'Done' },
+                  { label: 'Understand — จับใจความสำคัญ', value: !!(card.understanding?.trim() && card.understanding !== 'Notes not added yet.') },
+                  { label: 'Connect — เชื่อมกับชีวิตจริง', value: !!(card.keyTakeaways?.trim()) },
+                  { label: 'Apply — วางแผนใช้ยังไง', value: !!(card.application?.trim() && card.application !== 'Application not added yet.') },
+                  { label: 'Act — action เล็กๆ', value: !!(card.nextAction?.trim()) },
+                ];
+                const completedSteps = steps.filter(s => s.value).length;
+                const progressPercent = Math.round((completedSteps / steps.length) * 100);
 
-              {/* Stepper Progress */}
-              <div className="space-y-2.5">
-                {(() => {
-                  const steps = [
-                    { label: 'กำลังอ่าน', value: status === 'Reading' },
-                    { label: 'Understand — จับใจความสำคัญ', value: card.understanding?.trim() && card.understanding !== 'Notes not added yet.' },
-                    { label: 'Connect — เชื่อมกับชีวิตจริง', value: card.keyTakeaways?.trim() },
-                    { label: 'Apply — วางแผนใช้ยังไง', value: card.application?.trim() && card.application !== 'Application not added yet.' },
-                    { label: 'Act — action เล็กๆ', value: card.nextAction?.trim() },
-                  ];
-                  const completedSteps = steps.filter(s => s.value).length;
-                  const progressPercent = completedSteps * 20; // 20% per step (5 steps = 100%)
-
-                  return (
-                    <>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide">ความคืบหน้า</span>
-                        <span className="text-xs font-bold text-violet-600">{progressPercent}%</span>
-                      </div>
-                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mb-3">
-                        <div
-                          className="h-full bg-gradient-to-r from-violet-400 to-violet-600 rounded-full transition-all duration-300"
-                          style={{ width: `${progressPercent}%` }}
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        {steps.map((step, idx) => {
-                          const isCompleted = !!step.value;
-                          const canAccess = idx === 0 || steps.slice(0, idx).every(s => s.value);
-                          const isCurrentRequired = idx > 0 && !canAccess; // Show hint for locked steps
-                          return (
-                            <div key={idx}>
-                              <div className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border transition-all ${
-                                isCompleted
-                                  ? 'bg-violet-50 border-violet-200'
-                                  : canAccess
-                                  ? 'bg-gray-50 border-gray-200'
-                                  : 'bg-gray-100/50 border-gray-100'
-                              }`}>
-                                <div className={`flex-shrink-0 w-2 h-2 rounded-full ${
-                                  isCompleted
-                                    ? 'bg-violet-600'
-                                    : canAccess
-                                    ? 'bg-gray-400'
-                                    : 'bg-gray-300'
-                                }`} />
-
-                                <span className={`text-xs font-medium ${
-                                  isCompleted
-                                    ? 'text-violet-700'
-                                    : canAccess
-                                    ? 'text-gray-700'
-                                    : 'text-gray-400'
-                                }`}>
-                                  {step.label}
-                                </span>
-                              </div>
-                              {isCurrentRequired && (
-                                <div className="text-[10px] text-gray-400 px-3 py-1.5 italic">
-                                  ต้องเสร็จ step ก่อนหน้าก่อนจึงจะไปต่อได้
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
-
-              {/* Progress input — only when Reading */}
-              {status === 'Reading' && (
-                <div className="bg-violet-50 border border-violet-100 rounded-xl p-2.5">
-                  {(card.contentType === 'book' || card.contentType === 'pdf') ? (
-                    <div>
-                      <div className="text-[10px] font-semibold text-violet-700 mb-1.5">หน้าที่อ่านแล้ว</div>
-                      <div className="flex items-center gap-1.5">
-                        <input type="number" min={0} max={card.totalPages ?? 999}
-                          defaultValue={card.pagesRead ?? 0}
-                          onChange={e => {
-                            const total = card.totalPages ?? 0;
-                            if (total > 0) setProgress(Math.min(100, Math.round((Number(e.target.value) / total) * 100)));
-                          }}
-                          className="w-16 px-2 py-1 border border-violet-200 rounded-lg text-xs text-center focus:outline-none focus:border-violet-400 bg-white" />
-                        <span className="text-[10px] text-violet-600">/ {card.totalPages ?? '?'} หน้า</span>
-                      </div>
+                return (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide">ความคืบหน้า</span>
+                      <span className="text-xs font-bold text-violet-600">{progressPercent}%</span>
                     </div>
-                  ) : card.contentType === 'course' ? (
-                    <div>
-                      <div className="text-[10px] font-semibold text-violet-700 mb-1.5">บทเรียนที่เรียนแล้ว</div>
-                      <div className="flex items-center gap-1.5">
-                        <input type="number" min={0} max={card.totalLessons ?? 999}
-                          defaultValue={card.lessonsRead ?? 0}
-                          onChange={e => {
-                            const total = card.totalLessons ?? 0;
-                            if (total > 0) setProgress(Math.min(100, Math.round((Number(e.target.value) / total) * 100)));
-                          }}
-                          className="w-16 px-2 py-1 border border-violet-200 rounded-lg text-xs text-center focus:outline-none focus:border-violet-400 bg-white" />
-                        <span className="text-[10px] text-violet-600">/ {card.totalLessons ?? '?'} บทเรียน</span>
-                      </div>
+                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mb-3">
+                      <div
+                        className="h-full bg-gradient-to-r from-violet-400 to-violet-600 rounded-full transition-all duration-300"
+                        style={{ width: `${progressPercent}%` }}
+                      />
                     </div>
-                  ) : (card.contentType === 'video' || card.contentType === 'podcast') ? (
-                    <div>
-                      <div className="text-[10px] font-semibold text-violet-700 mb-1.5">{card.contentType === 'video' ? 'ดูไปแล้ว' : 'ฟังไปแล้ว'}</div>
-                      <div className="flex items-center gap-1.5">
-                        <input type="number" min={0} max={card.totalMins ?? 999}
-                          defaultValue={card.watchedMins ?? 0}
-                          onChange={e => {
-                            const total = card.totalMins ?? 0;
-                            if (total > 0) setProgress(Math.min(100, Math.round((Number(e.target.value) / total) * 100)));
-                          }}
-                          className="w-16 px-2 py-1 border border-violet-200 rounded-lg text-xs text-center focus:outline-none focus:border-violet-400 bg-white" />
-                        <span className="text-[10px] text-violet-600">/ {card.totalMins ?? '?'} นาที</span>
-                      </div>
+                    <div className="space-y-0">
+                      {steps.map((step, idx) => {
+                        const isCompleted = !!step.value;
+                        const canAccess = idx === 0 || steps.slice(0, idx).every(s => s.value);
+                        return (
+                          <div key={idx} className={`flex items-start gap-2.5 relative ${idx < steps.length - 1 ? 'pb-3' : ''}`}>
+                            {idx < steps.length - 1 && (
+                              <div className={`absolute left-[5px] top-[14px] w-0.5 h-3 ${isCompleted ? 'bg-violet-300' : 'bg-gray-200'}`} />
+                            )}
+                            <div className={`flex-shrink-0 w-3 h-3 rounded-full mt-0.5 ${
+                              isCompleted ? 'bg-violet-600' : canAccess ? 'bg-gray-300' : 'bg-gray-200'
+                            }`} />
+                            <span className={`text-xs font-medium leading-tight ${
+                              isCompleted ? 'text-violet-700' : canAccess ? 'text-gray-600' : 'text-gray-400'
+                            }`}>
+                              {step.label}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ) : (
-                    <div>
-                      <div className="text-[10px] font-semibold text-violet-700 mb-1.5">ความคืบหน้า</div>
-                      <input type="range" min={0} max={100} value={progress}
-                        onChange={e => setProgress(Number(e.target.value))}
-                        className="w-full accent-violet-500" />
-                    </div>
-                  )}
-                </div>
-              )}
+                  </>
+                );
+              })()}
             </div>
+
+            {/* Progress input — only when Reading */}
+            {status === 'Reading' && (
+              <div className="bg-violet-50 border border-violet-100 rounded-xl p-2.5">
+                {(card.contentType === 'book' || card.contentType === 'pdf') ? (
+                  <div>
+                    <div className="text-[10px] font-semibold text-violet-700 mb-1.5">หน้าที่อ่านแล้ว</div>
+                    <div className="flex items-center gap-1.5">
+                      <input type="number" min={0} max={card.totalPages ?? 999}
+                        defaultValue={card.pagesRead ?? 0}
+                        onChange={e => {
+                          const total = card.totalPages ?? 0;
+                          if (total > 0) setProgress(Math.min(100, Math.round((Number(e.target.value) / total) * 100)));
+                        }}
+                        className="w-16 px-2 py-1 border border-violet-200 rounded-lg text-xs text-center focus:outline-none focus:border-violet-400 bg-white" />
+                      <span className="text-[10px] text-violet-600">/ {card.totalPages ?? '?'} หน้า</span>
+                    </div>
+                  </div>
+                ) : card.contentType === 'course' ? (
+                  <div>
+                    <div className="text-[10px] font-semibold text-violet-700 mb-1.5">บทเรียนที่เรียนแล้ว</div>
+                    <div className="flex items-center gap-1.5">
+                      <input type="number" min={0} max={card.totalLessons ?? 999}
+                        defaultValue={card.lessonsRead ?? 0}
+                        onChange={e => {
+                          const total = card.totalLessons ?? 0;
+                          if (total > 0) setProgress(Math.min(100, Math.round((Number(e.target.value) / total) * 100)));
+                        }}
+                        className="w-16 px-2 py-1 border border-violet-200 rounded-lg text-xs text-center focus:outline-none focus:border-violet-400 bg-white" />
+                      <span className="text-[10px] text-violet-600">/ {card.totalLessons ?? '?'} บทเรียน</span>
+                    </div>
+                  </div>
+                ) : (card.contentType === 'video' || card.contentType === 'podcast') ? (
+                  <div>
+                    <div className="text-[10px] font-semibold text-violet-700 mb-1.5">{card.contentType === 'video' ? 'ดูไปแล้ว' : 'ฟังไปแล้ว'}</div>
+                    <div className="flex items-center gap-1.5">
+                      <input type="number" min={0} max={card.totalMins ?? 999}
+                        defaultValue={card.watchedMins ?? 0}
+                        onChange={e => {
+                          const total = card.totalMins ?? 0;
+                          if (total > 0) setProgress(Math.min(100, Math.round((Number(e.target.value) / total) * 100)));
+                        }}
+                        className="w-16 px-2 py-1 border border-violet-200 rounded-lg text-xs text-center focus:outline-none focus:border-violet-400 bg-white" />
+                      <span className="text-[10px] text-violet-600">/ {card.totalMins ?? '?'} นาที</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="text-[10px] font-semibold text-violet-700 mb-1.5">ความคืบหน้า</div>
+                    <input type="range" min={0} max={100} value={progress}
+                      onChange={e => setProgress(Number(e.target.value))}
+                      className="w-full accent-violet-500" />
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="space-y-1.5 text-[11px] border-t border-gray-100 pt-3">
               {([
@@ -6135,7 +6209,7 @@ function CourseDetailModal({
                     {/* ═══ 2. Main Content Body — Compact original preview ═══ */}
                     <div className="mb-8">
                       <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Original Post</p>
-                      <div className="rounded-2xl border border-gray-200 overflow-hidden bg-white shadow-sm max-w-md mx-auto">
+                      <div className="rounded-2xl border border-orange-100 bg-orange-50/20 overflow-hidden">
                         {card.imageUrl && (
                           <div className="relative w-full bg-gray-100 overflow-hidden" style={{ maxHeight: 280 }}>
                             {fitImage && (
@@ -6350,15 +6424,17 @@ function CourseDetailModal({
                     </div>
 
                     {/* Caption */}
-                    <div className="px-3.5 pb-4">
-                      <p className="text-[14px] text-gray-800 leading-[1.85]">
-                        <span className="font-bold mr-1.5">{card.provider}</span>
-                        {card.content || card.title}
-                      </p>
+                    <div className="p-5">
+                      <span className="font-bold text-[14px] text-gray-900 mr-1.5">{card.provider}</span>
+                      {card.extractedPostText ? (
+                        <RichTextContent value={card.extractedPostText} className="text-[15px] leading-[1.9] text-gray-800 mt-2" />
+                      ) : (
+                        <p className="text-[14px] text-gray-500 italic mt-1">{card.title}</p>
+                      )}
                       {card.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
+                        <div className="flex flex-wrap gap-1 mt-3">
                           {card.tags.map((t, i) => (
-                            <span key={i} className="text-[11px] text-sky-500 font-medium">{t}</span>
+                            <span key={i} className="text-[11px] text-orange-500 font-medium">{t}</span>
                           ))}
                         </div>
                       )}
@@ -7157,7 +7233,9 @@ function CourseDetailModal({
               <div
                 className="relative overflow-hidden rounded-2xl shadow-lg"
                 style={{
-                  background: timerMode === 'focus'
+                  background: customImages.length > 0
+                    ? `linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)), url('${customImages[selectedCustomImage]?.url}') center/cover no-repeat`
+                    : timerMode === 'focus'
                     ? 'linear-gradient(145deg,#f97316 0%,#db2777 45%,#7c3aed 100%)'
                     : timerMode === 'shortBreak'
                     ? 'linear-gradient(145deg,#10b981 0%,#0891b2 55%,#6366f1 100%)'
@@ -7165,8 +7243,12 @@ function CourseDetailModal({
                 }}
               >
                 {/* Decorative blobs */}
-                <div className="pointer-events-none absolute -top-10 -left-10 h-44 w-44 rounded-full bg-white/10 blur-3xl" />
-                <div className="pointer-events-none absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-black/15 blur-2xl" />
+                {customImages.length === 0 && (
+                  <>
+                    <div className="pointer-events-none absolute -top-10 -left-10 h-44 w-44 rounded-full bg-white/10 blur-3xl" />
+                    <div className="pointer-events-none absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-black/15 blur-2xl" />
+                  </>
+                )}
 
                 <div className="relative z-10 flex flex-col items-center gap-3 px-5 py-5">
                   {/* Spinning album disc */}
@@ -7190,14 +7272,14 @@ function CourseDetailModal({
                   <div className="w-full space-y-1">
                     <div className="h-[3px] overflow-hidden rounded-full bg-white/25">
                       <motion.div
-                        animate={{ width: `${progressFraction * 100}%` }}
+                        animate={{ width: `${musicType === 'file' && audioDuration > 0 ? (audioCurrentTime / audioDuration) * 100 : progressFraction * 100}%` }}
                         transition={{ duration: 0.8 }}
                         className="h-full rounded-full bg-white"
                       />
                     </div>
                     <div className="flex justify-between text-[10px] font-semibold text-white/50">
-                      <span>{fmtTime(currentDuration - remaining)}</span>
-                      <span>{fmtTime(currentDuration)}</span>
+                      <span>{musicType === 'file' && audioDuration > 0 ? fmtTime(audioCurrentTime) : fmtTime(currentDuration - remaining)}</span>
+                      <span>{musicType === 'file' && audioDuration > 0 ? fmtTime(audioDuration) : fmtTime(currentDuration)}</span>
                     </div>
                   </div>
 
@@ -7232,20 +7314,48 @@ function CourseDetailModal({
                   </div>
 
                   {/* Offline track list */}
-                  {musicType === 'file' && customAudio.length > 1 && (
+                  {musicType === 'file' && customAudio.length > 0 && (
                     <div className="w-full max-h-[90px] space-y-1 overflow-y-auto">
                       {customAudio.map((t, i) => (
-                        <button key={i} onClick={() => setSelectedCustomAudio(i)}
-                          className={`w-full truncate rounded-xl px-3 py-1.5 text-left text-[11px] font-semibold transition ${
+                        <div key={i}
+                          className={`w-full rounded-xl px-3 py-1.5 text-left text-[11px] font-semibold transition flex items-center justify-between gap-2 ${
                             i === selectedCustomAudio
                               ? 'bg-white text-gray-800 shadow-sm'
                               : 'bg-white/15 text-white/80 hover:bg-white/25'
                           }`}>
-                          {i === selectedCustomAudio ? '▶ ' : ''}{t.name}
-                        </button>
+                          <button onClick={() => setSelectedCustomAudio(i)} className="flex-1 truncate text-left">
+                            {i === selectedCustomAudio ? '▶ ' : ''}{t.name}
+                          </button>
+                          <motion.button
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => setCustomAudio(prev => prev.filter((_, idx) => idx !== i))}
+                            className="flex-shrink-0 p-1 hover:opacity-70 transition"
+                            title="Delete track">
+                            <span className="text-xs">✕</span>
+                          </motion.button>
+                        </div>
                       ))}
                     </div>
                   )}
+
+                  {/* Upload buttons row */}
+                  <div className="w-full flex gap-2">
+                    <motion.label
+                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-white/15 border border-white/25 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-white/25 transition cursor-pointer"
+                    >
+                      🎵 Add Sound
+                      <input type="file" multiple accept="audio/*" className="hidden" onChange={handleFileUpload} />
+                    </motion.label>
+                    <motion.label
+                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-white/15 border border-white/25 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-white/25 transition cursor-pointer"
+                    >
+                      🖼️ Set BG
+                      <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} />
+                    </motion.label>
+                  </div>
                 </div>
               </div>
             </motion.div>

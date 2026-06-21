@@ -1220,7 +1220,7 @@ function DcaPlannerTab({ showToast }: { showToast: (message: string) => void }) 
         <span className="text-[12px] font-bold text-slate-600">เลือกเดือน:</span>
         <CustomSelect
           value={selectedMonth}
-          onChange={setSelectedMonth}
+          onChange={v => setSelectedMonth(v as InvestmentMonthKey)}
           options={monthOptions}
           minWidth="140px"
         />

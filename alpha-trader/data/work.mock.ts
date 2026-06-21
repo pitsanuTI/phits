@@ -1,6 +1,7 @@
 import {
   CommonModelRow,
   CompletionCategory,
+  PartPriceRow,
   CompletionTrendPoint,
   EstimatorCategory,
   EstimatorPart,

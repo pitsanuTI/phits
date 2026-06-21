@@ -25,7 +25,7 @@ const STAT_CARDS = [
   { label: 'Total Tags',    value: '18',  sub: 'This week', icon: '🏷️', color: '#f59e0b', bg: '#fef3c7' },
 ];
 
-function MoodTick({ x, y, payload }: { x: number; y: number; payload: { value: number } }) {
+function MoodTick({ x = 0, y = 0, payload = { value: 0 } }: { x?: number; y?: number; payload?: { value: number } }) {
   return <text x={x - 8} y={y + 4} fontSize={10} textAnchor="middle">{payload.value}</text>;
 }
 

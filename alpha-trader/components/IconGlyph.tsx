@@ -189,8 +189,6 @@ export default function IconGlyph({
   const { Icon, color: defaultColor, label } = getGlyphMeta(token);
   return (
     <Icon
-      aria-label={title ?? label}
-      role="img"
       size={size}
       strokeWidth={2.2}
       className={className}

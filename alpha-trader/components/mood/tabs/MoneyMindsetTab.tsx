@@ -34,7 +34,7 @@ const ENTRY_FIELDS = [
   { key: 'intention', icon: '🎯', ph: 'Next money intention' },
 ];
 
-function MoneyTick({ x, y, payload }: { x: number; y: number; payload: { value: number } }) {
+function MoneyTick({ x = 0, y = 0, payload = { value: 0 } }: { x?: number; y?: number; payload?: { value: number } }) {
   return <text x={x - 6} y={y + 4} fontSize={9} textAnchor="middle">{payload.value}</text>;
 }
 
