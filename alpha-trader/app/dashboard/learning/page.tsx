@@ -3756,18 +3756,13 @@ function CourseDetailModal({
   const fitImage = shouldFitLearningImage(card.contentType);
   const showReadingUtilityRail = true;
   const overlayRef = useRef<HTMLDivElement>(null);
-  const portalScrollRef = useRef<number>(0);
 
-  // Save window.scrollY after first paint (before portal DOM commit)
-  useEffect(() => {
-    portalScrollRef.current = window.scrollY;
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
-  // After portal renders in document.body, restore scroll + focus overlay (both before Paint 2)
+  // Focus overlay with preventScroll so the portal mount cannot scroll the page.
+  // Background scroll position is held steady by OverallTab while we open.
   useLayoutEffect(() => {
     if (!mounted) return;
-    window.scrollTo(0, portalScrollRef.current);
     overlayRef.current?.focus({ preventScroll: true });
     requestAnimationFrame(() => setVisible(true));
   }, [mounted]);
@@ -7790,15 +7785,6 @@ function OverallTab({ showToast, learningCards, setLearningCards }: {
   const [editCardId, setEditCardId] = useState<number | null>(null);
   const selectedCard = selectedCardId !== null ? learningCards.find(c => c.id === selectedCardId) ?? null : null;
   const editCard = editCardId !== null ? learningCards.find(c => c.id === editCardId) ?? null : null;
-  const scrollSaveRef = useRef<number>(0);
-
-  // Restore window scroll position synchronously before browser paint when modal opens
-  useLayoutEffect(() => {
-    if (selectedCardId !== null) {
-      window.scrollTo(0, scrollSaveRef.current);
-    }
-  }, [selectedCardId]);
-
   const dueCards = learningCards.filter(c => c.nextReviewAt && c.nextReviewAt <= todayStr() && c.capturedAt !== todayStr());
 
   return (
@@ -8053,8 +8039,9 @@ function OverallTab({ showToast, learningCards, setLearningCards }: {
       )}
       </AnimatePresence>
 
-      {/* Learning Card Grid — replaces Today Plan + Active Courses */}
-      {selectedCardId === null && (
+      {/* Learning Card Grid — replaces Today Plan + Active Courses.
+          Kept mounted while the detail modal is open (it's a fixed overlay)
+          so the page height never collapses and the scroll position can't jump. */}
       <div className="bg-white rounded-2xl border border-purple-100 p-5 shadow-sm">
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -8080,7 +8067,7 @@ function OverallTab({ showToast, learningCards, setLearningCards }: {
             <LearningCardItem
               key={card.id}
               card={card}
-              onRead={() => { scrollSaveRef.current = window.scrollY; setSelectedCardId(card.id); }}
+              onRead={() => setSelectedCardId(card.id)}
               onToggleStage={(id, key) => {
                 setLearningCards(prev => prev.map(c => {
                   if (c.id !== id) return c;
@@ -8109,7 +8096,6 @@ function OverallTab({ showToast, learningCards, setLearningCards }: {
           ))}
         </div>
       </div>
-      )}
 
       {showAddCard && (
         <AddLearningModal
