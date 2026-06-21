@@ -4366,33 +4366,18 @@ function CourseDetailModal({
 
             {/* Progress input — only when Reading */}
             {status === 'Reading' && (
-              <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                {/* Premium progress bar header */}
-                <div className={`px-3 pt-3 pb-2 ${
-                  progress === 100 ? 'bg-gradient-to-r from-violet-500 to-purple-600' :
-                  progress >= 76   ? 'bg-gradient-to-r from-emerald-500 to-teal-500' :
-                  progress >= 51   ? 'bg-gradient-to-r from-amber-400 to-yellow-400' :
-                  progress >= 26   ? 'bg-gradient-to-r from-orange-400 to-amber-500' :
-                                     'bg-gradient-to-r from-rose-500 to-red-500'
-                }`}>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest">ความคืบหน้า</span>
-                    <span className="text-lg font-black text-white leading-none">{progress}<span className="text-xs font-semibold ml-0.5">%</span></span>
-                  </div>
-                  {/* Track */}
-                  <div className="h-2 bg-white/25 rounded-full overflow-hidden">
+              <div className="space-y-2">
+                {/* Progress bar */}
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{
-                        width: `${progress}%`,
-                        background: 'rgba(255,255,255,0.85)',
-                        boxShadow: '0 0 8px rgba(255,255,255,0.6)',
-                      }}
+                      className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-violet-500 via-sky-400 to-emerald-400"
+                      style={{ width: `${progress}%` }}
                     />
                   </div>
+                  <span className="text-[11px] font-extrabold text-gray-700 w-9 text-right shrink-0">{progress}%</span>
                 </div>
-                {/* Input section */}
-                <div className="bg-white px-3 py-2.5">
+                {/* Input */}
                 {(card.contentType === 'book' || card.contentType === 'pdf') ? (
                   <div className="flex items-center gap-1.5">
                     <span className="text-[10px] text-gray-500 flex-1">หน้าที่อ่านแล้ว</span>
@@ -4434,7 +4419,6 @@ function CourseDetailModal({
                     onChange={e => setProgress(Number(e.target.value))}
                     className="w-full accent-violet-500" />
                 )}
-                </div>
               </div>
             )}
 
@@ -6886,10 +6870,10 @@ function CourseDetailModal({
           {/* Bottom bar — reading progress */}
           <div className="shrink-0 px-6 py-2.5 border-t border-gray-100 bg-white flex items-center gap-3">
             <BookOpen size={10} className="text-violet-400 shrink-0" />
-            <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
-              <div className={`h-full ${card.progressColor} rounded-full transition-all duration-300`} style={{ width: `${progress}%` }} />
+            <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-violet-500 via-sky-400 to-emerald-400" style={{ width: `${progress}%` }} />
             </div>
-            <span className="text-[11px] font-bold text-gray-500 font-mono shrink-0">{progress}%</span>
+            <span className="text-[11px] font-extrabold text-gray-700 font-mono shrink-0">{progress}%</span>
           </div>
         </div>
         </div>
