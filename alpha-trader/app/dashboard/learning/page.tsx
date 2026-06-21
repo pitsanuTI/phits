@@ -4399,7 +4399,12 @@ function CourseDetailModal({
               <div className="flex items-center gap-2">
                 <FileText size={11} className="text-gray-400 shrink-0" />
                 <span className="text-gray-500">Type</span>
-                <span className="ml-auto font-medium text-gray-800">Course</span>
+                <span className="ml-auto font-medium text-gray-800">
+                  {(() => {
+                    const types = { book: 'Book', course: 'Course', video: 'Video', article: 'Article', social: 'Social Post', podcast: 'Podcast', pdf: 'PDF' };
+                    return types[card.contentType as keyof typeof types] || 'Content';
+                  })()}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock size={11} className="text-gray-400 shrink-0" />
