@@ -4265,15 +4265,15 @@ function CourseDetailModal({
   if (!mounted) return null;
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex"
+      className="fixed inset-0 z-50 flex items-center justify-center p-5"
       style={{
-        backgroundColor: 'rgba(0,0,0,0.45)',
-        backdropFilter: 'blur(6px)',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        backdropFilter: 'blur(8px)',
         opacity: visible ? 1 : 0,
         transition: 'opacity 0.22s ease-out',
         transform: visible ? 'translateY(0)' : 'translateY(8px)',
       }}
-    ><div className={`flex h-full w-full overflow-hidden transition-colors duration-500 ${readingMode ? 'bg-[#f4f6fb]' : 'bg-gray-50'}`}>
+    ><div className={`flex w-full max-w-[1400px] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 transition-colors duration-500 ${readingMode ? 'bg-[#f4f6fb]' : 'bg-gray-50'}`} style={{ height: '92vh' }}>
 
         {/* ══ PANEL 1: Left Info ═══════════════════════════════════════ */}
         <AnimatePresence initial={false}>
@@ -4431,18 +4431,26 @@ function CourseDetailModal({
             )}
 
             <div className="space-y-1.5 text-[11px] border-t border-gray-100 pt-3">
-              {([
-                { Icon: FileText, label: 'Type',      val: 'Course'        },
-                { Icon: Clock,    label: 'Est. Time', val: '~3h'           },
-                { Icon: Star,     label: 'Rating',    val: rating > 0 ? `${rating}/5` : '—' },
-                { Icon: Calendar, label: 'Review',    val: `in ${card.reviewDays}d` },
-              ] as const).map(m => (
-                <div key={m.label} className="flex items-center gap-2">
-                  <m.Icon size={11} className="text-gray-400 shrink-0" />
-                  <span className="text-gray-500">{m.label}</span>
-                  <span className="ml-auto font-medium text-gray-800">{m.val}</span>
-                </div>
-              ))}
+              <div className="flex items-center gap-2">
+                <FileText size={11} className="text-gray-400 shrink-0" />
+                <span className="text-gray-500">Type</span>
+                <span className="ml-auto font-medium text-gray-800">Course</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock size={11} className="text-gray-400 shrink-0" />
+                <span className="text-gray-500">Est. Time</span>
+                <span className="ml-auto font-medium text-gray-800">~3h</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Star size={11} className="text-gray-400 shrink-0" />
+                <span className="text-gray-500">Rating</span>
+                <span className="ml-auto font-medium text-gray-800">{rating > 0 ? `${rating}/5` : '—'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar size={11} className="text-gray-400 shrink-0" />
+                <span className="text-gray-500">Review</span>
+                <span className="ml-auto font-medium text-gray-800">in {card.reviewDays}d</span>
+              </div>
             </div>
 
             <div>
