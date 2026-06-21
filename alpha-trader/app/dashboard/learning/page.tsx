@@ -4338,16 +4338,6 @@ function CourseDetailModal({
 
                 return (
                   <>
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide">ความคืบหน้า</span>
-                      <span className="text-xs font-bold text-violet-600">{progressPercent}%</span>
-                    </div>
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mb-3">
-                      <div
-                        className="h-full bg-gradient-to-r from-violet-400 to-violet-600 rounded-full transition-all duration-300"
-                        style={{ width: `${progressPercent}%` }}
-                      />
-                    </div>
                     <div className="space-y-0">
                       {steps.map((step, idx) => {
                         const isCompleted = !!step.value;
@@ -4421,7 +4411,10 @@ function CourseDetailModal({
                   </div>
                 ) : (
                   <div>
-                    <div className="text-[10px] font-semibold text-violet-700 mb-1.5">ความคืบหน้า</div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <div className="text-[10px] font-semibold text-violet-700">ความคืบหน้า</div>
+                      <span className="text-xs font-bold text-violet-600">{progress}%</span>
+                    </div>
                     <input type="range" min={0} max={100} value={progress}
                       onChange={e => setProgress(Number(e.target.value))}
                       className="w-full accent-violet-500" />
