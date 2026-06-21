@@ -3643,6 +3643,14 @@ function CourseDetailModal({
   const [userTags, setUserTags] = useState<string[]>(card.userTags ?? []);
   const [status, setStatus] = useState<'Reading' | 'Done' | 'Unread'>(card.status);
   const [progress, setProgress] = useState(card.progress);
+  const stepProgressPct = Math.round([
+    true,
+    status === 'Reading' || status === 'Done',
+    !!(card.understanding?.trim() && card.understanding !== 'Notes not added yet.'),
+    !!(card.keyTakeaways?.trim()),
+    !!(card.application?.trim() && card.application !== 'Application not added yet.'),
+    !!(card.nextAction?.trim()),
+  ].filter(Boolean).length / 6 * 100);
 
   // Pomodoro
   const [pomodoroMin, setPomodoroMin] = useState(25);
@@ -4347,8 +4355,8 @@ function CourseDetailModal({
                             {idx < steps.length - 1 && (
                               <div className={`absolute left-[5px] top-[14px] w-0.5 h-3 ${isCompleted ? 'bg-violet-300' : 'bg-gray-200'}`} />
                             )}
-                            <div className={`flex-shrink-0 w-3 h-3 rounded-full mt-0.5 ${
-                              isCompleted ? 'bg-violet-600' : canAccess ? 'bg-gray-300' : 'bg-gray-200'
+                            <div className={`flex-shrink-0 w-3 h-3 rounded-full mt-0.5 transition-all duration-300 ${
+                              isCompleted ? 'bg-violet-600 shadow-[0_0_0_3px_rgba(139,92,246,0.18)]' : canAccess ? 'bg-gray-300' : 'bg-gray-200'
                             }`} />
                             <span className={`text-xs font-medium leading-tight ${
                               isCompleted ? 'text-violet-700' : canAccess ? 'text-gray-600' : 'text-gray-400'
@@ -4359,68 +4367,33 @@ function CourseDetailModal({
                         );
                       })}
                     </div>
+                    {/* Premium progress bar — driven by steps, not editable */}
+                    <div className="pt-3 border-t border-gray-100">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">ความคืบหน้า</span>
+                        <span className="text-[11px] font-extrabold text-violet-600">{progressPercent}%</span>
+                      </div>
+                      <div className="relative">
+                        <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-violet-500 via-sky-400 to-emerald-400 transition-all duration-700"
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        </div>
+                        {progressPercent > 0 && (
+                          <div
+                            className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-2 border-violet-500 shadow-[0_0_0_3px_rgba(139,92,246,0.2)] transition-all duration-700 pointer-events-none"
+                            style={{ left: `calc(${Math.min(progressPercent, 96)}% - 7px)` }}
+                          />
+                        )}
+                      </div>
+                      <div className="mt-1.5 text-[10px] text-gray-400">{completedSteps}/{steps.length} ขั้นตอน</div>
+                    </div>
                   </>
                 );
               })()}
             </div>
 
-            {/* Progress input — only when Reading */}
-            {status === 'Reading' && (
-              <div className="space-y-2">
-                {/* Progress bar */}
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-violet-500 via-sky-400 to-emerald-400"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <span className="text-[11px] font-extrabold text-gray-700 w-9 text-right shrink-0">{progress}%</span>
-                </div>
-                {/* Input */}
-                {(card.contentType === 'book' || card.contentType === 'pdf') ? (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] text-gray-500 flex-1">หน้าที่อ่านแล้ว</span>
-                    <input type="number" min={0} max={card.totalPages ?? 999}
-                      defaultValue={card.pagesRead ?? 0}
-                      onChange={e => {
-                        const total = card.totalPages ?? 0;
-                        if (total > 0) setProgress(Math.min(100, Math.round((Number(e.target.value) / total) * 100)));
-                      }}
-                      className="w-14 px-2 py-1 border border-gray-200 rounded-lg text-xs text-center focus:outline-none focus:border-violet-400 bg-gray-50" />
-                    <span className="text-[10px] text-gray-400">/ {card.totalPages ?? '?'}</span>
-                  </div>
-                ) : card.contentType === 'course' ? (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] text-gray-500 flex-1">บทเรียนที่เรียนแล้ว</span>
-                    <input type="number" min={0} max={card.totalLessons ?? 999}
-                      defaultValue={card.lessonsRead ?? 0}
-                      onChange={e => {
-                        const total = card.totalLessons ?? 0;
-                        if (total > 0) setProgress(Math.min(100, Math.round((Number(e.target.value) / total) * 100)));
-                      }}
-                      className="w-14 px-2 py-1 border border-gray-200 rounded-lg text-xs text-center focus:outline-none focus:border-violet-400 bg-gray-50" />
-                    <span className="text-[10px] text-gray-400">/ {card.totalLessons ?? '?'}</span>
-                  </div>
-                ) : (card.contentType === 'video' || card.contentType === 'podcast') ? (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] text-gray-500 flex-1">{card.contentType === 'video' ? 'ดูไปแล้ว' : 'ฟังไปแล้ว'}</span>
-                    <input type="number" min={0} max={card.totalMins ?? 999}
-                      defaultValue={card.watchedMins ?? 0}
-                      onChange={e => {
-                        const total = card.totalMins ?? 0;
-                        if (total > 0) setProgress(Math.min(100, Math.round((Number(e.target.value) / total) * 100)));
-                      }}
-                      className="w-14 px-2 py-1 border border-gray-200 rounded-lg text-xs text-center focus:outline-none focus:border-violet-400 bg-gray-50" />
-                    <span className="text-[10px] text-gray-400">/ {card.totalMins ?? '?'} นาที</span>
-                  </div>
-                ) : (
-                  <input type="range" min={0} max={100} value={progress}
-                    onChange={e => setProgress(Number(e.target.value))}
-                    className="w-full accent-violet-500" />
-                )}
-              </div>
-            )}
 
             <div className="space-y-1.5 text-[11px] border-t border-gray-100 pt-3">
               <div className="flex items-center gap-2">
@@ -6867,13 +6840,13 @@ function CourseDetailModal({
 
           </div>
 
-          {/* Bottom bar — reading progress */}
+          {/* Bottom bar — reading progress driven by stepper */}
           <div className="shrink-0 px-6 py-2.5 border-t border-gray-100 bg-white flex items-center gap-3">
             <BookOpen size={10} className="text-violet-400 shrink-0" />
             <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-violet-500 via-sky-400 to-emerald-400" style={{ width: `${progress}%` }} />
+              <div className="h-full rounded-full transition-all duration-700 bg-gradient-to-r from-violet-500 via-sky-400 to-emerald-400" style={{ width: `${stepProgressPct}%` }} />
             </div>
-            <span className="text-[11px] font-extrabold text-gray-700 font-mono shrink-0">{progress}%</span>
+            <span className="text-[11px] font-extrabold text-gray-700 font-mono shrink-0">{stepProgressPct}%</span>
           </div>
         </div>
         </div>
