@@ -4262,18 +4262,26 @@ function CourseDetailModal({
 
   if (!mounted) return null;
   return createPortal(
-    <div
-      ref={overlayRef}
-      tabIndex={-1}
-      className="fixed inset-0 z-50 flex items-center justify-center p-5 outline-none"
-      style={{
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        backdropFilter: 'blur(8px)',
-        opacity: visible ? 1 : 0,
-        transition: 'opacity 0.22s ease-out',
-        transform: visible ? 'translateY(0)' : 'translateY(8px)',
-      }}
-    ><div className={`flex w-full max-w-[1400px] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 transition-colors duration-500 ${readingMode ? 'bg-[#f4f6fb]' : 'bg-gray-50'}`} style={{ height: '92vh' }}>
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          ref={overlayRef}
+          tabIndex={-1}
+          className="fixed inset-0 z-50 flex items-center justify-center p-5 outline-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.22, ease: 'easeOut' }}
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+        >
+          <motion.div
+            className={`flex w-full max-w-[1400px] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 transition-colors duration-500 ${readingMode ? 'bg-[#f4f6fb]' : 'bg-gray-50'}`}
+            style={{ height: '92vh' }}
+            initial={{ opacity: 0, scale: 0.94, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 20 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          >
 
         {/* ══ PANEL 1: Left Info ═══════════════════════════════════════ */}
         <AnimatePresence initial={false}>
@@ -7767,8 +7775,10 @@ function CourseDetailModal({
         )}
         </AnimatePresence>
 
-      </div>
-    </div>,
+      </motion.div>
+      </motion.div>
+      )}
+    </AnimatePresence>,
     document.body
   );
 }
