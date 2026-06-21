@@ -6147,30 +6147,27 @@ function CourseDetailModal({
                         {card.title}
                       </h1>
 
-                      {/* Original creator/page with platform badge below */}
-                      <div className="flex items-start gap-3">
-                        <div className="flex flex-col items-center gap-1.5 shrink-0">
+                      {/* Creator/platform info */}
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
                           {card.pageIconUrl ? (
-                            <img src={card.pageIconUrl} alt={card.provider ?? ''} className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-sm" />
+                            <img src={card.pageIconUrl} alt={card.provider ?? ''} className="w-14 h-14 rounded-full object-cover ring-2 ring-orange-100 shadow-sm shrink-0" />
                           ) : (
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 via-pink-400 to-purple-500 flex items-center justify-center ring-2 ring-white shadow-sm">
-                              <span className="text-white text-sm font-bold">{(card.provider ?? 'P')[0].toUpperCase()}</span>
+                            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-400 via-pink-400 to-purple-500 flex items-center justify-center ring-2 ring-orange-100 shadow-sm shrink-0">
+                              <span className="text-white text-lg font-bold">{(card.provider ?? 'P')[0].toUpperCase()}</span>
                             </div>
                           )}
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-r ${platformLabel.color} text-white text-[10px] font-black uppercase tracking-wider whitespace-nowrap`}>
-                            {platformLabel.name}
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-bold text-gray-900 leading-tight">{card.provider}</p>
-                          <p className="text-[11px] text-gray-400">Saved {card.capturedAt}</p>
-                          {card.tags[0] && (
-                            <span className="inline-block mt-1.5 text-[11px] text-orange-500 font-semibold">{card.tags[0].replace('#', '')}</span>
-                          )}
+                          <div className="min-w-0">
+                            <p className="text-[14px] font-bold text-gray-900">{card.provider}</p>
+                            <p className="text-[12px] text-gray-500">Saved {card.capturedAt}</p>
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-r ${platformLabel.color} text-white text-[10px] font-black uppercase tracking-wider mt-1.5`}>
+                              {platformLabel.name}
+                            </span>
+                          </div>
                         </div>
                         {card.sourceUrl && (
                           <a href={card.sourceUrl} target="_blank" rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-orange-200 text-orange-600 rounded-full text-[11px] font-bold hover:bg-orange-50 transition shrink-0">
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-orange-200 text-orange-600 rounded-full text-[11px] font-bold hover:bg-orange-50 transition shrink-0 whitespace-nowrap">
                             <ExternalLink size={10} /> Open Original
                           </a>
                         )}
