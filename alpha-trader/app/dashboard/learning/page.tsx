@@ -6142,33 +6142,31 @@ function CourseDetailModal({
                   <div className="max-w-[720px] mx-auto">
                     {/* ═══ 1. Content Header (compact) ═══ */}
                     <div className="mb-6 pb-5 border-b border-orange-100">
-                      <div className="flex items-center gap-2 mb-3 flex-wrap">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-r ${platformLabel.color} text-white text-[10px] font-black uppercase tracking-wider`}>
-                          <Globe size={10} /> {platformLabel.name}
-                        </span>
-                        {card.tags[0] && (
-                          <span className="text-[11px] text-orange-500 font-semibold">{card.tags[0].replace('#', '')}</span>
-                        )}
-                        <span className="text-[10px] text-gray-400 ml-auto">Saved {card.capturedAt}</span>
-                      </div>
-
                       {/* AI-generated Title */}
-                      <h1 className="text-[24px] font-extrabold text-gray-950 leading-[1.25] tracking-tight mb-3">
+                      <h1 className="text-[24px] font-extrabold text-gray-950 leading-[1.25] tracking-tight mb-4">
                         {card.title}
                       </h1>
 
-                      {/* Original creator/page */}
-                      <div className="flex items-center gap-3 pb-1">
-                        {card.pageIconUrl ? (
-                          <img src={card.pageIconUrl} alt={card.provider ?? ''} className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm shrink-0" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 via-pink-400 to-purple-500 flex items-center justify-center shrink-0 ring-2 ring-white shadow-sm">
-                            <span className="text-white text-sm font-bold">{(card.provider ?? 'P')[0].toUpperCase()}</span>
-                          </div>
-                        )}
+                      {/* Original creator/page with platform badge below */}
+                      <div className="flex items-start gap-3">
+                        <div className="flex flex-col items-center gap-1.5 shrink-0">
+                          {card.pageIconUrl ? (
+                            <img src={card.pageIconUrl} alt={card.provider ?? ''} className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-sm" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 via-pink-400 to-purple-500 flex items-center justify-center ring-2 ring-white shadow-sm">
+                              <span className="text-white text-sm font-bold">{(card.provider ?? 'P')[0].toUpperCase()}</span>
+                            </div>
+                          )}
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-r ${platformLabel.color} text-white text-[10px] font-black uppercase tracking-wider whitespace-nowrap`}>
+                            {platformLabel.name}
+                          </span>
+                        </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-[13px] font-bold text-gray-900 leading-tight">{card.provider}</p>
-                          <p className="text-[11px] text-gray-400">Original creator · {card.capturedAt}</p>
+                          <p className="text-[11px] text-gray-400">Saved {card.capturedAt}</p>
+                          {card.tags[0] && (
+                            <span className="inline-block mt-1.5 text-[11px] text-orange-500 font-semibold">{card.tags[0].replace('#', '')}</span>
+                          )}
                         </div>
                         {card.sourceUrl && (
                           <a href={card.sourceUrl} target="_blank" rel="noopener noreferrer"
