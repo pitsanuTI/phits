@@ -3678,13 +3678,6 @@ function CourseDetailModal({
   const [youtubeVideoId, setYoutubeVideoId] = useState('');
   const [showAddMusic, setShowAddMusic] = useState(false);
   const [addMusicMode, setAddMusicMode] = useState<'youtube' | 'file'>('youtube');
-  const [showPlaylistLibrary, setShowPlaylistLibrary] = useState(false);
-  const pomodoroPlaylists = [
-    { id: 'study', name: '📚 Deep Study', desc: 'Lo-fi hip hop for focus', type: 'lofi' as const, icon: '📚', color: 'from-violet-500 to-purple-600' },
-    { id: 'relax', name: '🧘 Relaxed Vibes', desc: 'Calm ambient music', type: 'white' as const, icon: '🧘', color: 'from-emerald-500 to-teal-600' },
-    { id: 'focus', name: '🎯 Maximum Focus', desc: 'Brown noise + binaural', type: 'brown' as const, icon: '🎯', color: 'from-orange-500 to-red-600' },
-    { id: 'mindfulness', name: '🌿 Mindfulness', desc: 'Meditation & focus', type: 'binaural' as const, icon: '🌿', color: 'from-green-500 to-emerald-600' },
-  ];
   // Video utility
   const [playbackSpeed, setPlaybackSpeed] = useState<0.5 | 0.75 | 1 | 1.25 | 1.5 | 2>(1);
 
@@ -7333,51 +7326,6 @@ function CourseDetailModal({
           )}
 
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-            {/* Playlist Library Toggle */}
-            <motion.button
-              onClick={() => setShowPlaylistLibrary(!showPlaylistLibrary)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full rounded-xl bg-gradient-to-r from-purple-100 to-pink-100 px-3 py-2.5 flex items-center justify-between border border-purple-200 hover:border-purple-300 transition"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🎧</span>
-                <div className="text-left">
-                  <div className="text-xs font-bold text-purple-700 uppercase tracking-wider">Playlist Library</div>
-                  <div className="text-xs text-purple-600">Choose mood</div>
-                </div>
-              </div>
-              <motion.div animate={{ rotate: showPlaylistLibrary ? 180 : 0 }} transition={{ duration: 0.3 }}>
-                <ChevronDown size={14} className="text-purple-600" />
-              </motion.div>
-            </motion.button>
-
-            {/* Playlist Grid */}
-            <AnimatePresence>
-              {showPlaylistLibrary && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
-                  <div className="grid grid-cols-4 gap-2">
-                    {pomodoroPlaylists.map(playlist => (
-                      <motion.button
-                        key={playlist.id}
-                        onClick={() => { setMusicType(playlist.type); setShowPlaylistLibrary(false); }}
-                        title={playlist.name}
-                        whileHover={{ scale: 1.1, y: -2 }}
-                        whileTap={{ scale: 0.92 }}
-                        className={`aspect-square rounded-lg p-3 border-2 transition flex items-center justify-center text-3xl ${
-                          musicType === playlist.type
-                            ? `bg-gradient-to-br ${playlist.color} border-white shadow-md`
-                            : 'bg-white border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        {playlist.icon}
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             {/* Mode tabs */}
             <div className="flex gap-1 bg-gray-100 p-0.5 rounded-xl">
               {([
