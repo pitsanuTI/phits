@@ -3755,20 +3755,14 @@ function CourseDetailModal({
   const [p3Tab, setP3Tab] = useState<'timer'|'review'>('timer');
   const fitImage = shouldFitLearningImage(card.contentType);
   const showReadingUtilityRail = true;
-  const savedScrollRef = useRef<number>(0);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
-  // Save scroll position BEFORE portal renders (useEffect runs before setMounted triggers re-render)
-  useEffect(() => {
-    const main = document.querySelector('main');
-    savedScrollRef.current = main?.scrollTop ?? 0;
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
-  // Restore scroll synchronously after portal renders, before browser paint
+  // Focus overlay with preventScroll to stop browser auto-focus from jumping the page
   useLayoutEffect(() => {
     if (!mounted) return;
-    const main = document.querySelector('main');
-    if (main) main.scrollTop = savedScrollRef.current;
+    overlayRef.current?.focus({ preventScroll: true });
     requestAnimationFrame(() => setVisible(true));
   }, [mounted]);
   useEffect(() => {
@@ -4268,7 +4262,9 @@ function CourseDetailModal({
   if (!mounted) return null;
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-5"
+      ref={overlayRef}
+      tabIndex={-1}
+      className="fixed inset-0 z-50 flex items-center justify-center p-5 outline-none"
       style={{
         backgroundColor: 'rgba(0,0,0,0.5)',
         backdropFilter: 'blur(8px)',
@@ -7788,6 +7784,14 @@ function OverallTab({ showToast, learningCards, setLearningCards }: {
   const [editCardId, setEditCardId] = useState<number | null>(null);
   const selectedCard = selectedCardId !== null ? learningCards.find(c => c.id === selectedCardId) ?? null : null;
   const editCard = editCardId !== null ? learningCards.find(c => c.id === editCardId) ?? null : null;
+  const scrollSaveRef = useRef<number>(0);
+
+  // Restore window scroll position synchronously before browser paint when modal opens
+  useLayoutEffect(() => {
+    if (selectedCardId !== null) {
+      window.scrollTo(0, scrollSaveRef.current);
+    }
+  }, [selectedCardId]);
 
   const dueCards = learningCards.filter(c => c.nextReviewAt && c.nextReviewAt <= todayStr() && c.capturedAt !== todayStr());
 
@@ -8070,7 +8074,7 @@ function OverallTab({ showToast, learningCards, setLearningCards }: {
             <LearningCardItem
               key={card.id}
               card={card}
-              onRead={() => setSelectedCardId(card.id)}
+              onRead={() => { scrollSaveRef.current = window.scrollY; setSelectedCardId(card.id); }}
               onToggleStage={(id, key) => {
                 setLearningCards(prev => prev.map(c => {
                   if (c.id !== id) return c;
