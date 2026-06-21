@@ -4334,7 +4334,7 @@ function CourseDetailModal({
             <div className="space-y-2.5">
               {(() => {
                 const steps = [
-                  { label: 'บันทึกในคลัง', value: true },
+                  { label: 'เริ่มต้น', value: true },
                   { label: 'กำลังอ่าน', value: status === 'Reading' || status === 'Done' },
                   { label: 'Understand — จับใจความสำคัญ', value: !!(card.understanding?.trim() && card.understanding !== 'Notes not added yet.') },
                   { label: 'Connect — เชื่อมกับชีวิตจริง', value: !!(card.keyTakeaways?.trim()) },
@@ -6189,19 +6189,13 @@ function CourseDetailModal({
                               className="w-full h-auto block" />
                           </div>
                         )}
-                        <div className="px-4 py-3.5">
-                          <p className="text-[13px] text-gray-800 leading-[1.7] whitespace-pre-wrap">
-                            <span className="font-bold mr-1.5">{card.provider}</span>
-                            {content || card.title}
-                          </p>
-                          {card.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 mt-2">
-                              {card.tags.map((t, i) => (
-                                <span key={i} className="text-[11px] text-sky-500 font-medium">{t}</span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                        {card.tags.length > 0 && (
+                          <div className="px-4 py-3.5 flex flex-wrap gap-1.5">
+                            {card.tags.map((t, i) => (
+                              <span key={i} className="text-[11px] text-sky-500 font-medium">{t}</span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
 
