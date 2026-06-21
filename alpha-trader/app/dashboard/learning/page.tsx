@@ -6184,14 +6184,9 @@ function CourseDetailModal({
                       <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Original Post</p>
                       <div className="rounded-2xl border border-orange-100 bg-orange-50/20 overflow-hidden">
                         {card.imageUrl && (
-                          <div className="relative w-full bg-gray-100 overflow-hidden" style={{ maxHeight: 280 }}>
-                            {fitImage && (
-                              <img src={card.imageUrl} alt="" aria-hidden="true"
-                                className="absolute inset-0 w-full h-full scale-110 object-cover blur-xl opacity-40" />
-                            )}
+                          <div className="w-full overflow-hidden">
                             <img src={card.imageUrl} alt={card.title}
-                              className={`relative w-full ${fitImage ? 'object-contain' : 'object-cover'}`}
-                              style={{ maxHeight: 280, objectPosition: `center ${card.imageDragOffset ?? 50}%` }} />
+                              className="w-full h-auto block" />
                           </div>
                         )}
                         <div className="px-4 py-3.5">
