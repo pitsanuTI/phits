@@ -4350,19 +4350,29 @@ function CourseDetailModal({
                       {steps.map((step, idx) => {
                         const isCompleted = !!step.value;
                         const canAccess = idx === 0 || steps.slice(0, idx).every(s => s.value);
+                        const isInProgress = canAccess && !isCompleted;
                         return (
-                          <div key={idx} className={`flex items-start gap-2.5 relative ${idx < steps.length - 1 ? 'pb-3' : ''}`}>
+                          <div key={idx} className={`flex items-start gap-2.5 relative px-2.5 py-1.5 rounded-lg transition-colors ${
+                            isCompleted ? 'bg-violet-50' : isInProgress ? 'bg-amber-50' : 'bg-gray-50'
+                          } ${idx < steps.length - 1 ? 'pb-3 mb-0.5' : ''}`}>
                             {idx < steps.length - 1 && (
-                              <div className={`absolute left-[5px] top-[14px] w-0.5 h-3 ${isCompleted ? 'bg-violet-300' : 'bg-gray-200'}`} />
+                              <div className={`absolute left-[20px] top-[38px] w-0.5 h-3 transition-colors ${isCompleted ? 'bg-violet-400' : 'bg-gray-200'}`} />
                             )}
-                            <div className={`flex-shrink-0 w-3 h-3 rounded-full mt-0.5 transition-all duration-300 ${
-                              isCompleted ? 'bg-violet-600 shadow-[0_0_0_3px_rgba(139,92,246,0.18)]' : canAccess ? 'bg-gray-300' : 'bg-gray-200'
-                            }`} />
-                            <span className={`text-xs font-medium leading-tight ${
-                              isCompleted ? 'text-violet-700' : canAccess ? 'text-gray-600' : 'text-gray-400'
+                            <div className={`flex-shrink-0 w-4 h-4 rounded-full mt-0.5 transition-all duration-300 flex items-center justify-center ${
+                              isCompleted ? 'bg-violet-600 shadow-[0_0_0_4px_rgba(139,92,246,0.25)] text-white' : isInProgress ? 'bg-amber-500 shadow-[0_0_0_4px_rgba(217,119,6,0.2)]' : 'bg-gray-300'
                             }`}>
-                              {step.label}
-                            </span>
+                              {isCompleted && <CheckCircle2 size={12} className="text-white" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className={`text-xs font-semibold leading-tight block ${
+                                isCompleted ? 'text-violet-700' : isInProgress ? 'text-amber-700' : 'text-gray-400'
+                              }`}>
+                                {step.label}
+                              </span>
+                              {isCompleted && <span className="text-[10px] text-violet-500 font-medium">✓ ผ่านแล้ว</span>}
+                              {isInProgress && <span className="text-[10px] text-amber-600 font-medium">กำลังทำ</span>}
+                              {!canAccess && <span className="text-[10px] text-gray-400 font-medium">ยังไม่เปิด</span>}
+                            </div>
                           </div>
                         );
                       })}
