@@ -4346,24 +4346,24 @@ function CourseDetailModal({
                         const isInProgress = canAccess && !isCompleted;
                         return (
                           <div key={idx} className={`flex items-start gap-3 relative px-3 py-2 rounded-lg transition-all duration-300 ${
-                            isCompleted ? 'bg-violet-100 border border-violet-200' : isInProgress ? 'bg-orange-100 border border-orange-200' : 'bg-gray-100 border border-gray-200'
+                            isCompleted ? 'bg-emerald-100 border border-emerald-200' : isInProgress ? 'bg-sky-100 border border-sky-200' : 'bg-gray-100 border border-gray-200'
                           } ${idx < steps.length - 1 ? 'pb-3 mb-1' : ''}`}>
                             {idx < steps.length - 1 && (
-                              <div className={`absolute left-[30px] top-[50px] w-0.5 h-4 transition-colors ${isCompleted ? 'bg-violet-400' : isInProgress ? 'bg-orange-300' : 'bg-gray-300'}`} />
+                              <div className={`absolute left-[30px] top-[50px] w-0.5 h-4 transition-colors ${isCompleted ? 'bg-emerald-400' : isInProgress ? 'bg-sky-300' : 'bg-gray-300'}`} />
                             )}
                             <div className={`flex-shrink-0 w-6 h-6 rounded-full mt-0 transition-all duration-300 flex items-center justify-center font-bold text-sm ${
-                              isCompleted ? 'bg-violet-600 shadow-[0_0_0_4px_rgba(139,92,246,0.3)] text-white' : isInProgress ? 'bg-orange-500 shadow-[0_0_0_4px_rgba(249,115,22,0.3)] text-white' : 'bg-gray-400 text-white'
+                              isCompleted ? 'bg-emerald-600 shadow-[0_0_0_4px_rgba(5,150,105,0.3)] text-white' : isInProgress ? 'bg-sky-500 shadow-[0_0_0_4px_rgba(14,165,233,0.3)] text-white' : 'bg-gray-400 text-white'
                             }`}>
                               {isCompleted ? '✓' : isInProgress ? '◉' : '◯'}
                             </div>
                             <div className="flex-1 min-w-0">
                               <span className={`text-xs font-bold leading-tight block ${
-                                isCompleted ? 'text-violet-800' : isInProgress ? 'text-orange-800' : 'text-gray-500'
+                                isCompleted ? 'text-emerald-800' : isInProgress ? 'text-sky-800' : 'text-gray-500'
                               }`}>
                                 {step.label}
                               </span>
                               <span className={`text-[10px] font-semibold inline-block mt-0.5 px-2 py-0.5 rounded-full ${
-                                isCompleted ? 'bg-violet-200 text-violet-700' : isInProgress ? 'bg-orange-200 text-orange-700' : 'bg-gray-200 text-gray-600'
+                                isCompleted ? 'bg-emerald-200 text-emerald-700' : isInProgress ? 'bg-sky-200 text-sky-700' : 'bg-gray-200 text-gray-600'
                               }`}>
                                 {isCompleted ? '✓ ผ่านแล้ว' : isInProgress ? '⏱ กำลังทำ' : '🔒 ยังไม่เปิด'}
                               </span>
