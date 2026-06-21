@@ -3757,25 +3757,9 @@ function CourseDetailModal({
   const showReadingUtilityRail = true;
   useEffect(() => { setMounted(true); }, []);
 
-  // Lock scroll and animate in on mount
+  // Animate in on mount — no scroll lock needed since overlay is fixed inset-0
   useLayoutEffect(() => {
-    const scrollY = window.scrollY;
-    scrollAtOpen.current = scrollY;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.left = '0';
-    document.body.style.right = '0';
-    document.body.style.paddingRight = scrollbarWidth + 'px';
-    requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
-    return () => {
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
-      document.body.style.paddingRight = '';
-      window.scrollTo(0, scrollAtOpen.current);
-    };
+    requestAnimationFrame(() => setVisible(true));
   }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
