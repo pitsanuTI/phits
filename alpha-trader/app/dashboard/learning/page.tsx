@@ -4366,60 +4366,75 @@ function CourseDetailModal({
 
             {/* Progress input — only when Reading */}
             {status === 'Reading' && (
-              <div className="bg-violet-50 border border-violet-100 rounded-xl p-2.5">
+              <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                {/* Premium progress bar header */}
+                <div className={`px-3 pt-3 pb-2 ${
+                  progress === 100 ? 'bg-gradient-to-r from-violet-500 to-purple-600' :
+                  progress >= 76   ? 'bg-gradient-to-r from-emerald-500 to-teal-500' :
+                  progress >= 51   ? 'bg-gradient-to-r from-amber-400 to-yellow-400' :
+                  progress >= 26   ? 'bg-gradient-to-r from-orange-400 to-amber-500' :
+                                     'bg-gradient-to-r from-rose-500 to-red-500'
+                }`}>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest">ความคืบหน้า</span>
+                    <span className="text-lg font-black text-white leading-none">{progress}<span className="text-xs font-semibold ml-0.5">%</span></span>
+                  </div>
+                  {/* Track */}
+                  <div className="h-2 bg-white/25 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${progress}%`,
+                        background: 'rgba(255,255,255,0.85)',
+                        boxShadow: '0 0 8px rgba(255,255,255,0.6)',
+                      }}
+                    />
+                  </div>
+                </div>
+                {/* Input section */}
+                <div className="bg-white px-3 py-2.5">
                 {(card.contentType === 'book' || card.contentType === 'pdf') ? (
-                  <div>
-                    <div className="text-[10px] font-semibold text-violet-700 mb-1.5">หน้าที่อ่านแล้ว</div>
-                    <div className="flex items-center gap-1.5">
-                      <input type="number" min={0} max={card.totalPages ?? 999}
-                        defaultValue={card.pagesRead ?? 0}
-                        onChange={e => {
-                          const total = card.totalPages ?? 0;
-                          if (total > 0) setProgress(Math.min(100, Math.round((Number(e.target.value) / total) * 100)));
-                        }}
-                        className="w-16 px-2 py-1 border border-violet-200 rounded-lg text-xs text-center focus:outline-none focus:border-violet-400 bg-white" />
-                      <span className="text-[10px] text-violet-600">/ {card.totalPages ?? '?'} หน้า</span>
-                    </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-gray-500 flex-1">หน้าที่อ่านแล้ว</span>
+                    <input type="number" min={0} max={card.totalPages ?? 999}
+                      defaultValue={card.pagesRead ?? 0}
+                      onChange={e => {
+                        const total = card.totalPages ?? 0;
+                        if (total > 0) setProgress(Math.min(100, Math.round((Number(e.target.value) / total) * 100)));
+                      }}
+                      className="w-14 px-2 py-1 border border-gray-200 rounded-lg text-xs text-center focus:outline-none focus:border-violet-400 bg-gray-50" />
+                    <span className="text-[10px] text-gray-400">/ {card.totalPages ?? '?'}</span>
                   </div>
                 ) : card.contentType === 'course' ? (
-                  <div>
-                    <div className="text-[10px] font-semibold text-violet-700 mb-1.5">บทเรียนที่เรียนแล้ว</div>
-                    <div className="flex items-center gap-1.5">
-                      <input type="number" min={0} max={card.totalLessons ?? 999}
-                        defaultValue={card.lessonsRead ?? 0}
-                        onChange={e => {
-                          const total = card.totalLessons ?? 0;
-                          if (total > 0) setProgress(Math.min(100, Math.round((Number(e.target.value) / total) * 100)));
-                        }}
-                        className="w-16 px-2 py-1 border border-violet-200 rounded-lg text-xs text-center focus:outline-none focus:border-violet-400 bg-white" />
-                      <span className="text-[10px] text-violet-600">/ {card.totalLessons ?? '?'} บทเรียน</span>
-                    </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-gray-500 flex-1">บทเรียนที่เรียนแล้ว</span>
+                    <input type="number" min={0} max={card.totalLessons ?? 999}
+                      defaultValue={card.lessonsRead ?? 0}
+                      onChange={e => {
+                        const total = card.totalLessons ?? 0;
+                        if (total > 0) setProgress(Math.min(100, Math.round((Number(e.target.value) / total) * 100)));
+                      }}
+                      className="w-14 px-2 py-1 border border-gray-200 rounded-lg text-xs text-center focus:outline-none focus:border-violet-400 bg-gray-50" />
+                    <span className="text-[10px] text-gray-400">/ {card.totalLessons ?? '?'}</span>
                   </div>
                 ) : (card.contentType === 'video' || card.contentType === 'podcast') ? (
-                  <div>
-                    <div className="text-[10px] font-semibold text-violet-700 mb-1.5">{card.contentType === 'video' ? 'ดูไปแล้ว' : 'ฟังไปแล้ว'}</div>
-                    <div className="flex items-center gap-1.5">
-                      <input type="number" min={0} max={card.totalMins ?? 999}
-                        defaultValue={card.watchedMins ?? 0}
-                        onChange={e => {
-                          const total = card.totalMins ?? 0;
-                          if (total > 0) setProgress(Math.min(100, Math.round((Number(e.target.value) / total) * 100)));
-                        }}
-                        className="w-16 px-2 py-1 border border-violet-200 rounded-lg text-xs text-center focus:outline-none focus:border-violet-400 bg-white" />
-                      <span className="text-[10px] text-violet-600">/ {card.totalMins ?? '?'} นาที</span>
-                    </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-gray-500 flex-1">{card.contentType === 'video' ? 'ดูไปแล้ว' : 'ฟังไปแล้ว'}</span>
+                    <input type="number" min={0} max={card.totalMins ?? 999}
+                      defaultValue={card.watchedMins ?? 0}
+                      onChange={e => {
+                        const total = card.totalMins ?? 0;
+                        if (total > 0) setProgress(Math.min(100, Math.round((Number(e.target.value) / total) * 100)));
+                      }}
+                      className="w-14 px-2 py-1 border border-gray-200 rounded-lg text-xs text-center focus:outline-none focus:border-violet-400 bg-gray-50" />
+                    <span className="text-[10px] text-gray-400">/ {card.totalMins ?? '?'} นาที</span>
                   </div>
                 ) : (
-                  <div>
-                    <div className="flex justify-between items-center mb-1.5">
-                      <div className="text-[10px] font-semibold text-violet-700">ความคืบหน้า</div>
-                      <span className="text-xs font-bold text-violet-600">{progress}%</span>
-                    </div>
-                    <input type="range" min={0} max={100} value={progress}
-                      onChange={e => setProgress(Number(e.target.value))}
-                      className="w-full accent-violet-500" />
-                  </div>
+                  <input type="range" min={0} max={100} value={progress}
+                    onChange={e => setProgress(Number(e.target.value))}
+                    className="w-full accent-violet-500" />
                 )}
+                </div>
               </div>
             )}
 
