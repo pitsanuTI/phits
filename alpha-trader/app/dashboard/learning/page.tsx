@@ -3761,15 +3761,19 @@ function CourseDetailModal({
   useLayoutEffect(() => {
     const scrollY = window.scrollY;
     scrollAtOpen.current = scrollY;
-    // Apply padding-right to prevent layout shift when scrollbar disappears
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    document.documentElement.style.overflow = 'hidden';
-    document.documentElement.style.paddingRight = scrollbarWidth + 'px';
-    window.scrollTo(0, scrollY);
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.paddingRight = scrollbarWidth + 'px';
     requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
     return () => {
-      document.documentElement.style.overflow = '';
-      document.documentElement.style.paddingRight = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.paddingRight = '';
       window.scrollTo(0, scrollAtOpen.current);
     };
   }, []);
