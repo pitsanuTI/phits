@@ -6180,8 +6180,7 @@ function CourseDetailModal({
                     </div>
 
                     {/* ═══ 2. Main Content Body — Compact original preview ═══ */}
-                    <div className="mb-8">
-                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Original Post</p>
+                    <div className="mb-4">
                       <div className="rounded-2xl border border-orange-100 bg-orange-50/20 overflow-hidden">
                         {card.imageUrl && (
                           <div className="w-full overflow-hidden">
