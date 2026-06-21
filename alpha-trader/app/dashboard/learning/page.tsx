@@ -3755,12 +3755,22 @@ function CourseDetailModal({
   const [p3Tab, setP3Tab] = useState<'timer'|'review'>('timer');
   const fitImage = shouldFitLearningImage(card.contentType);
   const showReadingUtilityRail = true;
-  useEffect(() => { setMounted(true); }, []);
+  const savedScrollRef = useRef<number>(0);
 
-  // Animate in on mount — no scroll lock needed since overlay is fixed inset-0
-  useLayoutEffect(() => {
-    requestAnimationFrame(() => setVisible(true));
+  // Save scroll position BEFORE portal renders (useEffect runs before setMounted triggers re-render)
+  useEffect(() => {
+    const main = document.querySelector('main');
+    savedScrollRef.current = main?.scrollTop ?? 0;
+    setMounted(true);
   }, []);
+
+  // Restore scroll synchronously after portal renders, before browser paint
+  useLayoutEffect(() => {
+    if (!mounted) return;
+    const main = document.querySelector('main');
+    if (main) main.scrollTop = savedScrollRef.current;
+    requestAnimationFrame(() => setVisible(true));
+  }, [mounted]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
