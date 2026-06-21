@@ -3756,12 +3756,18 @@ function CourseDetailModal({
   const fitImage = shouldFitLearningImage(card.contentType);
   const showReadingUtilityRail = true;
   const overlayRef = useRef<HTMLDivElement>(null);
+  const portalScrollRef = useRef<number>(0);
 
-  useEffect(() => { setMounted(true); }, []);
+  // Save window.scrollY after first paint (before portal DOM commit)
+  useEffect(() => {
+    portalScrollRef.current = window.scrollY;
+    setMounted(true);
+  }, []);
 
-  // Focus overlay with preventScroll to stop browser auto-focus from jumping the page
+  // After portal renders in document.body, restore scroll + focus overlay (both before Paint 2)
   useLayoutEffect(() => {
     if (!mounted) return;
+    window.scrollTo(0, portalScrollRef.current);
     overlayRef.current?.focus({ preventScroll: true });
     requestAnimationFrame(() => setVisible(true));
   }, [mounted]);
