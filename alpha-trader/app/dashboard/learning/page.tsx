@@ -7356,22 +7356,21 @@ function CourseDetailModal({
             <AnimatePresence>
               {showPlaylistLibrary && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-4 gap-2">
                     {pomodoroPlaylists.map(playlist => (
                       <motion.button
                         key={playlist.id}
                         onClick={() => { setMusicType(playlist.type); setShowPlaylistLibrary(false); }}
-                        whileHover={{ scale: 1.05, y: -4 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`rounded-xl p-3 border-2 transition text-left ${
+                        title={playlist.name}
+                        whileHover={{ scale: 1.1, y: -2 }}
+                        whileTap={{ scale: 0.92 }}
+                        className={`aspect-square rounded-lg p-3 border-2 transition flex items-center justify-center text-3xl ${
                           musicType === playlist.type
-                            ? `bg-gradient-to-br ${playlist.color} border-white text-white shadow-lg`
+                            ? `bg-gradient-to-br ${playlist.color} border-white shadow-md`
                             : 'bg-white border-gray-200 hover:border-gray-300'
                         }`}
                       >
-                        <div className="text-2xl mb-1">{playlist.icon}</div>
-                        <div className={`text-[11px] font-black ${musicType === playlist.type ? 'text-white' : 'text-gray-900'}`}>{playlist.name}</div>
-                        <div className={`text-[9px] ${musicType === playlist.type ? 'text-white/80' : 'text-gray-400'}`}>{playlist.desc}</div>
+                        {playlist.icon}
                       </motion.button>
                     ))}
                   </div>
