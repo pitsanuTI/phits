@@ -3654,8 +3654,9 @@ function ReflectionSteps({
     },
   ];
 
+  const [confirmedSteps, setConfirmedSteps] = useState<Set<number>>(new Set());
   const handleComplete = (stepNum: number) => {
-    // บันทึก แต่ยังคงให้แก้ไขได้ - ไม่ต้องทำอะไร เพราะ state อัปเดตแล้ว
+    setConfirmedSteps(prev => new Set([...prev, stepNum]));
   };
 
   return (
@@ -3752,9 +3753,16 @@ function ReflectionSteps({
                 {step.unlocked && (
                   <button
                     onClick={() => handleComplete(step.n)}
-                    className="mt-2 w-full px-3 py-1.5 bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold rounded transition-colors"
+                    disabled={!step.value?.trim()}
+                    className={`mt-2 w-full px-3 py-1.5 text-xs font-bold rounded transition-all duration-300 ${
+                      confirmedSteps.has(step.n) || step.done
+                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                        : step.value?.trim()
+                        ? 'bg-sky-500 hover:bg-sky-600 text-white'
+                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    }`}
                   >
-                    เสร็จสิ้น
+                    {confirmedSteps.has(step.n) || step.done ? '✓ บันทึกแล้ว' : 'เสร็จสิ้น'}
                   </button>
                 )}
               </div>
@@ -4898,28 +4906,6 @@ function CourseDetailModal({
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-
-                            {/* REVIEW QUESTIONS (Support - not locked) */}
-                            <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
-                              <div className="flex items-center gap-2 mb-3">
-                                <FileQuestion size={13} className="text-fuchsia-500" />
-                                <span className="text-[11px] font-black text-fuchsia-700 uppercase tracking-wide">REVIEW QUESTIONS</span>
-                                <span className="text-[10px] text-fuchsia-400 ml-auto italic">Supporting material</span>
-                              </div>
-                              <div className="space-y-2">
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q1. What's the key insight in one line?</label>
-                                  <input value={clarityQ1} onChange={e => setClarityQ1(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q2. If I had to act on this tomorrow, what would I do?</label>
-                                  <input value={clarityQ2} onChange={e => setClarityQ2(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                              </div>
                             </div>
 
                             <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
@@ -5105,27 +5091,6 @@ function CourseDetailModal({
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-
-                            <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
-                              <div className="flex items-center gap-2 mb-3">
-                                <FileQuestion size={13} className="text-fuchsia-500" />
-                                <span className="text-[11px] font-black text-fuchsia-700 uppercase tracking-wide">REVIEW QUESTIONS</span>
-                                <span className="text-[10px] text-fuchsia-400 ml-auto italic">Supporting material</span>
-                              </div>
-                              <div className="space-y-2">
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q1. What's the key insight in one line?</label>
-                                  <input value={clarityQ1} onChange={e => setClarityQ1(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q2. If I had to act on this tomorrow, what would I do?</label>
-                                  <input value={clarityQ2} onChange={e => setClarityQ2(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                              </div>
                             </div>
 
                             <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
@@ -5359,27 +5324,6 @@ function CourseDetailModal({
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-
-                            <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
-                              <div className="flex items-center gap-2 mb-3">
-                                <FileQuestion size={13} className="text-fuchsia-500" />
-                                <span className="text-[11px] font-black text-fuchsia-700 uppercase tracking-wide">REVIEW QUESTIONS</span>
-                                <span className="text-[10px] text-fuchsia-400 ml-auto italic">Supporting material</span>
-                              </div>
-                              <div className="space-y-2">
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q1. What's the key insight in one line?</label>
-                                  <input value={clarityQ1} onChange={e => setClarityQ1(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q2. If I had to act on this tomorrow, what would I do?</label>
-                                  <input value={clarityQ2} onChange={e => setClarityQ2(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                              </div>
                             </div>
 
                             <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
@@ -5628,27 +5572,6 @@ function CourseDetailModal({
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-
-                            <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
-                              <div className="flex items-center gap-2 mb-3">
-                                <FileQuestion size={13} className="text-fuchsia-500" />
-                                <span className="text-[11px] font-black text-fuchsia-700 uppercase tracking-wide">REVIEW QUESTIONS</span>
-                                <span className="text-[10px] text-fuchsia-400 ml-auto italic">Supporting material</span>
-                              </div>
-                              <div className="space-y-2">
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q1. What's the key insight in one line?</label>
-                                  <input value={clarityQ1} onChange={e => setClarityQ1(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q2. If I had to act on this tomorrow, what would I do?</label>
-                                  <input value={clarityQ2} onChange={e => setClarityQ2(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                              </div>
                             </div>
 
                             <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
@@ -5868,28 +5791,6 @@ function CourseDetailModal({
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-
-                            {/* REVIEW QUESTIONS (Support - not locked) */}
-                            <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
-                              <div className="flex items-center gap-2 mb-3">
-                                <FileQuestion size={13} className="text-fuchsia-500" />
-                                <span className="text-[11px] font-black text-fuchsia-700 uppercase tracking-wide">REVIEW QUESTIONS</span>
-                                <span className="text-[10px] text-fuchsia-400 ml-auto italic">Supporting material</span>
-                              </div>
-                              <div className="space-y-2">
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q1. What's the key insight in one line?</label>
-                                  <input value={clarityQ1} onChange={e => setClarityQ1(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q2. If I had to act on this tomorrow, what would I do?</label>
-                                  <input value={clarityQ2} onChange={e => setClarityQ2(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                              </div>
                             </div>
 
                             {/* Review reminder */}
@@ -6009,28 +5910,6 @@ function CourseDetailModal({
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-
-                            {/* REVIEW QUESTIONS (Support - not locked) */}
-                            <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
-                              <div className="flex items-center gap-2 mb-3">
-                                <FileQuestion size={13} className="text-fuchsia-500" />
-                                <span className="text-[11px] font-black text-fuchsia-700 uppercase tracking-wide">REVIEW QUESTIONS</span>
-                                <span className="text-[10px] text-fuchsia-400 ml-auto italic">Supporting material</span>
-                              </div>
-                              <div className="space-y-2">
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q1. What's the key insight in one line?</label>
-                                  <input value={clarityQ1} onChange={e => setClarityQ1(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q2. If I had to act on this tomorrow, what would I do?</label>
-                                  <input value={clarityQ2} onChange={e => setClarityQ2(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                              </div>
                             </div>
                           </>
                         );
@@ -6147,28 +6026,6 @@ function CourseDetailModal({
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-
-                            {/* REVIEW QUESTIONS (Support - not locked) */}
-                            <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
-                              <div className="flex items-center gap-2 mb-3">
-                                <FileQuestion size={13} className="text-fuchsia-500" />
-                                <span className="text-[11px] font-black text-fuchsia-700 uppercase tracking-wide">REVIEW QUESTIONS</span>
-                                <span className="text-[10px] text-fuchsia-400 ml-auto italic">Supporting material</span>
-                              </div>
-                              <div className="space-y-2">
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q1. What does this post change about how I think or act?</label>
-                                  <input value={clarityQ1} onChange={e => setClarityQ1(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q2. If I want to apply this, what's blocking me?</label>
-                                  <input value={clarityQ2} onChange={e => setClarityQ2(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                              </div>
                             </div>
                           </>
                         );
@@ -6532,27 +6389,6 @@ function CourseDetailModal({
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-
-                            <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
-                              <div className="flex items-center gap-2 mb-3">
-                                <FileQuestion size={13} className="text-fuchsia-500" />
-                                <span className="text-[11px] font-black text-fuchsia-700 uppercase tracking-wide">REVIEW QUESTIONS</span>
-                                <span className="text-[10px] text-fuchsia-400 ml-auto italic">Supporting material</span>
-                              </div>
-                              <div className="space-y-2">
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q1. What's the key insight in one line?</label>
-                                  <input value={clarityQ1} onChange={e => setClarityQ1(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                                <div>
-                                  <label className="text-[11px] font-semibold text-fuchsia-600 mb-1 block">Q2. If I had to act on this tomorrow, what would I do?</label>
-                                  <input value={clarityQ2} onChange={e => setClarityQ2(e.target.value)}
-                                    placeholder="คำตอบของคุณ..."
-                                    className="w-full px-3 py-2 border border-fuchsia-200 rounded-xl text-[12px] focus:outline-none focus:border-fuchsia-400 bg-white" />
-                                </div>
-                              </div>
                             </div>
 
                             <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
