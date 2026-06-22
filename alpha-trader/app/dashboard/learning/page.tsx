@@ -3655,58 +3655,83 @@ function ReflectionSteps({
   ];
 
   return (
-    <div className="space-y-3">
-      {steps.map(step => {
-        const Icon = step.icon;
-        // emerald = done, sky = current (unlocked, not done), gray = locked
-        const tone = step.done ? 'emerald' : step.unlocked ? 'sky' : 'gray';
-        const box = step.done
-          ? 'border-emerald-200 bg-emerald-50/50'
-          : step.unlocked
-          ? 'border-sky-200 bg-sky-50/40'
-          : 'border-gray-200 bg-gray-50/50 opacity-60';
-        const badge = step.done
-          ? 'bg-emerald-600 text-white'
-          : step.unlocked
-          ? 'bg-sky-500 text-white'
-          : 'bg-gray-300 text-white';
-        const labelCls = step.done ? 'text-emerald-800' : step.unlocked ? 'text-sky-800' : 'text-gray-500';
-        const iconCls = step.done ? 'text-emerald-500' : step.unlocked ? 'text-sky-500' : 'text-gray-400';
-        const pill = step.done
-          ? 'bg-emerald-200 text-emerald-700'
-          : step.unlocked
-          ? 'bg-sky-200 text-sky-700'
-          : 'bg-gray-200 text-gray-600';
+    <div className="space-y-0">
+      {/* Status Bar - เริ่มต้น + กำลังอ่าน */}
+      <div className="flex gap-4 mb-4">
+        {/* เริ่มต้น */}
+        <div className="flex items-center gap-2 flex-1">
+          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white text-[10px] font-black">✓</div>
+          <span className="text-xs text-emerald-700 font-semibold">เริ่มต้น</span>
+        </div>
+        {/* กำลังอ่าน */}
+        <div className="flex items-center gap-2 flex-1">
+          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white text-[10px] font-black">✓</div>
+          <span className="text-xs text-emerald-700 font-semibold">กำลังอ่าน</span>
+        </div>
+      </div>
+
+      {/* Reflection Steps Timeline */}
+      {steps.map((step, idx) => {
+        const isCompleted = step.done;
+        const isActive = step.unlocked && !step.done;
+        const isLocked = !step.unlocked;
+
+        const badgeBg = isCompleted
+          ? 'bg-emerald-500'
+          : isActive
+          ? 'bg-sky-500'
+          : 'bg-gray-300';
+
+        const boxBg = isCompleted
+          ? 'bg-emerald-50/40 border-emerald-200'
+          : isActive
+          ? 'bg-sky-50/40 border-sky-200'
+          : 'bg-gray-50/30 border-gray-200';
+
+        const labelColor = isCompleted
+          ? 'text-emerald-900'
+          : isActive
+          ? 'text-sky-900'
+          : 'text-gray-600';
+
+        const statusText = isCompleted
+          ? '✓ ผ่านแล้ว'
+          : isActive
+          ? '⏱ กำลังทำ'
+          : '🔒 ยังไม่เปิด';
+
+        const lineColor = isCompleted
+          ? 'bg-emerald-500'
+          : isActive
+          ? 'bg-sky-500'
+          : 'bg-gray-300';
+
         return (
-          <div key={step.n} className={`rounded-2xl border p-4 transition-all duration-300 ${box}`}>
-            <div className="flex items-center gap-2 mb-2">
-              <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${badge}`}>
-                {step.done ? '✓' : step.unlocked ? step.n : <Lock size={10} />}
-              </span>
-              <Icon size={13} className={iconCls} />
-              <span className={`text-[11px] font-black uppercase tracking-wide ${labelCls}`}>{step.label}</span>
-              <span className={`ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full ${pill}`}>
-                {step.done ? '✓ ผ่านแล้ว' : step.unlocked ? '⏱ กำลังทำ' : '🔒 ยังไม่เปิด'}
-              </span>
+          <div key={step.n} className="relative">
+            <div className={`flex gap-3 px-3 py-3 rounded-lg border ${boxBg} transition-all duration-300`}>
+              {/* Timeline Column */}
+              <div className="flex flex-col items-center">
+                {/* Badge */}
+                <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white text-xs font-black ${badgeBg} transition-all duration-300`}>
+                  {isCompleted ? '✓' : isLocked ? <Lock size={11} /> : '●'}
+                </div>
+
+                {/* Connecting Line */}
+                {idx < steps.length - 1 && (
+                  <div className={`w-0.5 h-12 ${lineColor} transition-all duration-300 mt-1`} />
+                )}
+              </div>
+
+              {/* Step Content */}
+              <div className="flex-1 pt-0.5">
+                <div className={`text-xs font-bold ${labelColor}`}>
+                  {step.label}
+                </div>
+                <div className="text-[11px] text-gray-500 mt-0.5">
+                  {statusText}
+                </div>
+              </div>
             </div>
-            {step.n === 4 ? (
-              <input
-                disabled={!step.unlocked}
-                value={step.value}
-                onChange={e => step.set(e.target.value)}
-                placeholder={step.unlocked ? step.placeholder : step.lockHint}
-                className={`w-full px-3 py-2 text-[13px] focus:outline-none bg-transparent ${step.unlocked ? 'text-gray-800 placeholder:text-gray-300' : 'text-gray-400 placeholder:text-gray-300 cursor-not-allowed'}`}
-              />
-            ) : (
-              <textarea
-                disabled={!step.unlocked}
-                value={step.value}
-                onChange={e => step.set(e.target.value)}
-                placeholder={step.unlocked ? step.placeholder : step.lockHint}
-                rows={3}
-                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${step.unlocked ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-400 placeholder:text-gray-300 cursor-not-allowed'}`}
-              />
-            )}
           </div>
         );
       })}
@@ -4410,7 +4435,7 @@ function CourseDetailModal({
           className="border-r border-gray-200 flex flex-col bg-white overflow-y-auto overflow-x-hidden"
         >
           <div className="p-4">
-            <label className={`relative w-full aspect-video rounded-xl overflow-hidden shadow-md cursor-pointer group ${!modalImageUrl ? `bg-gradient-to-br ${card.coverGradient}` : ''}`} title="คลิกเพื่อเปลี่ยนรูปปก หรือ Ctrl+V วางรูปได้เลย">
+            <label className={`block relative w-full aspect-video rounded-xl overflow-hidden shadow-md cursor-pointer group ${!modalImageUrl ? `bg-gradient-to-br ${card.coverGradient}` : ''}`} title="คลิกเพื่อเปลี่ยนรูปปก หรือ Ctrl+V วางรูปได้เลย">
               <input type="file" accept="image/*" className="sr-only" onChange={e => {
                 const file = e.target.files?.[0];
                 if (!file) return;
@@ -7460,40 +7485,19 @@ function CourseDetailModal({
                 )}
 
                 {card.contentType === 'article' && (
-                  <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-2.5">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-1.5">
-                        <AlignLeft size={11} className="text-emerald-500" />
-                        <span className="text-[10px] font-black text-emerald-700 uppercase tracking-wide">Reading Progress</span>
+                  <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50/60 p-3.5">
+                    <div className="flex items-center justify-between mb-2.5">
+                      <div className="flex items-center gap-2">
+                        <AlignLeft size={13} className="text-emerald-600" />
+                        <span className="text-[11px] font-black text-emerald-700 uppercase tracking-wide">Reading Progress</span>
                       </div>
-                      <span className="text-[10px] font-black text-emerald-600 stat-num">{progress}%</span>
+                      <span className="text-lg font-black text-emerald-600 stat-num leading-none">{progress}%</span>
                     </div>
-                    <div className="h-1 bg-emerald-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
+                    <div className="h-2.5 bg-emerald-100 rounded-full overflow-hidden shadow-inner">
+                      <div className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
                     </div>
-                  </div>
-                )}
-
-                {/* Status — Article + Social per spec */}
-                {(card.contentType === 'article' || card.contentType === 'social') && (
-                  <div className="rounded-xl border border-sky-100 bg-sky-50/40 p-2.5">
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <CheckCircle2 size={11} className="text-sky-500" />
-                      <span className="text-[10px] font-black text-sky-700 uppercase tracking-wide">Status</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-1">
-                      {(['Unread', 'Reading', 'Done'] as const).map(s => (
-                        <button key={s} type="button" onClick={() => setStatus(s)}
-                          className={`py-1 rounded-lg text-[9px] font-black uppercase tracking-wide transition ${
-                            status === s
-                              ? s === 'Done' ? 'bg-emerald-500 text-white shadow-sm'
-                              : s === 'Reading' ? 'bg-sky-500 text-white shadow-sm'
-                              : 'bg-gray-400 text-white shadow-sm'
-                              : 'bg-white text-gray-400 border border-gray-200 hover:text-gray-700'
-                          }`}>
-                          {s}
-                        </button>
-                      ))}
+                    <div className="mt-1.5 text-[10px] text-emerald-600 font-medium">
+                      {progress === 0 ? 'ยังไม่เริ่มอ่าน' : progress === 100 ? 'อ่านเสร็จแล้ว ✓' : `อ่านไปแล้ว ${progress}%`}
                     </div>
                   </div>
                 )}
@@ -7519,17 +7523,20 @@ function CourseDetailModal({
                 )}
 
                 {/* Next review — All three types */}
-                <div className="rounded-xl border border-rose-100 bg-rose-50/40 p-2.5">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Calendar size={11} className="text-rose-500" />
-                    <span className="text-[10px] font-black text-rose-700 uppercase tracking-wide">Next Review</span>
+                <div className="rounded-xl border border-rose-200 bg-gradient-to-br from-rose-50 to-pink-50/60 p-3.5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar size={13} className="text-rose-500" />
+                    <span className="text-[11px] font-black text-rose-700 uppercase tracking-wide">Next Review</span>
+                    {card.reviewCount != null && card.reviewCount > 0 && (
+                      <span className="ml-auto text-[10px] font-bold text-rose-400 bg-rose-100 px-2 py-0.5 rounded-full">reviewed {card.reviewCount}x</span>
+                    )}
                   </div>
-                  <div className="text-[11px] font-bold text-rose-700 leading-tight">
+                  <div className="text-[15px] font-black text-rose-700 leading-snug">
                     {card.nextReviewAt ? card.nextReviewAt : `in ${card.reviewDays} days`}
                   </div>
-                  {card.reviewCount != null && card.reviewCount > 0 && (
-                    <div className="text-[9px] text-rose-400 mt-0.5">reviewed {card.reviewCount}x</div>
-                  )}
+                  <div className="mt-1 text-[10px] text-rose-400 font-medium">
+                    {card.nextReviewAt ? 'วันที่กำหนดทบทวน' : 'หลังจากอ่านจบ'}
+                  </div>
                 </div>
               </div>
             )}
@@ -9152,3 +9159,4 @@ export default function LearningPage() {
     </>
   );
 }
+
