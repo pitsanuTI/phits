@@ -3654,8 +3654,15 @@ function ReflectionSteps({
     },
   ];
 
+  const handleComplete = (stepNum: number) => {
+    if (stepNum === 1) setUnderstanding('understanding_completed');
+    else if (stepNum === 2) setKeyTakeaways('keytakeaways_completed');
+    else if (stepNum === 3) setApplication('application_completed');
+    else if (stepNum === 4) setNextAction('nextaction_completed');
+  };
+
   return (
-    <div className="space-y-0">
+    <div className="space-y-3">
       {steps.map((step, idx) => {
         const isCompleted = step.done;
         const isActive = step.unlocked && !step.done;
@@ -3703,18 +3710,48 @@ function ReflectionSteps({
 
                 {/* Connecting Line */}
                 {idx < steps.length - 1 && (
-                  <div className={`w-0.5 h-14 ${lineColor} transition-all duration-300 mt-1`} />
+                  <div className={`w-0.5 h-24 ${lineColor} transition-all duration-300 mt-1`} />
                 )}
               </div>
 
               {/* Step Content */}
-              <div className="flex-1 py-0.5">
+              <div className="flex-1">
                 <div className={`text-xs font-bold ${labelColor}`}>
                   {step.label}
                 </div>
-                <div className="text-[11px] text-gray-500 mt-1">
+                <div className="text-[11px] text-gray-500 mt-1 mb-2">
                   {statusText}
                 </div>
+
+                {/* Input Field - Show for all steps */}
+                {step.n === 4 ? (
+                  <input
+                    disabled={!step.unlocked}
+                    value={step.value}
+                    onChange={e => step.set(e.target.value)}
+                    placeholder={step.unlocked ? step.placeholder : step.lockHint}
+                    className={`w-full px-2 py-1.5 text-xs focus:outline-none bg-white rounded border ${step.unlocked ? 'border-sky-300 text-gray-800' : 'border-gray-200 text-gray-400 cursor-not-allowed'}`}
+                  />
+                ) : (
+                  <textarea
+                    disabled={!step.unlocked}
+                    value={step.value}
+                    onChange={e => step.set(e.target.value)}
+                    placeholder={step.unlocked ? step.placeholder : step.lockHint}
+                    rows={2}
+                    className={`w-full text-xs resize-none focus:outline-none bg-white rounded border p-2 ${step.unlocked ? 'border-sky-300 text-gray-700' : 'border-gray-200 text-gray-400 cursor-not-allowed'}`}
+                  />
+                )}
+
+                {/* Complete Button - Show when unlocked */}
+                {step.unlocked && (
+                  <button
+                    onClick={() => handleComplete(step.n)}
+                    className="mt-2 w-full px-3 py-1.5 bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold rounded transition-colors"
+                  >
+                    เสร็จสิ้น
+                  </button>
+                )}
               </div>
             </div>
           </div>
