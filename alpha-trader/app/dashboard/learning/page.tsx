@@ -3655,10 +3655,7 @@ function ReflectionSteps({
   ];
 
   const handleComplete = (stepNum: number) => {
-    if (stepNum === 1) setUnderstanding('understanding_completed');
-    else if (stepNum === 2) setKeyTakeaways('keytakeaways_completed');
-    else if (stepNum === 3) setApplication('application_completed');
-    else if (stepNum === 4) setNextAction('nextaction_completed');
+    // บันทึก แต่ยังคงให้แก้ไขได้ - ไม่ต้องทำอะไร เพราะ state อัปเดตแล้ว
   };
 
   return (
@@ -3741,6 +3738,14 @@ function ReflectionSteps({
                     rows={2}
                     className={`w-full text-xs resize-none focus:outline-none bg-white rounded border p-2 ${step.unlocked ? 'border-sky-300 text-gray-700' : 'border-gray-200 text-gray-400 cursor-not-allowed'}`}
                   />
+                )}
+
+                {/* Summary - Show text that was entered */}
+                {step.value && step.value !== 'Notes not added yet.' && step.value !== 'Application not added yet.' && (
+                  <div className="mt-2 p-2 bg-gray-50 rounded border border-gray-200">
+                    <p className="text-[11px] text-gray-600 font-semibold mb-1">ข้อความของคุณ:</p>
+                    <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{step.value}</p>
+                  </div>
                 )}
 
                 {/* Complete Button - Show when unlocked */}
