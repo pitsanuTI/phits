@@ -3656,21 +3656,6 @@ function ReflectionSteps({
 
   return (
     <div className="space-y-0">
-      {/* Status Bar - เริ่มต้น + กำลังอ่าน */}
-      <div className="flex gap-4 mb-4">
-        {/* เริ่มต้น */}
-        <div className="flex items-center gap-2 flex-1">
-          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white text-[10px] font-black">✓</div>
-          <span className="text-xs text-emerald-700 font-semibold">เริ่มต้น</span>
-        </div>
-        {/* กำลังอ่าน */}
-        <div className="flex items-center gap-2 flex-1">
-          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white text-[10px] font-black">✓</div>
-          <span className="text-xs text-emerald-700 font-semibold">กำลังอ่าน</span>
-        </div>
-      </div>
-
-      {/* Reflection Steps Timeline */}
       {steps.map((step, idx) => {
         const isCompleted = step.done;
         const isActive = step.unlocked && !step.done;
@@ -3683,10 +3668,10 @@ function ReflectionSteps({
           : 'bg-gray-300';
 
         const boxBg = isCompleted
-          ? 'bg-emerald-50/40 border-emerald-200'
+          ? 'bg-emerald-50 border-emerald-200'
           : isActive
-          ? 'bg-sky-50/40 border-sky-200'
-          : 'bg-gray-50/30 border-gray-200';
+          ? 'bg-sky-50 border-sky-200'
+          : 'bg-gray-50 border-gray-200';
 
         const labelColor = isCompleted
           ? 'text-emerald-900'
@@ -3707,27 +3692,27 @@ function ReflectionSteps({
           : 'bg-gray-300';
 
         return (
-          <div key={step.n} className="relative">
+          <div key={step.n}>
             <div className={`flex gap-3 px-3 py-3 rounded-lg border ${boxBg} transition-all duration-300`}>
               {/* Timeline Column */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center shrink-0">
                 {/* Badge */}
-                <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white text-xs font-black ${badgeBg} transition-all duration-300`}>
+                <div className={`flex h-6 w-6 items-center justify-center rounded-full text-white text-xs font-black ${badgeBg} transition-all duration-300`}>
                   {isCompleted ? '✓' : isLocked ? <Lock size={11} /> : '●'}
                 </div>
 
                 {/* Connecting Line */}
                 {idx < steps.length - 1 && (
-                  <div className={`w-0.5 h-12 ${lineColor} transition-all duration-300 mt-1`} />
+                  <div className={`w-0.5 h-14 ${lineColor} transition-all duration-300 mt-1`} />
                 )}
               </div>
 
               {/* Step Content */}
-              <div className="flex-1 pt-0.5">
+              <div className="flex-1 py-0.5">
                 <div className={`text-xs font-bold ${labelColor}`}>
                   {step.label}
                 </div>
-                <div className="text-[11px] text-gray-500 mt-0.5">
+                <div className="text-[11px] text-gray-500 mt-1">
                   {statusText}
                 </div>
               </div>
