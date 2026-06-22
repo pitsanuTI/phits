@@ -15,7 +15,7 @@ import {
   ExternalLink, RefreshCw, Globe, AlignLeft, Bell, BarChart2,
   GraduationCap, Headphones, Hash, Heart, Check, Bold, Underline, Highlighter,
   Heading1, Heading2, List, ListOrdered, Quote,
-  Share2, Image, Briefcase, MessageSquare, Music,
+  Share2, Image, Briefcase, MessageSquare, Music, Lock, Link2,
 } from 'lucide-react';
 
 import { Aws, Github, Discord, Notion, Youtube, Instagram, Linkedin, X as XIcon } from '@thesvg/react';
@@ -3594,6 +3594,126 @@ function TagSelector({ selected, onChange }: { selected: string[]; onChange: (ta
   );
 }
 
+// ─── Reflection Steps (sequential, aligned 1:1 with the sidebar Stepper) ──
+// Four gated steps matching the stepper: Understand → Connect → Apply → Act.
+// Each step unlocks only once the previous one is filled (standard learn-to-unlock
+// flow). Locked steps stay visible but dimmed + disabled. Status colours mirror the
+// stepper: emerald = done, sky = current/in-progress, gray = locked.
+function ReflectionSteps({
+  status, subjectLabel,
+  understanding, setUnderstanding,
+  keyTakeaways, setKeyTakeaways,
+  application, setApplication,
+  nextAction, setNextAction,
+}: {
+  status: 'Reading' | 'Done' | 'Unread';
+  subjectLabel: string;
+  understanding: string; setUnderstanding: (v: string) => void;
+  keyTakeaways: string; setKeyTakeaways: (v: string) => void;
+  application: string; setApplication: (v: string) => void;
+  nextAction: string; setNextAction: (v: string) => void;
+}) {
+  const filled = (v: string, sentinel?: string) => !!v?.trim() && v !== sentinel;
+  const readDone = status === 'Reading' || status === 'Done';
+  const doneUnderstand = filled(understanding, 'Notes not added yet.');
+  const doneConnect = filled(keyTakeaways);
+  const doneApply = filled(application, 'Application not added yet.');
+  const doneAct = filled(nextAction);
+
+  // A step is unlocked when the previous step is done (Understand unlocks after reading).
+  const steps = [
+    {
+      n: 1, label: 'Understand — จับใจความสำคัญ', icon: Lightbulb,
+      unlocked: readDone, done: doneUnderstand,
+      value: understanding === 'Notes not added yet.' ? '' : understanding,
+      set: setUnderstanding,
+      placeholder: `สิ่งสำคัญที่ได้จาก${subjectLabel}คืออะไร...`,
+      lockHint: 'ต้องอ่านให้เสร็จก่อน',
+    },
+    {
+      n: 2, label: 'Connect — เชื่อมกับชีวิตจริง', icon: Link2,
+      unlocked: doneUnderstand, done: doneConnect,
+      value: keyTakeaways, set: setKeyTakeaways,
+      placeholder: `เนื้อหานี้เชื่อมโยงกับชีวิต/งานของคุณยังไง...`,
+      lockHint: 'ทำขั้น Understand ให้เสร็จก่อน',
+    },
+    {
+      n: 3, label: 'Apply — วางแผนใช้ยังไง', icon: Target,
+      unlocked: doneConnect, done: doneApply,
+      value: application === 'Application not added yet.' ? '' : application,
+      set: setApplication,
+      placeholder: `จะนำไอเดียนี้ไปใช้จริงยังไง...`,
+      lockHint: 'ทำขั้น Connect ให้เสร็จก่อน',
+    },
+    {
+      n: 4, label: 'Act — action เล็กๆ', icon: Zap,
+      unlocked: doneApply, done: doneAct,
+      value: nextAction, set: setNextAction,
+      placeholder: `action เล็กๆ ที่จะลงมือทำ...`,
+      lockHint: 'ทำขั้น Apply ให้เสร็จก่อน',
+    },
+  ];
+
+  return (
+    <div className="space-y-3">
+      {steps.map(step => {
+        const Icon = step.icon;
+        // emerald = done, sky = current (unlocked, not done), gray = locked
+        const tone = step.done ? 'emerald' : step.unlocked ? 'sky' : 'gray';
+        const box = step.done
+          ? 'border-emerald-200 bg-emerald-50/50'
+          : step.unlocked
+          ? 'border-sky-200 bg-sky-50/40'
+          : 'border-gray-200 bg-gray-50/50 opacity-60';
+        const badge = step.done
+          ? 'bg-emerald-600 text-white'
+          : step.unlocked
+          ? 'bg-sky-500 text-white'
+          : 'bg-gray-300 text-white';
+        const labelCls = step.done ? 'text-emerald-800' : step.unlocked ? 'text-sky-800' : 'text-gray-500';
+        const iconCls = step.done ? 'text-emerald-500' : step.unlocked ? 'text-sky-500' : 'text-gray-400';
+        const pill = step.done
+          ? 'bg-emerald-200 text-emerald-700'
+          : step.unlocked
+          ? 'bg-sky-200 text-sky-700'
+          : 'bg-gray-200 text-gray-600';
+        return (
+          <div key={step.n} className={`rounded-2xl border p-4 transition-all duration-300 ${box}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${badge}`}>
+                {step.done ? '✓' : step.unlocked ? step.n : <Lock size={10} />}
+              </span>
+              <Icon size={13} className={iconCls} />
+              <span className={`text-[11px] font-black uppercase tracking-wide ${labelCls}`}>{step.label}</span>
+              <span className={`ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full ${pill}`}>
+                {step.done ? '✓ ผ่านแล้ว' : step.unlocked ? '⏱ กำลังทำ' : '🔒 ยังไม่เปิด'}
+              </span>
+            </div>
+            {step.n === 4 ? (
+              <input
+                disabled={!step.unlocked}
+                value={step.value}
+                onChange={e => step.set(e.target.value)}
+                placeholder={step.unlocked ? step.placeholder : step.lockHint}
+                className={`w-full px-3 py-2 text-[13px] focus:outline-none bg-transparent ${step.unlocked ? 'text-gray-800 placeholder:text-gray-300' : 'text-gray-400 placeholder:text-gray-300 cursor-not-allowed'}`}
+              />
+            ) : (
+              <textarea
+                disabled={!step.unlocked}
+                value={step.value}
+                onChange={e => step.set(e.target.value)}
+                placeholder={step.unlocked ? step.placeholder : step.lockHint}
+                rows={3}
+                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${step.unlocked ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-400 placeholder:text-gray-300 cursor-not-allowed'}`}
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Course Detail Modal (3-panel: Info | Reading | Pomodoro) ─────────
 function CourseDetailModal({
   card,
@@ -3748,7 +3868,6 @@ function CourseDetailModal({
   };
 
   const scrollAtOpen = useRef(0);
-  const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
   const isReadingType = card.contentType === 'article' || card.contentType === 'social' || card.contentType === 'book';
   const [readingMode, setReadingMode] = useState(isReadingType);
@@ -3760,11 +3879,10 @@ function CourseDetailModal({
   useEffect(() => { setMounted(true); }, []);
 
   // Focus overlay with preventScroll so the portal mount cannot scroll the page.
-  // Background scroll position is held steady by OverallTab while we open.
+  // The entrance animation is handled by framer-motion's initial/animate.
   useLayoutEffect(() => {
     if (!mounted) return;
     overlayRef.current?.focus({ preventScroll: true });
-    requestAnimationFrame(() => setVisible(true));
   }, [mounted]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -4262,15 +4380,12 @@ function CourseDetailModal({
 
   if (!mounted) return null;
   return createPortal(
-    <AnimatePresence>
-      {visible && (
         <motion.div
           ref={overlayRef}
           tabIndex={-1}
           className="fixed inset-0 z-50 flex items-center justify-center p-5 outline-none"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
           style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
         >
@@ -4279,7 +4394,6 @@ function CourseDetailModal({
             style={{ height: '92vh' }}
             initial={{ opacity: 0, scale: 0.94, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 20 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
           >
 
@@ -4678,80 +4792,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            {/* Step 2: KEY INSIGHT (Understand) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Lightbulb size={13} className={isStep1Complete ? 'text-amber-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep1Complete ? 'text-amber-700' : 'text-gray-500'}`}>KEY INSIGHT</span>
-                                {!isStep1Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องอ่านให้เสร็จก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep1Complete} value={typeNotes} onChange={e => setTypeNotes(e.target.value)}
-                                placeholder="สิ่งเดียวที่อยากจำจากหนังสือเล่มนี้..."
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep1Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            {/* Step 3: WHY I SAVED THIS (Connect) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep2Complete ? 'border-violet-100 bg-violet-50/30' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Bookmark size={13} className={isStep2Complete ? 'text-violet-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep2Complete ? 'text-violet-700' : 'text-gray-500'}`}>WHY I SAVED THIS</span>
-                                <span className={`text-[10px] ml-auto font-semibold ${isStep2Complete ? 'text-violet-400' : 'text-gray-400'}`}>{quotesList.length} saved</span>
-                                {!isStep2Complete && <span className="text-[9px] text-gray-400 italic">ต้องเสร็จ Step 2 ก่อน</span>}
-                              </div>
-                              <div className="flex gap-2 mb-3">
-                                <input disabled={!isStep2Complete} value={newQuote} onChange={e => setNewQuote(e.target.value)}
-                                  onKeyDown={e => { if (e.key === 'Enter' && newQuote.trim() && isStep2Complete) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); e.preventDefault(); }}}
-                                  placeholder={isStep2Complete ? '"Paste a memorable quote... ↵"' : 'Complete Step 2 first...'}
-                                  className={`flex-1 px-3 py-2 border rounded-xl text-[13px] focus:outline-none bg-white ${isStep2Complete ? 'border-violet-200 focus:border-violet-400' : 'border-gray-200 cursor-not-allowed text-gray-400 placeholder:text-gray-300'}`} />
-                                <button disabled={!isStep2Complete} onClick={() => { if (newQuote.trim() && isStep2Complete) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); }}}
-                                  className={`px-4 py-2 rounded-xl text-[12px] font-bold transition flex items-center gap-1 ${isStep2Complete ? 'bg-violet-500 text-white hover:bg-violet-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
-                                  <Plus size={13} />
-                                </button>
-                              </div>
-                              <div className={`max-h-[240px] overflow-y-auto space-y-2 p-2 rounded-xl ${isStep2Complete ? 'bg-white/50' : 'bg-gray-100/30'}`}>
-                                {quotesList.length > 0 ? quotesList.map((q, i) => (
-                                  <div key={i} className="flex items-start gap-2.5 p-3 bg-white rounded-lg border border-violet-100 group hover:border-violet-200 transition">
-                                    <span className="text-violet-300 text-2xl font-serif leading-none mt-0.5 shrink-0">&ldquo;</span>
-                                    <p className="flex-1 text-[13px] text-violet-900 italic leading-relaxed">{q}</p>
-                                    <button disabled={!isStep2Complete} onClick={() => setQuotesList(ql => ql.filter((_, j) => j !== i))}
-                                      className="opacity-0 group-hover:opacity-100 shrink-0 mt-0.5 text-gray-300 hover:text-rose-400 transition cursor-pointer"><X size={12} /></button>
-                                  </div>
-                                )) : (
-                                  <div className="py-6 text-center">
-                                    <Bookmark size={20} className="text-violet-200 mx-auto mb-1.5" />
-                                    <p className={`text-[11px] font-medium ${isStep2Complete ? 'text-violet-400' : 'text-gray-400'}`}>
-                                      {isStep2Complete ? 'Paste memorable quotes here' : 'Complete Step 2 first'}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Step 4: HOW I CAN APPLY THIS (Apply) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep3Complete ? 'border-orange-100 bg-orange-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Target size={13} className={isStep3Complete ? 'text-orange-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep3Complete ? 'text-orange-700' : 'text-gray-500'}`}>HOW I CAN APPLY THIS</span>
-                                {!isStep3Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 3 ก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep3Complete} value={application} onChange={e => setApplication(e.target.value)}
-                                placeholder="วิธีที่จะนำไอเดียจากหนังสือไปใช้จริง..."
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep3Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            {/* Step 5: ACTION IDEA (Act) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep4Complete ? 'border-emerald-100 bg-emerald-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Zap size={13} className={isStep4Complete ? 'text-emerald-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep4Complete ? 'text-emerald-700' : 'text-gray-500'}`}>ACTION IDEA</span>
-                                {!isStep4Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 4 ก่อน</span>}
-                              </div>
-                              <input disabled={!isStep4Complete} value={nextAction} onChange={e => setNextAction(e.target.value)}
-                                placeholder="action เล็กๆ ที่จะทำ..."
-                                className={`w-full px-3 py-2 text-[12px] focus:outline-none bg-transparent ${isStep4Complete ? 'text-gray-800 placeholder:text-emerald-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
+                            <ReflectionSteps
+                              status={status} subjectLabel="หนังสือเล่มนี้"
+                              understanding={understanding} setUnderstanding={setUnderstanding}
+                              keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
+                              application={application} setApplication={setApplication}
+                              nextAction={nextAction} setNextAction={setNextAction}
+                            />
 
                             {/* REVIEW QUESTIONS (Support - not locked) */}
                             <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
@@ -4952,52 +4999,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Lightbulb size={13} className={isStep1Complete ? 'text-amber-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep1Complete ? 'text-amber-700' : 'text-gray-500'}`}>KEY INSIGHT</span>
-                                {!isStep1Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องอ่านให้เสร็จก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep1Complete} value={typeNotes} onChange={e => setTypeNotes(e.target.value)}
-                                placeholder="ส่วนสำคัญ อ้างอิงหน้า หรือจุดเด่น..."
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep1Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            <div className={`rounded-2xl border p-4 transition ${isStep2Complete ? 'border-violet-100 bg-violet-50/30' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Bookmark size={13} className={isStep2Complete ? 'text-violet-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep2Complete ? 'text-violet-700' : 'text-gray-500'}`}>WHY I SAVED THIS</span>
-                                {!isStep2Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 2 ก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep2Complete} value={keyTakeaways} onChange={e => setKeyTakeaways(e.target.value)}
-                                placeholder="ทำไมถึงบันทึกเอกสารนี้? เชื่อมกับชีวิตอย่างไร?"
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep2Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            <div className={`rounded-2xl border p-4 transition ${isStep3Complete ? 'border-orange-100 bg-orange-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Target size={13} className={isStep3Complete ? 'text-orange-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep3Complete ? 'text-orange-700' : 'text-gray-500'}`}>HOW I CAN APPLY THIS</span>
-                                {!isStep3Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 3 ก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep3Complete} value={application} onChange={e => setApplication(e.target.value)}
-                                placeholder="วิธีที่จะนำเอกสารนี้ไปใช้จริง..."
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep3Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            <div className={`rounded-2xl border p-4 transition ${isStep4Complete ? 'border-emerald-100 bg-emerald-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Zap size={13} className={isStep4Complete ? 'text-emerald-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep4Complete ? 'text-emerald-700' : 'text-gray-500'}`}>ACTION IDEA</span>
-                                {!isStep4Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 4 ก่อน</span>}
-                              </div>
-                              <input disabled={!isStep4Complete} value={nextAction} onChange={e => setNextAction(e.target.value)}
-                                placeholder="สิ่งที่จะทำอย่างเป็นรูปธรรม..."
-                                className={`w-full px-3 py-2 text-[12px] focus:outline-none bg-transparent ${isStep4Complete ? 'text-gray-800 placeholder:text-emerald-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
+                            <ReflectionSteps
+                              status={status} subjectLabel="เอกสารนี้"
+                              understanding={understanding} setUnderstanding={setUnderstanding}
+                              keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
+                              application={application} setApplication={setApplication}
+                              nextAction={nextAction} setNextAction={setNextAction}
+                            />
 
                             <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
                               <div className="flex items-center gap-2 mb-3">
@@ -5245,52 +5253,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Lightbulb size={13} className={isStep1Complete ? 'text-amber-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep1Complete ? 'text-amber-700' : 'text-gray-500'}`}>KEY INSIGHT</span>
-                                {!isStep1Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องอ่านให้เสร็จก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep1Complete} value={typeNotes} onChange={e => setTypeNotes(e.target.value)}
-                                placeholder="สิ่งสำคัญที่ได้เรียนรู้จากคอร์สนี้..."
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep1Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            <div className={`rounded-2xl border p-4 transition ${isStep2Complete ? 'border-violet-100 bg-violet-50/30' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Bookmark size={13} className={isStep2Complete ? 'text-violet-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep2Complete ? 'text-violet-700' : 'text-gray-500'}`}>WHY I SAVED THIS</span>
-                                {!isStep2Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 2 ก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep2Complete} value={keyTakeaways} onChange={e => setKeyTakeaways(e.target.value)}
-                                placeholder="ทำไมถึงเรียนคอร์สนี้? เชื่อมกับเป้าหมายอย่างไร?"
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep2Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            <div className={`rounded-2xl border p-4 transition ${isStep3Complete ? 'border-orange-100 bg-orange-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Target size={13} className={isStep3Complete ? 'text-orange-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep3Complete ? 'text-orange-700' : 'text-gray-500'}`}>HOW I CAN APPLY THIS</span>
-                                {!isStep3Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 3 ก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep3Complete} value={application} onChange={e => setApplication(e.target.value)}
-                                placeholder="วิธีที่จะนำทักษะเหล่านี้ไปใช้ในโปรเจคจริง..."
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep3Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            <div className={`rounded-2xl border p-4 transition ${isStep4Complete ? 'border-emerald-100 bg-emerald-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Zap size={13} className={isStep4Complete ? 'text-emerald-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep4Complete ? 'text-emerald-700' : 'text-gray-500'}`}>ACTION IDEA</span>
-                                {!isStep4Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 4 ก่อน</span>}
-                              </div>
-                              <input disabled={!isStep4Complete} value={nextAction} onChange={e => setNextAction(e.target.value)}
-                                placeholder="โปรเจคที่จะสร้างจากสิ่งที่เรียนรู้..."
-                                className={`w-full px-3 py-2 text-[12px] focus:outline-none bg-transparent ${isStep4Complete ? 'text-gray-800 placeholder:text-emerald-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
+                            <ReflectionSteps
+                              status={status} subjectLabel="คอร์สนี้"
+                              understanding={understanding} setUnderstanding={setUnderstanding}
+                              keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
+                              application={application} setApplication={setApplication}
+                              nextAction={nextAction} setNextAction={setNextAction}
+                            />
 
                             <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
                               <div className="flex items-center gap-2 mb-3">
@@ -5553,52 +5522,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Lightbulb size={13} className={isStep1Complete ? 'text-amber-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep1Complete ? 'text-amber-700' : 'text-gray-500'}`}>KEY INSIGHT</span>
-                                {!isStep1Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องอ่านให้เสร็จก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep1Complete} value={typeNotes} onChange={e => setTypeNotes(e.target.value)}
-                                placeholder="สิ่งสำคัญที่ได้เรียนรู้จากวิดีโอนี้..."
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep1Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            <div className={`rounded-2xl border p-4 transition ${isStep2Complete ? 'border-violet-100 bg-violet-50/30' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Bookmark size={13} className={isStep2Complete ? 'text-violet-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep2Complete ? 'text-violet-700' : 'text-gray-500'}`}>WHY I SAVED THIS</span>
-                                {!isStep2Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 2 ก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep2Complete} value={keyTakeaways} onChange={e => setKeyTakeaways(e.target.value)}
-                                placeholder="ทำไมถึงบันทึกวิดีโอนี้? เชื่อมกับชีวิตอย่างไร?"
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep2Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            <div className={`rounded-2xl border p-4 transition ${isStep3Complete ? 'border-orange-100 bg-orange-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Target size={13} className={isStep3Complete ? 'text-orange-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep3Complete ? 'text-orange-700' : 'text-gray-500'}`}>HOW I CAN APPLY THIS</span>
-                                {!isStep3Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 3 ก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep3Complete} value={application} onChange={e => setApplication(e.target.value)}
-                                placeholder="วิธีที่จะนำสิ่งที่เรียนรู้ไปใช้จริง..."
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep3Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            <div className={`rounded-2xl border p-4 transition ${isStep4Complete ? 'border-emerald-100 bg-emerald-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Zap size={13} className={isStep4Complete ? 'text-emerald-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep4Complete ? 'text-emerald-700' : 'text-gray-500'}`}>ACTION IDEA</span>
-                                {!isStep4Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 4 ก่อน</span>}
-                              </div>
-                              <input disabled={!isStep4Complete} value={nextAction} onChange={e => setNextAction(e.target.value)}
-                                placeholder="สิ่งที่จะทำอย่างเป็นรูปธรรม..."
-                                className={`w-full px-3 py-2 text-[12px] focus:outline-none bg-transparent ${isStep4Complete ? 'text-gray-800 placeholder:text-emerald-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
+                            <ReflectionSteps
+                              status={status} subjectLabel="วิดีโอนี้"
+                              understanding={understanding} setUnderstanding={setUnderstanding}
+                              keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
+                              application={application} setApplication={setApplication}
+                              nextAction={nextAction} setNextAction={setNextAction}
+                            />
 
                             <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
                               <div className="flex items-center gap-2 mb-3">
@@ -5832,82 +5762,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            {/* Step 2: KEY INSIGHT (Understand) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Lightbulb size={13} className={isStep1Complete ? 'text-amber-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep1Complete ? 'text-amber-700' : 'text-gray-500'}`}>KEY INSIGHT</span>
-                                {!isStep1Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องอ่านให้เสร็จก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep1Complete} value={keyTakeaways} onChange={e => setKeyTakeaways(e.target.value)}
-                                placeholder="เรียนรู้อะไรบ้าง? (แบบ bullet points)"
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep1Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            {/* Step 3: WHY I SAVED THIS (Connect) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep2Complete ? 'border-violet-100 bg-violet-50/30' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-3">
-                                <Bookmark size={13} className={isStep2Complete ? 'text-violet-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep2Complete ? 'text-violet-700' : 'text-gray-500'}`}>WHY I SAVED THIS</span>
-                                <span className={`text-[10px] ml-auto font-semibold ${isStep2Complete ? 'text-violet-400' : 'text-gray-400'}`}>{quotesList.length} saved</span>
-                                {!isStep2Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 2 ก่อน</span>}
-                              </div>
-                              <div className="flex gap-2 mb-4">
-                                <input disabled={!isStep2Complete} value={newQuote} onChange={e => setNewQuote(e.target.value)}
-                                  onKeyDown={e => { if (e.key === 'Enter' && newQuote.trim() && isStep2Complete) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); e.preventDefault(); }}}
-                                  placeholder={isStep2Complete ? '"Paste a memorable line... ↵"' : 'Complete Step 2 first...'}
-                                  className={`flex-1 px-3 py-2 border rounded-xl text-[13px] focus:outline-none bg-white ${isStep2Complete ? 'border-violet-200 focus:border-violet-400' : 'border-gray-200 cursor-not-allowed text-gray-400 placeholder:text-gray-300'}`} />
-                                <button disabled={!isStep2Complete} onClick={() => { if (newQuote.trim() && isStep2Complete) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); }}}
-                                  className={`px-4 py-2 rounded-xl text-[12px] font-bold transition flex items-center gap-1 ${isStep2Complete ? 'bg-violet-500 text-white hover:bg-violet-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
-                                  <Plus size={13} />
-                                </button>
-                              </div>
-                              <div className={`max-h-[320px] overflow-y-auto space-y-3 p-3 rounded-xl ${isStep2Complete ? 'bg-white/50' : 'bg-gray-100/30'}`}>
-                                {quotesList.length > 0 ? (
-                                  quotesList.map((q, i) => (
-                                    <div key={i} className="flex items-start gap-2.5 p-3 bg-white rounded-lg border border-violet-100 group hover:border-violet-300 transition">
-                                      <span className="text-violet-300 text-2xl font-serif leading-none mt-0.5 shrink-0">&ldquo;</span>
-                                      <p className="flex-1 text-[13px] text-violet-900 italic leading-relaxed">{q}</p>
-                                      <button disabled={!isStep2Complete} onClick={() => setQuotesList(ql => ql.filter((_, j) => j !== i))}
-                                        className={`shrink-0 mt-0.5 transition ${isStep2Complete ? 'opacity-0 group-hover:opacity-100 text-gray-300 hover:text-rose-400 cursor-pointer' : 'opacity-0'}`}><X size={12} /></button>
-                                    </div>
-                                  ))
-                                ) : (
-                                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                                    <Bookmark size={24} className="text-violet-200 mb-2" />
-                                    <p className={`text-[11px] font-medium ${isStep2Complete ? 'text-violet-400' : 'text-gray-400'}`}>
-                                      {isStep2Complete ? 'Save memorable quotes here' : 'Complete Step 2 first'}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Step 4: HOW I CAN APPLY THIS (Apply) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep3Complete ? 'border-orange-100 bg-orange-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Target size={13} className={isStep3Complete ? 'text-orange-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep3Complete ? 'text-orange-700' : 'text-gray-500'}`}>HOW I CAN APPLY THIS</span>
-                                {!isStep3Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 3 ก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep3Complete} value={application} onChange={e => setApplication(e.target.value)}
-                                placeholder="วิธีที่จะนำข้อคิดนี้ไปใช้จริง..."
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep3Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            {/* Step 5: ACTION IDEA (Act) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep4Complete ? 'border-emerald-100 bg-emerald-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Zap size={13} className={isStep4Complete ? 'text-emerald-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep4Complete ? 'text-emerald-700' : 'text-gray-500'}`}>ACTION IDEA</span>
-                                {!isStep4Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 4 ก่อน</span>}
-                              </div>
-                              <input disabled={!isStep4Complete} value={nextAction} onChange={e => setNextAction(e.target.value)}
-                                placeholder="action เล็กๆ ที่จะทำ..."
-                                className={`w-full px-3 py-2 text-[12px] focus:outline-none bg-transparent ${isStep4Complete ? 'text-gray-800 placeholder:text-emerald-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
+                            <ReflectionSteps
+                              status={status} subjectLabel="บทความนี้"
+                              understanding={understanding} setUnderstanding={setUnderstanding}
+                              keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
+                              application={application} setApplication={setApplication}
+                              nextAction={nextAction} setNextAction={setNextAction}
+                            />
 
                             {/* REVIEW QUESTIONS (Support - not locked) */}
                             <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
@@ -6042,75 +5903,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            {/* Step 2: KEY INSIGHT (Understand) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Lightbulb size={13} className={isStep1Complete ? 'text-amber-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep1Complete ? 'text-amber-700' : 'text-gray-500'}`}>KEY INSIGHT</span>
-                                {!isStep1Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องอ่านให้เสร็จก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep1Complete} value={keyTakeaways} onChange={e => setKeyTakeaways(e.target.value)}
-                                placeholder="เรียนรู้อะไรบ้าง? (แบบ bullet points)"
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep1Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            {/* Step 3: WHY I SAVED THIS (Connect) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep2Complete ? 'border-violet-100 bg-violet-50/30' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-3">
-                                <Bookmark size={13} className={isStep2Complete ? 'text-violet-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep2Complete ? 'text-violet-700' : 'text-gray-500'}`}>WHY I SAVED THIS</span>
-                                {!isStep2Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 2 ก่อน</span>}
-                              </div>
-                              <div className="flex gap-2 mb-3">
-                                <input disabled={!isStep2Complete} value={newQuote} onChange={e => setNewQuote(e.target.value)}
-                                  onKeyDown={e => { if (e.key === 'Enter' && newQuote.trim() && isStep2Complete) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); e.preventDefault(); }}}
-                                  placeholder={isStep2Complete ? '"Paste a memorable line... ↵"' : 'Complete Step 2 first...'}
-                                  className={`flex-1 px-3 py-2 border rounded-xl text-[13px] focus:outline-none bg-white ${isStep2Complete ? 'border-violet-200 focus:border-violet-400' : 'border-gray-200 cursor-not-allowed text-gray-400 placeholder:text-gray-300'}`} />
-                                <button disabled={!isStep2Complete} onClick={() => { if (newQuote.trim() && isStep2Complete) { setQuotesList(q => [...q, newQuote.trim()]); setNewQuote(''); }}}
-                                  className={`px-4 py-2 rounded-xl text-[12px] font-bold transition flex items-center gap-1 ${isStep2Complete ? 'bg-violet-500 text-white hover:bg-violet-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
-                                  <Plus size={13} />
-                                </button>
-                              </div>
-                              <div className="space-y-2">
-                                {quotesList.map((q, i) => (
-                                  <div key={i} className="flex items-start gap-2.5 p-3 bg-white rounded-xl border border-violet-100 group hover:border-violet-200 transition">
-                                    <span className="text-violet-300 text-2xl font-serif leading-none mt-0.5">&ldquo;</span>
-                                    <p className="flex-1 text-[13px] text-violet-900 italic leading-relaxed">{q}</p>
-                                    <button disabled={!isStep2Complete} onClick={() => setQuotesList(ql => ql.filter((_, j) => j !== i))}
-                                      className={`shrink-0 mt-0.5 transition ${isStep2Complete ? 'opacity-0 group-hover:opacity-100 text-gray-300 hover:text-rose-400 cursor-pointer' : 'opacity-0'}`}><X size={12} /></button>
-                                  </div>
-                                ))}
-                                {quotesList.length === 0 && (
-                                  <p className={`text-[11px] italic text-center py-2 ${isStep2Complete ? 'text-violet-300' : 'text-gray-300'}`}>No quotes yet</p>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Step 4: HOW I CAN APPLY THIS (Apply) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep3Complete ? 'border-orange-100 bg-orange-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Target size={13} className={isStep3Complete ? 'text-orange-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep3Complete ? 'text-orange-700' : 'text-gray-500'}`}>HOW I CAN APPLY THIS</span>
-                                {!isStep3Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 3 ก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep3Complete} value={application} onChange={e => setApplication(e.target.value)}
-                                placeholder="วิธีที่จะนำข้อคิดนี้ไปใช้จริง..."
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep3Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            {/* Step 5: ACTION IDEA (Act) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep4Complete ? 'border-emerald-100 bg-emerald-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Zap size={13} className={isStep4Complete ? 'text-emerald-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep4Complete ? 'text-emerald-700' : 'text-gray-500'}`}>ACTION IDEA</span>
-                                {!isStep4Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 4 ก่อน</span>}
-                              </div>
-                              <input disabled={!isStep4Complete} value={nextAction} onChange={e => setNextAction(e.target.value)}
-                                placeholder="action เล็กๆ ที่จะทำ..."
-                                className={`w-full px-3 py-2 text-[12px] focus:outline-none bg-transparent ${isStep4Complete ? 'text-gray-800 placeholder:text-emerald-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
+                            <ReflectionSteps
+                              status={status} subjectLabel="เนื้อหานี้"
+                              understanding={understanding} setUnderstanding={setUnderstanding}
+                              keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
+                              application={application} setApplication={setApplication}
+                              nextAction={nextAction} setNextAction={setNextAction}
+                            />
 
                             {/* REVIEW QUESTIONS (Support - not locked) */}
                             <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
@@ -6242,56 +6041,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            {/* Step 2: KEY INSIGHT (Understand) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Lightbulb size={13} className={isStep1Complete ? 'text-amber-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep1Complete ? 'text-amber-700' : 'text-gray-500'}`}>KEY INSIGHT</span>
-                                {!isStep1Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องอ่านให้เสร็จก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep1Complete} value={typeNotes} onChange={e => setTypeNotes(e.target.value)}
-                                placeholder="สิ่งเดียวที่อยากจำจากโพสต์นี้..."
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep1Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            {/* Step 3: WHY I SAVED THIS (Connect) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep2Complete ? 'border-violet-100 bg-violet-50/30' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Bookmark size={13} className={isStep2Complete ? 'text-violet-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep2Complete ? 'text-violet-700' : 'text-gray-500'}`}>WHY I SAVED THIS</span>
-                                {!isStep2Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 2 ก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep2Complete} value={understanding} onChange={e => setUnderstanding(e.target.value)}
-                                placeholder="อะไรดึงดูดความสนใจ? เชื่อมโยงกับชีวิตอย่างไร?"
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep2Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            {/* Step 4: HOW I CAN APPLY THIS (Apply) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep3Complete ? 'border-orange-100 bg-orange-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Target size={13} className={isStep3Complete ? 'text-orange-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep3Complete ? 'text-orange-700' : 'text-gray-500'}`}>HOW I CAN APPLY THIS</span>
-                                {!isStep3Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 3 ก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep3Complete} value={application} onChange={e => setApplication(e.target.value)}
-                                placeholder="การกระทำเล็กน้อยที่ทำได้วันนี้จากโพสต์นี้..."
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep3Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            {/* Step 5: ACTION IDEA (Act) */}
-                            <div className={`rounded-2xl border p-4 transition ${isStep4Complete ? 'border-emerald-100 bg-emerald-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Zap size={13} className={isStep4Complete ? 'text-emerald-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep4Complete ? 'text-emerald-700' : 'text-gray-500'}`}>ACTION IDEA</span>
-                                {!isStep4Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 4 ก่อน</span>}
-                              </div>
-                              <input disabled={!isStep4Complete} value={nextAction} onChange={e => setNextAction(e.target.value)}
-                                placeholder="ขั้นตอนต่อไปที่จะทำทันที..."
-                                className={`w-full px-3 py-2 text-[12px] focus:outline-none bg-transparent ${isStep4Complete ? 'text-gray-800 placeholder:text-emerald-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
+                            <ReflectionSteps
+                              status={status} subjectLabel="โพสต์นี้"
+                              understanding={understanding} setUnderstanding={setUnderstanding}
+                              keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
+                              application={application} setApplication={setApplication}
+                              nextAction={nextAction} setNextAction={setNextAction}
+                            />
 
                             {/* REVIEW QUESTIONS (Support - not locked) */}
                             <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
@@ -6670,52 +6426,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            <div className={`rounded-2xl border p-4 transition ${isStep1Complete ? 'border-amber-100 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Lightbulb size={13} className={isStep1Complete ? 'text-amber-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep1Complete ? 'text-amber-700' : 'text-gray-500'}`}>KEY INSIGHT</span>
-                                {!isStep1Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องอ่านให้เสร็จก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep1Complete} value={typeNotes} onChange={e => setTypeNotes(e.target.value)}
-                                placeholder="สิ่งสำคัญที่ได้ยินจากตอนนี้..."
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep1Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            <div className={`rounded-2xl border p-4 transition ${isStep2Complete ? 'border-violet-100 bg-violet-50/30' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Bookmark size={13} className={isStep2Complete ? 'text-violet-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep2Complete ? 'text-violet-700' : 'text-gray-500'}`}>WHY I SAVED THIS</span>
-                                {!isStep2Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 2 ก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep2Complete} value={keyTakeaways} onChange={e => setKeyTakeaways(e.target.value)}
-                                placeholder="ทำไมถึงบันทึก episode นี้? เชื่อมกับชีวิตอย่างไร?"
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep2Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            <div className={`rounded-2xl border p-4 transition ${isStep3Complete ? 'border-orange-100 bg-orange-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Target size={13} className={isStep3Complete ? 'text-orange-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep3Complete ? 'text-orange-700' : 'text-gray-500'}`}>HOW I CAN APPLY THIS</span>
-                                {!isStep3Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 3 ก่อน</span>}
-                              </div>
-                              <textarea disabled={!isStep3Complete} value={application} onChange={e => setApplication(e.target.value)}
-                                placeholder="วิธีที่จะนำสิ่งที่ได้ยินไปใช้จริง..."
-                                rows={3}
-                                className={`w-full text-[13px] resize-none focus:outline-none bg-transparent leading-relaxed ${isStep3Complete ? 'text-gray-700 placeholder:text-gray-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
-
-                            <div className={`rounded-2xl border p-4 transition ${isStep4Complete ? 'border-emerald-100 bg-emerald-50/40' : 'border-gray-200 bg-gray-50/50 opacity-60'}`}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Zap size={13} className={isStep4Complete ? 'text-emerald-500' : 'text-gray-400'} />
-                                <span className={`text-[11px] font-black uppercase tracking-wide ${isStep4Complete ? 'text-emerald-700' : 'text-gray-500'}`}>ACTION IDEA</span>
-                                {!isStep4Complete && <span className="text-[9px] text-gray-400 ml-auto italic">ต้องเสร็จ Step 4 ก่อน</span>}
-                              </div>
-                              <input disabled={!isStep4Complete} value={nextAction} onChange={e => setNextAction(e.target.value)}
-                                placeholder="สิ่งที่จะทำอย่างเป็นรูปธรรม..."
-                                className={`w-full px-3 py-2 text-[12px] focus:outline-none bg-transparent ${isStep4Complete ? 'text-gray-800 placeholder:text-emerald-300' : 'text-gray-500 placeholder:text-gray-300 cursor-not-allowed'}`} />
-                            </div>
+                            <ReflectionSteps
+                              status={status} subjectLabel="ตอนนี้"
+                              understanding={understanding} setUnderstanding={setUnderstanding}
+                              keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
+                              application={application} setApplication={setApplication}
+                              nextAction={nextAction} setNextAction={setNextAction}
+                            />
 
                             <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50/30 p-4">
                               <div className="flex items-center gap-2 mb-3">
@@ -7776,9 +7493,7 @@ function CourseDetailModal({
         </AnimatePresence>
 
       </motion.div>
-      </motion.div>
-      )}
-    </AnimatePresence>,
+      </motion.div>,
     document.body
   );
 }
