@@ -3729,7 +3729,7 @@ function CourseDetailModal({
     clarityQ1?: string, clarityQ2?: string, clarityBelief?: number,
     nextReviewAt?: string, reviewCount?: number,
     typeNotes?: string, quotesList?: string, timestamps?: string,
-    episodeNumber?: string, guestName?: string
+    episodeNumber?: string, guestName?: string, imageUrl?: string
   ) => void;
 }) {
   const defaultU = card.understanding === 'Notes not added yet.' ? '' : richTextToPlainText(card.understanding);
@@ -3755,6 +3755,7 @@ function CourseDetailModal({
   );
   const [episodeNumber, setEpisodeNumber] = useState(card.episodeNumber ?? '');
   const [guestName, setGuestName] = useState(card.guestName ?? '');
+  const [modalImageUrl, setModalImageUrl] = useState(card.imageUrl ?? '');
   const [newQuote, setNewQuote] = useState('');
   const [newTs, setNewTs] = useState('');
   const [newTsNote, setNewTsNote] = useState('');
@@ -3896,18 +3897,17 @@ function CourseDetailModal({
         const file = items[i].getAsFile();
         if (file) {
           if (file.size > 5 * 1024 * 1024) { alert('ไฟล์ต้องไม่เกิน 5MB'); return; }
-          const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
           const reader = new FileReader();
           reader.onload = (ev) => {
             const img = document.createElement('img') as HTMLImageElement;
             img.onload = () => {
               const canvas = document.createElement('canvas');
               const maxWidth = 800;
-              const scale = maxWidth / img.width;
-              canvas.width = maxWidth;
-              canvas.height = img.height * scale;
+              const scale = Math.min(1, maxWidth / img.width);
+              canvas.width = Math.round(img.width * scale);
+              canvas.height = Math.round(img.height * scale);
               canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
-              void fileSizeMB;
+              setModalImageUrl(canvas.toDataURL('image/jpeg', 0.85));
             };
             img.src = ev.target?.result as string;
           };
@@ -4145,7 +4145,8 @@ function CourseDetailModal({
       quotesList.filter(Boolean).join('\n') || undefined,
       timestamps.filter(t => t.t).map(t => `${t.t} — ${t.note}`).join('\n') || undefined,
       episodeNumber.trim() || undefined,
-      guestName.trim() || undefined
+      guestName.trim() || undefined,
+      modalImageUrl
     );
     onClose();
   };
@@ -4409,14 +4410,34 @@ function CourseDetailModal({
           className="border-r border-gray-200 flex flex-col bg-white overflow-y-auto overflow-x-hidden"
         >
           <div className="p-4">
-            <div className={`relative w-full aspect-video rounded-xl overflow-hidden shadow-md ${!card.imageUrl ? `bg-gradient-to-br ${card.coverGradient}` : ''}`}>
-              {card.imageUrl ? (
+            <label className={`relative w-full aspect-video rounded-xl overflow-hidden shadow-md cursor-pointer group ${!modalImageUrl ? `bg-gradient-to-br ${card.coverGradient}` : ''}`} title="คลิกเพื่อเปลี่ยนรูปปก หรือ Ctrl+V วางรูปได้เลย">
+              <input type="file" accept="image/*" className="sr-only" onChange={e => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (file.size > 5 * 1024 * 1024) { alert('ไฟล์ต้องไม่เกิน 5MB'); return; }
+                const reader = new FileReader();
+                reader.onload = ev => {
+                  const img = document.createElement('img') as HTMLImageElement;
+                  img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const scale = Math.min(1, 800 / img.width);
+                    canvas.width = Math.round(img.width * scale);
+                    canvas.height = Math.round(img.height * scale);
+                    canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    setModalImageUrl(canvas.toDataURL('image/jpeg', 0.85));
+                  };
+                  img.src = ev.target?.result as string;
+                };
+                reader.readAsDataURL(file);
+                e.target.value = '';
+              }} />
+              {modalImageUrl ? (
                 <>
                   {fitImage && (
-                    <img src={card.imageUrl} alt="" aria-hidden="true"
+                    <img src={modalImageUrl} alt="" aria-hidden="true"
                       className="absolute inset-0 w-full h-full scale-110 object-cover blur-xl opacity-55" />
                   )}
-                  <img src={card.imageUrl} alt={card.title}
+                  <img src={modalImageUrl} alt={card.title}
                     className={`absolute inset-0 w-full h-full ${fitImage ? 'object-contain' : 'object-cover'}`}
                     style={{ objectPosition: `center ${card.imageDragOffset ?? 50}%` }} />
                 </>
@@ -4430,7 +4451,10 @@ function CourseDetailModal({
                   </div>
                 </>
               )}
-            </div>
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Image size={20} className="text-white" />
+              </div>
+            </label>
           </div>
 
           <div className="px-4 pb-4 flex flex-col gap-3 flex-1">
@@ -4690,15 +4714,38 @@ function CourseDetailModal({
                       </div>
 
                       <div className="flex items-start gap-5 mb-5">
-                        <div className={`relative w-20 h-28 rounded-xl overflow-hidden shadow-md shrink-0 ${!card.imageUrl ? `bg-gradient-to-br ${card.coverGradient}` : ''}`}>
-                          {card.imageUrl ? (
-                            <img src={card.imageUrl} alt={card.title} className="w-full h-full object-cover" style={{ objectPosition: `center ${card.imageDragOffset ?? 50}%` }} />
+                        <label className={`relative w-20 h-28 rounded-xl overflow-hidden shadow-md shrink-0 cursor-pointer group ${!modalImageUrl ? `bg-gradient-to-br ${card.coverGradient}` : ''}`} title="คลิกเพื่อเปลี่ยนรูปปก หรือ Ctrl+V วางรูปได้เลย">
+                          <input type="file" accept="image/*" className="sr-only" onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            if (file.size > 5 * 1024 * 1024) { alert('ไฟล์ต้องไม่เกิน 5MB'); return; }
+                            const reader = new FileReader();
+                            reader.onload = ev => {
+                              const img = document.createElement('img') as HTMLImageElement;
+                              img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                const scale = Math.min(1, 800 / img.width);
+                                canvas.width = Math.round(img.width * scale);
+                                canvas.height = Math.round(img.height * scale);
+                                canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                setModalImageUrl(canvas.toDataURL('image/jpeg', 0.85));
+                              };
+                              img.src = ev.target?.result as string;
+                            };
+                            reader.readAsDataURL(file);
+                            e.target.value = '';
+                          }} />
+                          {modalImageUrl ? (
+                            <img src={modalImageUrl} alt={card.title} className="w-full h-full object-cover" style={{ objectPosition: `center ${card.imageDragOffset ?? 50}%` }} />
                           ) : (
                             <div className="absolute inset-0 flex items-center justify-center">
                               <IconGlyph token={card.coverEmoji} size={32} color="rgba(255,255,255,0.95)" />
                             </div>
                           )}
-                        </div>
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Image size={16} className="text-white" />
+                          </div>
+                        </label>
 
                         <div className="flex-1 min-w-0">
                           <h1 className="text-[28px] font-extrabold text-gray-950 leading-[1.15] mb-1.5 tracking-tight">
@@ -7849,7 +7896,7 @@ function OverallTab({ showToast, learningCards, setLearningCards }: {
         <CourseDetailModal
           card={selectedCard}
           onClose={() => setSelectedCardId(null)}
-          onSave={(id, understanding, application, rating, userTags, content, status, progress, keyTakeaways, nextAction, clarityQ1, clarityQ2, clarityBelief, nextReviewAt, reviewCount, typeNotes, quotesList, timestamps, episodeNumber, guestName) => {
+          onSave={(id, understanding, application, rating, userTags, content, status, progress, keyTakeaways, nextAction, clarityQ1, clarityQ2, clarityBelief, nextReviewAt, reviewCount, typeNotes, quotesList, timestamps, episodeNumber, guestName, imageUrl) => {
             setLearningCards(prev => prev.map(c => {
               if (c.id !== id) return c;
               const stages: LearnStages = {
@@ -7863,6 +7910,7 @@ function OverallTab({ showToast, learningCards, setLearningCards }: {
                 stages, progress, keyTakeaways, nextAction,
                 clarityQ1, clarityQ2, clarityBelief, nextReviewAt, reviewCount,
                 typeNotes, quotesList, timestamps, episodeNumber, guestName,
+                imageUrl: imageUrl ?? c.imageUrl,
               };
             }));
             showToast('Learning notes saved!');
