@@ -4629,7 +4629,7 @@ function CourseDetailModal({
 
           {readingMode && (
           <div className="shrink-0 border-b border-violet-100/70 bg-white/92 backdrop-blur-sm">
-            <div className="mx-auto flex w-full max-w-[880px] items-center justify-between gap-3 px-6 py-3">
+            <div className="mx-auto flex w-full max-w-[1080px] items-center justify-between gap-3 px-6 py-3">
               <div className="inline-flex items-center gap-2 rounded-full border border-violet-100 bg-violet-50/70 px-3 py-1 text-[11px] font-semibold text-violet-600">
                 <BookOpen size={12} />
                 Comfort Reading
@@ -4653,7 +4653,7 @@ function CourseDetailModal({
           )}
 
           <div className={`flex-1 overflow-y-auto ${readingMode ? 'px-6 py-6 sm:px-8 sm:py-7' : 'px-6 py-5'}`}>
-            <div className={`${readingMode ? 'mx-auto w-full max-w-[880px]' : ''}`}>
+            <div className={`${readingMode ? 'mx-auto w-full max-w-[1080px]' : ''}`}>
             {/* Title block — skip for article/social (own title) AND for reading mode types that render their own header */}
             {card.contentType !== 'article' && card.contentType !== 'social' && !(readingMode && (card.contentType === 'book' || card.contentType === 'video' || card.contentType === 'podcast' || card.contentType === 'course' || card.contentType === 'pdf')) && (
             <div className="mb-5">
@@ -5560,7 +5560,7 @@ function CourseDetailModal({
 
                 if (readingMode) return (
                   /* ── READING MODE: structured layout per content-type spec ── */
-                  <div className="max-w-[880px] mx-auto">
+                  <div className="max-w-[1080px] mx-auto">
                     {/* ═══ 1. Content Header ═══ */}
                     <div className="mb-6">
                       {/* Meta row */}
@@ -5686,7 +5686,7 @@ function CourseDetailModal({
                 return (
                   /* ── NORMAL MODE: compact layout ── */
                   <div className="space-y-8">
-                    <div className="max-w-[880px] mx-auto">
+                    <div className="max-w-[1080px] mx-auto">
                       {card.tags[0] && (
                         <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-[0.12em] mb-2">
                           {card.tags[0].replace('#', '')}
