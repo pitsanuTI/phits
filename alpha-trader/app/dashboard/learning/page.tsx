@@ -3613,6 +3613,7 @@ function StepBoxes({
   application: string; setApplication: (v: string) => void;
   nextAction: string; setNextAction: (v: string) => void;
 }) {
+  const [confirmedSteps, setConfirmedSteps] = useState<Set<number>>(new Set());
   const filled = (v: string, sentinel?: string) => !!(v?.trim()) && v !== sentinel;
   const boxes = [
     {
@@ -3648,46 +3649,63 @@ function StepBoxes({
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="flex flex-col gap-4">
       {boxes.map(box => {
         const Icon = box.icon;
+        const isConfirmed = confirmedSteps.has(box.n) || box.done;
+        const hasText = !!box.value?.trim();
         return (
           <div
             key={box.n}
             className={`relative rounded-2xl border-2 overflow-hidden bg-white transition-all duration-300 ${
-              box.done
+              isConfirmed
                 ? 'border-emerald-300 shadow-[0_0_0_3px_rgba(52,211,153,0.10)]'
                 : 'border-gray-200 focus-within:border-violet-200'
             }`}
           >
-            <div className={`h-1 w-full ${box.done ? 'bg-emerald-400' : box.accent} opacity-75 transition-colors duration-300`} />
-            <div className="p-3.5">
-              <div className="flex items-center justify-between mb-2.5">
+            <div className={`h-1 w-full ${isConfirmed ? 'bg-emerald-400' : box.accent} opacity-75 transition-colors duration-300`} />
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-lg tabular-nums leading-none ${box.numCls}`}>
                     {String(box.n).padStart(2, '0')}
                   </span>
                   <div>
-                    <div className="text-[12px] font-bold text-gray-800 leading-none">{box.label}</div>
-                    <div className={`text-[9px] font-semibold mt-0.5 ${box.done ? 'text-emerald-600' : 'text-gray-400'}`}>
+                    <div className="text-[13px] font-bold text-gray-800 leading-none">{box.label}</div>
+                    <div className={`text-[10px] font-semibold mt-0.5 ${isConfirmed ? 'text-emerald-600' : 'text-gray-400'}`}>
                       {box.sub}
                     </div>
                   </div>
                 </div>
-                {box.done && (
-                  <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
-                    <Check size={10} className="text-white" strokeWidth={3} />
-                  </div>
-                )}
+                <Icon size={14} className={`${isConfirmed ? 'text-emerald-400' : 'text-gray-300'} transition-colors shrink-0`} />
               </div>
-              <Icon size={13} className={`mb-1.5 ${box.done ? 'text-emerald-400' : 'text-gray-300'} transition-colors`} />
               <textarea
                 value={box.value}
-                onChange={e => box.set(e.target.value)}
+                onChange={e => {
+                  box.set(e.target.value);
+                  if (confirmedSteps.has(box.n)) {
+                    setConfirmedSteps(prev => { const next = new Set(prev); next.delete(box.n); return next; });
+                  }
+                }}
                 placeholder={box.placeholder}
                 rows={3}
-                className="w-full text-[12px] bg-transparent resize-none focus:outline-none text-gray-700 placeholder:text-gray-300 leading-relaxed border-0"
+                className="w-full text-[13px] bg-transparent resize-none focus:outline-none text-gray-700 placeholder:text-gray-300 leading-relaxed border-0"
               />
+              <div className="mt-3 flex justify-end">
+                <button
+                  onClick={() => { if (hasText) setConfirmedSteps(prev => new Set([...prev, box.n])); }}
+                  disabled={!hasText}
+                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-[11px] font-bold transition-all duration-200 ${
+                    isConfirmed
+                      ? 'bg-emerald-500 text-white'
+                      : hasText
+                      ? 'bg-sky-500 hover:bg-sky-600 text-white'
+                      : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                  }`}
+                >
+                  {isConfirmed ? <><Check size={11} strokeWidth={3} /> บันทึกแล้ว</> : 'เสร็จแล้ว'}
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -4466,9 +4484,8 @@ function CourseDetailModal({
 
                 return (
                   <>
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="mb-3">
                       <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Progress</span>
-                      <span className="text-[11px] font-extrabold text-violet-600">{progressPercent}%</span>
                     </div>
                     {steps.map((step, idx) => {
                       const isCompleted = !!step.value;
@@ -4521,7 +4538,10 @@ function CourseDetailModal({
                           style={{ width: `${progressPercent}%` }}
                         />
                       </div>
-                      <div className="mt-1 text-[9px] text-gray-400 font-medium">{completedSteps}/{steps.length} ขั้นตอน</div>
+                      <div className="mt-1.5 flex items-center justify-between">
+                        <span className="text-[9px] text-gray-400 font-medium">{completedSteps}/{steps.length} ขั้นตอน</span>
+                        <span className="text-[11px] font-extrabold text-violet-600">{progressPercent}%</span>
+                      </div>
                     </div>
                   </>
                 );
@@ -4830,25 +4850,6 @@ function CourseDetailModal({
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-
-                            <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
-                              <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
-                                <Calendar size={16} className="text-rose-500" />
-                              </div>
-                              <div className="flex-1">
-                                <div className="text-[12px] font-black text-rose-700">Review Reminder</div>
-                                <div className="text-[11px] text-rose-500 mt-0.5">
-                                  {card.nextReviewAt ? `Next review: ${card.nextReviewAt}` : `Review in ${card.reviewDays} days`}
-                                  {card.reviewCount != null && card.reviewCount > 0 && ` · reviewed ${card.reviewCount}x`}
-                                </div>
-                              </div>
-                              {card.sourceUrl && (
-                                <a href={card.sourceUrl} target="_blank" rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-rose-200 text-rose-600 rounded-xl text-[11px] font-bold hover:bg-rose-50 transition shrink-0">
-                                  <ExternalLink size={11} /> Read Original
-                                </a>
-                              )}
-                            </div>
                           </>
                         );
                       })()}
@@ -5014,18 +5015,6 @@ function CourseDetailModal({
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-
-                            <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
-                              <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
-                                <Calendar size={16} className="text-rose-500" />
-                              </div>
-                              <div className="flex-1">
-                                <div className="text-[12px] font-black text-rose-700">Review Reminder</div>
-                                <div className="text-[11px] text-rose-500 mt-0.5">
-                                  {card.nextReviewAt ? `Next review: ${card.nextReviewAt}` : `Review in ${card.reviewDays} days`}
-                                </div>
-                              </div>
-                            </div>
                           </>
                         );
                       })()}
@@ -5246,18 +5235,6 @@ function CourseDetailModal({
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-
-                            <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
-                              <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
-                                <Calendar size={16} className="text-rose-500" />
-                              </div>
-                              <div className="flex-1">
-                                <div className="text-[12px] font-black text-rose-700">Review Reminder</div>
-                                <div className="text-[11px] text-rose-500 mt-0.5">
-                                  {card.nextReviewAt ? `Next review: ${card.nextReviewAt}` : `Review in ${card.reviewDays} days`}
-                                </div>
-                              </div>
-                            </div>
                           </>
                         );
                       })()}
@@ -5493,18 +5470,6 @@ function CourseDetailModal({
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-
-                            <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
-                              <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
-                                <Calendar size={16} className="text-rose-500" />
-                              </div>
-                              <div className="flex-1">
-                                <div className="text-[12px] font-black text-rose-700">Review Reminder</div>
-                                <div className="text-[11px] text-rose-500 mt-0.5">
-                                  {card.nextReviewAt ? `Next review: ${card.nextReviewAt}` : `Review in ${card.reviewDays} days`}
-                                </div>
-                              </div>
-                            </div>
                           </>
                         );
                       })()}
@@ -5711,26 +5676,6 @@ function CourseDetailModal({
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-
-                            {/* Review reminder */}
-                            <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
-                              <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
-                                <Calendar size={16} className="text-rose-500" />
-                              </div>
-                              <div className="flex-1">
-                                <div className="text-[12px] font-black text-rose-700">Review Reminder</div>
-                                <div className="text-[11px] text-rose-500 mt-0.5">
-                                  {card.nextReviewAt ? `Next review: ${card.nextReviewAt}` : `Review in ${card.reviewDays} days`}
-                                  {card.reviewCount != null && card.reviewCount > 0 && ` · reviewed ${card.reviewCount}x`}
-                                </div>
-                              </div>
-                              {card.sourceUrl && (
-                                <a href={card.sourceUrl} target="_blank" rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-emerald-200 text-emerald-600 rounded-xl text-[11px] font-bold hover:bg-emerald-50 transition shrink-0">
-                                  <ExternalLink size={11} /> Original
-                                </a>
-                              )}
-                            </div>
                           </>
                         );
                       })()}
@@ -5948,19 +5893,6 @@ function CourseDetailModal({
                         );
                       })()}
 
-                      {/* Review reminder */}
-                      <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
-                        <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
-                          <Calendar size={16} className="text-rose-500" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-[12px] font-black text-rose-700">Review Reminder</div>
-                          <div className="text-[11px] text-rose-500 mt-0.5">
-                            {card.nextReviewAt ? `Next review: ${card.nextReviewAt}` : `Review in ${card.reviewDays} days`}
-                            {card.reviewCount != null && card.reviewCount > 0 && ` · reviewed ${card.reviewCount}x`}
-                          </div>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 );
@@ -6306,18 +6238,6 @@ function CourseDetailModal({
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-
-                            <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
-                              <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
-                                <Calendar size={16} className="text-rose-500" />
-                              </div>
-                              <div className="flex-1">
-                                <div className="text-[12px] font-black text-rose-700">Review Reminder</div>
-                                <div className="text-[11px] text-rose-500 mt-0.5">
-                                  {card.nextReviewAt ? `Next review: ${card.nextReviewAt}` : `Review in ${card.reviewDays} days`}
-                                </div>
-                              </div>
-                            </div>
                           </>
                         );
                       })()}
