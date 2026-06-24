@@ -4677,7 +4677,7 @@ function CourseDetailModal({
               <div className="mb-8 pb-6 border-b border-gray-100">
                 <RichTextContent
                   value={content}
-                  className={`${readingMode ? 'max-w-[800px] text-[18px] leading-[2.0]' : 'max-w-[680px] text-[16px] leading-[1.95]'} mx-auto tracking-[0.003em] font-normal text-gray-800`}
+                  className={`${readingMode ? 'max-w-[920px] text-[18px] leading-[2.0]' : 'max-w-[760px] text-[16px] leading-[1.95]'} mx-auto tracking-[0.003em] font-normal text-gray-800`}
                 />
               </div>
             )}
@@ -5560,7 +5560,7 @@ function CourseDetailModal({
 
                 if (readingMode) return (
                   /* ── READING MODE: structured layout per content-type spec ── */
-                  <div className="max-w-[760px] mx-auto">
+                  <div className="max-w-[880px] mx-auto">
                     {/* ═══ 1. Content Header ═══ */}
                     <div className="mb-6">
                       {/* Meta row */}
@@ -5686,7 +5686,7 @@ function CourseDetailModal({
                 return (
                   /* ── NORMAL MODE: compact layout ── */
                   <div className="space-y-8">
-                    <div className="max-w-[760px] mx-auto">
+                    <div className="max-w-[880px] mx-auto">
                       {card.tags[0] && (
                         <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-[0.12em] mb-2">
                           {card.tags[0].replace('#', '')}
