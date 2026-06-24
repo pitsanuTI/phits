@@ -4598,7 +4598,7 @@ function CourseDetailModal({
 
         {/* ══ PANEL 2: Center Reading ══════════════════════════════════ */}
         <div className={readingMode ? 'flex-1 flex items-center justify-center py-4 px-3 overflow-hidden' : 'relative flex min-w-0 flex-1 flex-col bg-white'}>
-        <div className={`${readingMode ? 'relative flex h-full max-h-full w-full max-w-[960px] flex-col overflow-hidden rounded-[30px] border border-violet-100/80 bg-white shadow-[0_24px_64px_rgba(15,23,42,0.08)]' : 'relative flex min-w-0 flex-1 flex-col bg-white'}`}>
+        <div className={`${readingMode ? 'relative flex h-full max-h-full w-full max-w-[1140px] flex-col overflow-hidden rounded-[30px] border border-violet-100/80 bg-white shadow-[0_24px_64px_rgba(15,23,42,0.08)]' : 'relative flex min-w-0 flex-1 flex-col bg-white'}`}>
 
           {/* Header bar — only in normal mode */}
           {!readingMode && (
@@ -4629,7 +4629,7 @@ function CourseDetailModal({
 
           {readingMode && (
           <div className="shrink-0 border-b border-violet-100/70 bg-white/92 backdrop-blur-sm">
-            <div className="mx-auto flex w-full max-w-[760px] items-center justify-between gap-3 px-6 py-3">
+            <div className="mx-auto flex w-full max-w-[880px] items-center justify-between gap-3 px-6 py-3">
               <div className="inline-flex items-center gap-2 rounded-full border border-violet-100 bg-violet-50/70 px-3 py-1 text-[11px] font-semibold text-violet-600">
                 <BookOpen size={12} />
                 Comfort Reading
@@ -4653,7 +4653,7 @@ function CourseDetailModal({
           )}
 
           <div className={`flex-1 overflow-y-auto ${readingMode ? 'px-6 py-6 sm:px-8 sm:py-7' : 'px-6 py-5'}`}>
-            <div className={`${readingMode ? 'mx-auto w-full max-w-[760px]' : ''}`}>
+            <div className={`${readingMode ? 'mx-auto w-full max-w-[880px]' : ''}`}>
             {/* Title block — skip for article/social (own title) AND for reading mode types that render their own header */}
             {card.contentType !== 'article' && card.contentType !== 'social' && !(readingMode && (card.contentType === 'book' || card.contentType === 'video' || card.contentType === 'podcast' || card.contentType === 'course' || card.contentType === 'pdf')) && (
             <div className="mb-5">
@@ -4701,7 +4701,7 @@ function CourseDetailModal({
                   .filter(line => /^(chapter|บทที่|ch\.|part)/i.test(line.trim()))
                   .slice(0, 12);
                 return (
-                  <div className="max-w-[820px] mx-auto">
+                  <div className="max-w-[940px] mx-auto">
                     {/* ═══ 1. Content Header (compact) ═══ */}
                     <div className="mb-8 pb-6 border-b border-violet-100">
                       <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -4872,7 +4872,7 @@ function CourseDetailModal({
                   return 'PDF';
                 })();
                 return (
-                  <div className="max-w-[820px] mx-auto">
+                  <div className="max-w-[940px] mx-auto">
                     {/* ═══ 1. Content Header (compact, document-style) ═══ */}
                     <div className="mb-6 pb-5 border-b border-violet-100">
                       <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -5073,7 +5073,7 @@ function CourseDetailModal({
                 const lessonPct = card.totalLessons ? Math.min(100, Math.round(((card.lessonsRead ?? 0) / card.totalLessons) * 100)) : 0;
                 const modules = typeNotes.split('\n').filter(l => /^(module|section|lesson|week|unit|\d+[.:])/i.test(l.trim()));
                 return (
-                  <div className="max-w-[800px] mx-auto">
+                  <div className="max-w-[920px] mx-auto">
 
                     {/* 1. Compact header */}
                     <div className="mb-5 pb-5 border-b border-sky-100">
@@ -5292,7 +5292,7 @@ function CourseDetailModal({
                 const watchPct = card.totalMins ? Math.min(100, Math.round(((card.watchedMins ?? 0) / card.totalMins) * 100)) : 0;
                 const chapterLines = typeNotes.split('\n').filter(l => /^(chapter|ch\.|part|section|\d+[.:])/i.test(l.trim()));
                 return (
-                  <div className="max-w-[800px] mx-auto">
+                  <div className="max-w-[920px] mx-auto">
 
                     {/* 1. Compact header */}
                     <div className="mb-5 pb-5 border-b border-rose-100">
@@ -5686,7 +5686,7 @@ function CourseDetailModal({
                 return (
                   /* ── NORMAL MODE: compact layout ── */
                   <div className="space-y-8">
-                    <div className="max-w-[640px] mx-auto">
+                    <div className="max-w-[760px] mx-auto">
                       {card.tags[0] && (
                         <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-[0.12em] mb-2">
                           {card.tags[0].replace('#', '')}
@@ -5736,7 +5736,7 @@ function CourseDetailModal({
                       )}
                     </div>
 
-                    <div className="border-t border-gray-100 pt-6 max-w-[640px] mx-auto space-y-4">
+                    <div className="border-t border-gray-100 pt-6 max-w-[760px] mx-auto space-y-4">
                       <div className="flex items-center gap-2 mb-4">
                         <Brain size={14} className="text-emerald-500" />
                         <p className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">Reflection &amp; Application</p>
@@ -6023,7 +6023,7 @@ function CourseDetailModal({
               if (ct === 'podcast' && readingMode) {
                 const listenPct = card.totalMins ? Math.min(100, Math.round(((card.watchedMins ?? 0) / card.totalMins) * 100)) : 0;
                 return (
-                  <div className="max-w-[800px] mx-auto">
+                  <div className="max-w-[920px] mx-auto">
 
                     {/* 1. Episode header */}
                     <div className="mb-5 pb-5 border-b border-teal-100">
