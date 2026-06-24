@@ -4828,7 +4828,7 @@ function CourseDetailModal({
                           <>
                             {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
                                   <AlignLeft size={13} className="text-gray-400" />
                                   <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
@@ -4993,7 +4993,7 @@ function CourseDetailModal({
                           <>
                             {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
                                   <AlignLeft size={13} className="text-gray-400" />
                                   <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
@@ -5213,7 +5213,7 @@ function CourseDetailModal({
                           <>
                             {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
                                   <AlignLeft size={13} className="text-gray-400" />
                                   <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
@@ -5448,7 +5448,7 @@ function CourseDetailModal({
                           <>
                             {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
                                   <AlignLeft size={13} className="text-gray-400" />
                                   <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
@@ -5654,7 +5654,7 @@ function CourseDetailModal({
                           <>
                             {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
                                   <AlignLeft size={13} className="text-gray-400" />
                                   <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
@@ -5752,7 +5752,7 @@ function CourseDetailModal({
                           <>
                             {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
                                   <AlignLeft size={13} className="text-gray-400" />
                                   <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
@@ -5867,7 +5867,7 @@ function CourseDetailModal({
                           <>
                             {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
                                   <AlignLeft size={13} className="text-gray-400" />
                                   <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
@@ -6216,7 +6216,7 @@ function CourseDetailModal({
                           <>
                             {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[360px] overflow-y-auto">
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
                                 <div className="flex items-center gap-2 mb-3">
                                   <AlignLeft size={13} className="text-gray-400" />
                                   <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
