@@ -3599,7 +3599,7 @@ function TagSelector({ selected, onChange }: { selected: string[]; onChange: (ta
 // Each step unlocks only once the previous one is filled (standard learn-to-unlock
 // flow). Locked steps stay visible but dimmed + disabled. Status colours mirror the
 // stepper: emerald = done, sky = current/in-progress, gray = locked.
-function ReflectionSteps({
+function StepBoxes({
   status, subjectLabel,
   understanding, setUnderstanding,
   keyTakeaways, setKeyTakeaways,
@@ -3613,159 +3613,81 @@ function ReflectionSteps({
   application: string; setApplication: (v: string) => void;
   nextAction: string; setNextAction: (v: string) => void;
 }) {
-  const filled = (v: string, sentinel?: string) => !!v?.trim() && v !== sentinel;
-  const readDone = status === 'Reading' || status === 'Done';
-  const doneUnderstand = filled(understanding, 'Notes not added yet.');
-  const doneConnect = filled(keyTakeaways);
-  const doneApply = filled(application, 'Application not added yet.');
-  const doneAct = filled(nextAction);
-
-  // A step is unlocked when the previous step is done (Understand unlocks after reading).
-  const steps = [
+  const filled = (v: string, sentinel?: string) => !!(v?.trim()) && v !== sentinel;
+  const boxes = [
     {
-      n: 1, label: 'Understand — จับใจความสำคัญ', icon: Lightbulb,
-      unlocked: readDone, done: doneUnderstand,
+      n: 1, label: 'Understand', sub: 'จับใจความสำคัญ', icon: Lightbulb,
+      accent: 'bg-violet-400', numCls: 'bg-violet-100 text-violet-700',
       value: understanding === 'Notes not added yet.' ? '' : understanding,
       set: setUnderstanding,
       placeholder: `สิ่งสำคัญที่ได้จาก${subjectLabel}คืออะไร...`,
-      lockHint: 'ต้องอ่านให้เสร็จก่อน',
+      done: filled(understanding, 'Notes not added yet.'),
     },
     {
-      n: 2, label: 'Connect — เชื่อมกับชีวิตจริง', icon: Link2,
-      unlocked: doneUnderstand, done: doneConnect,
+      n: 2, label: 'Connect', sub: 'เชื่อมกับชีวิตจริง', icon: Link2,
+      accent: 'bg-sky-400', numCls: 'bg-sky-100 text-sky-700',
       value: keyTakeaways, set: setKeyTakeaways,
-      placeholder: `เนื้อหานี้เชื่อมโยงกับชีวิต/งานของคุณยังไง...`,
-      lockHint: 'ทำขั้น Understand ให้เสร็จก่อน',
+      placeholder: 'เนื้อหานี้เชื่อมโยงกับชีวิต/งานของคุณยังไง...',
+      done: filled(keyTakeaways),
     },
     {
-      n: 3, label: 'Apply — วางแผนใช้ยังไง', icon: Target,
-      unlocked: doneConnect, done: doneApply,
+      n: 3, label: 'Apply', sub: 'วางแผนใช้ยังไง', icon: Target,
+      accent: 'bg-emerald-400', numCls: 'bg-emerald-100 text-emerald-700',
       value: application === 'Application not added yet.' ? '' : application,
       set: setApplication,
-      placeholder: `จะนำไอเดียนี้ไปใช้จริงยังไง...`,
-      lockHint: 'ทำขั้น Connect ให้เสร็จก่อน',
+      placeholder: 'จะนำไอเดียนี้ไปใช้จริงยังไง...',
+      done: filled(application, 'Application not added yet.'),
     },
     {
-      n: 4, label: 'Act — action เล็กๆ', icon: Zap,
-      unlocked: doneApply, done: doneAct,
+      n: 4, label: 'Act', sub: 'action เล็กๆ', icon: Zap,
+      accent: 'bg-amber-400', numCls: 'bg-amber-100 text-amber-700',
       value: nextAction, set: setNextAction,
-      placeholder: `action เล็กๆ ที่จะลงมือทำ...`,
-      lockHint: 'ทำขั้น Apply ให้เสร็จก่อน',
+      placeholder: 'action เล็กๆ ที่จะลงมือทำวันนี้...',
+      done: filled(nextAction),
     },
   ];
 
-  const [confirmedSteps, setConfirmedSteps] = useState<Set<number>>(new Set());
-  const handleComplete = (stepNum: number) => {
-    setConfirmedSteps(prev => new Set([...prev, stepNum]));
-  };
-
   return (
-    <div className="space-y-3">
-      {steps.map((step, idx) => {
-        const isCompleted = step.done;
-        const isActive = step.unlocked && !step.done;
-        const isLocked = !step.unlocked;
-
-        const badgeBg = isCompleted
-          ? 'bg-emerald-500'
-          : isActive
-          ? 'bg-sky-500'
-          : 'bg-gray-300';
-
-        const boxBg = isCompleted
-          ? 'bg-emerald-50 border-emerald-200'
-          : isActive
-          ? 'bg-sky-50 border-sky-200'
-          : 'bg-gray-50 border-gray-200';
-
-        const labelColor = isCompleted
-          ? 'text-emerald-900'
-          : isActive
-          ? 'text-sky-900'
-          : 'text-gray-600';
-
-        const statusText = isCompleted
-          ? '✓ ผ่านแล้ว'
-          : isActive
-          ? '⏱ กำลังทำ'
-          : '🔒 ยังไม่เปิด';
-
-        const lineColor = isCompleted
-          ? 'bg-emerald-500'
-          : isActive
-          ? 'bg-sky-500'
-          : 'bg-gray-300';
-
+    <div className="grid grid-cols-2 gap-3">
+      {boxes.map(box => {
+        const Icon = box.icon;
         return (
-          <div key={step.n}>
-            <div className={`flex gap-3 px-3 py-3 rounded-lg border ${boxBg} transition-all duration-300`}>
-              {/* Timeline Column */}
-              <div className="flex flex-col items-center shrink-0">
-                {/* Badge */}
-                <div className={`flex h-6 w-6 items-center justify-center rounded-full text-white text-xs font-black ${badgeBg} transition-all duration-300`}>
-                  {isCompleted ? '✓' : isLocked ? <Lock size={11} /> : '●'}
+          <div
+            key={box.n}
+            className={`relative rounded-2xl border-2 overflow-hidden bg-white transition-all duration-300 ${
+              box.done
+                ? 'border-emerald-300 shadow-[0_0_0_3px_rgba(52,211,153,0.10)]'
+                : 'border-gray-200 focus-within:border-violet-200'
+            }`}
+          >
+            <div className={`h-1 w-full ${box.done ? 'bg-emerald-400' : box.accent} opacity-75 transition-colors duration-300`} />
+            <div className="p-3.5">
+              <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-lg tabular-nums leading-none ${box.numCls}`}>
+                    {String(box.n).padStart(2, '0')}
+                  </span>
+                  <div>
+                    <div className="text-[12px] font-bold text-gray-800 leading-none">{box.label}</div>
+                    <div className={`text-[9px] font-semibold mt-0.5 ${box.done ? 'text-emerald-600' : 'text-gray-400'}`}>
+                      {box.sub}
+                    </div>
+                  </div>
                 </div>
-
-                {/* Connecting Line */}
-                {idx < steps.length - 1 && (
-                  <div className={`w-0.5 h-24 ${lineColor} transition-all duration-300 mt-1`} />
-                )}
-              </div>
-
-              {/* Step Content */}
-              <div className="flex-1">
-                <div className={`text-xs font-bold ${labelColor}`}>
-                  {step.label}
-                </div>
-                <div className="text-[11px] text-gray-500 mt-1 mb-2">
-                  {statusText}
-                </div>
-
-                {/* Input Field - Show for all steps */}
-                {step.n === 4 ? (
-                  <input
-                    disabled={!step.unlocked}
-                    value={step.value}
-                    onChange={e => step.set(e.target.value)}
-                    placeholder={step.unlocked ? step.placeholder : step.lockHint}
-                    className={`w-full px-2 py-1.5 text-xs focus:outline-none bg-white rounded border ${step.unlocked ? 'border-sky-300 text-gray-800' : 'border-gray-200 text-gray-400 cursor-not-allowed'}`}
-                  />
-                ) : (
-                  <textarea
-                    disabled={!step.unlocked}
-                    value={step.value}
-                    onChange={e => step.set(e.target.value)}
-                    placeholder={step.unlocked ? step.placeholder : step.lockHint}
-                    rows={2}
-                    className={`w-full text-xs resize-none focus:outline-none bg-white rounded border p-2 ${step.unlocked ? 'border-sky-300 text-gray-700' : 'border-gray-200 text-gray-400 cursor-not-allowed'}`}
-                  />
-                )}
-
-                {/* Summary - Show text that was entered */}
-                {step.value && step.value !== 'Notes not added yet.' && step.value !== 'Application not added yet.' && (
-                  <div className="mt-2 p-2 bg-gray-50 rounded border border-gray-200">
-                    <p className="text-[11px] text-gray-600 font-semibold mb-1">ข้อความของคุณ:</p>
-                    <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{step.value}</p>
+                {box.done && (
+                  <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+                    <Check size={10} className="text-white" strokeWidth={3} />
                   </div>
                 )}
-
-                {/* Complete Button - Show when unlocked */}
-                {step.unlocked && (
-                  <button
-                    onClick={() => handleComplete(step.n)}
-                    disabled={!step.value?.trim()}
-                    className={`mt-2 w-full px-3 py-1.5 text-xs font-bold rounded transition-all duration-300 ${
-                      confirmedSteps.has(step.n) || step.done
-                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                        : step.value?.trim()
-                        ? 'bg-sky-500 hover:bg-sky-600 text-white'
-                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    }`}
-                  >
-                    {confirmedSteps.has(step.n) || step.done ? '✓ บันทึกแล้ว' : 'เสร็จสิ้น'}
-                  </button>
-                )}
               </div>
+              <Icon size={13} className={`mb-1.5 ${box.done ? 'text-emerald-400' : 'text-gray-300'} transition-colors`} />
+              <textarea
+                value={box.value}
+                onChange={e => box.set(e.target.value)}
+                placeholder={box.placeholder}
+                rows={3}
+                className="w-full text-[12px] bg-transparent resize-none focus:outline-none text-gray-700 placeholder:text-gray-300 leading-relaxed border-0"
+              />
             </div>
           </div>
         );
@@ -4528,76 +4450,78 @@ function CourseDetailModal({
               )}
             </div>
 
-            {/* Stepper Progress */}
-            <div className="space-y-2.5">
+            {/* Stepper Progress — live state */}
+            <div className="space-y-0">
               {(() => {
                 const steps = [
-                  { label: 'เริ่มต้น', value: true },
-                  { label: 'กำลังอ่าน', value: status === 'Reading' || status === 'Done' },
-                  { label: 'Understand — จับใจความสำคัญ', value: !!(card.understanding?.trim() && card.understanding !== 'Notes not added yet.') },
-                  { label: 'Connect — เชื่อมกับชีวิตจริง', value: !!(card.keyTakeaways?.trim()) },
-                  { label: 'Apply — วางแผนใช้ยังไง', value: !!(card.application?.trim() && card.application !== 'Application not added yet.') },
-                  { label: 'Act — action เล็กๆ', value: !!(card.nextAction?.trim()) },
+                  { label: 'เริ่มต้น', sub: 'เพิ่มการเรียนรู้แล้ว', value: true },
+                  { label: 'กำลังอ่าน', sub: 'Reading in progress', value: status === 'Reading' || status === 'Done' },
+                  { label: 'Understand', sub: 'จับใจความสำคัญ', value: !!(understanding?.trim() && understanding !== 'Notes not added yet.') },
+                  { label: 'Connect', sub: 'เชื่อมกับชีวิตจริง', value: !!(keyTakeaways?.trim()) },
+                  { label: 'Apply', sub: 'วางแผนใช้ยังไง', value: !!(application?.trim() && application !== 'Application not added yet.') },
+                  { label: 'Act', sub: 'action เล็กๆ', value: !!(nextAction?.trim()) },
                 ];
                 const completedSteps = steps.filter(s => s.value).length;
                 const progressPercent = Math.round((completedSteps / steps.length) * 100);
 
                 return (
                   <>
-                    <div className="space-y-0">
-                      {steps.map((step, idx) => {
-                        const isCompleted = !!step.value;
-                        const canAccess = idx === 0 || steps.slice(0, idx).every(s => s.value);
-                        const isInProgress = canAccess && !isCompleted;
-                        return (
-                          <div key={idx} className={`flex items-start gap-3 relative px-3 py-2 rounded-lg transition-all duration-300 ${
-                            isCompleted ? 'bg-emerald-100 border border-emerald-200' : isInProgress ? 'bg-sky-100 border border-sky-200' : 'bg-gray-100 border border-gray-200'
-                          } ${idx < steps.length - 1 ? 'pb-3 mb-1' : ''}`}>
-                            {idx < steps.length - 1 && (
-                              <div className={`absolute left-[30px] top-[50px] w-0.5 h-4 transition-colors ${isCompleted ? 'bg-emerald-400' : isInProgress ? 'bg-sky-300' : 'bg-gray-300'}`} />
-                            )}
-                            <div className={`flex-shrink-0 w-6 h-6 rounded-full mt-0 transition-all duration-300 flex items-center justify-center font-bold text-sm ${
-                              isCompleted ? 'bg-emerald-600 shadow-[0_0_0_4px_rgba(5,150,105,0.3)] text-white' : isInProgress ? 'bg-sky-500 shadow-[0_0_0_4px_rgba(14,165,233,0.3)] text-white' : 'bg-gray-400 text-white'
-                            }`}>
-                              {isCompleted ? '✓' : isInProgress ? '◉' : '◯'}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <span className={`text-xs font-bold leading-tight block ${
-                                isCompleted ? 'text-emerald-800' : isInProgress ? 'text-sky-800' : 'text-gray-500'
-                              }`}>
-                                {step.label}
-                              </span>
-                              <span className={`text-[10px] font-semibold inline-block mt-0.5 px-2 py-0.5 rounded-full ${
-                                isCompleted ? 'bg-emerald-200 text-emerald-700' : isInProgress ? 'bg-sky-200 text-sky-700' : 'bg-gray-200 text-gray-600'
-                              }`}>
-                                {isCompleted ? '✓ ผ่านแล้ว' : isInProgress ? '⏱ กำลังทำ' : '🔒 ยังไม่เปิด'}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Progress</span>
+                      <span className="text-[11px] font-extrabold text-violet-600">{progressPercent}%</span>
                     </div>
-                    {/* Premium progress bar — driven by steps, not editable */}
-                    <div className="pt-3 border-t border-gray-100">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">ความคืบหน้า</span>
-                        <span className="text-[11px] font-extrabold text-violet-600">{progressPercent}%</span>
-                      </div>
-                      <div className="relative">
-                        <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-violet-500 via-sky-400 to-emerald-400 transition-all duration-700"
-                            style={{ width: `${progressPercent}%` }}
-                          />
+                    {steps.map((step, idx) => {
+                      const isCompleted = !!step.value;
+                      const canAccess = idx === 0 || steps.slice(0, idx).every(s => s.value);
+                      const isActive = canAccess && !isCompleted;
+                      const isLast = idx === steps.length - 1;
+                      return (
+                        <div key={idx} className="flex gap-0">
+                          <div className="flex flex-col items-center w-6 shrink-0">
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300 z-10 ${
+                              isCompleted
+                                ? 'bg-emerald-500 border-emerald-400'
+                                : isActive
+                                ? 'bg-white border-sky-400 shadow-[0_0_0_3px_rgba(14,165,233,0.18)]'
+                                : 'bg-white border-gray-200'
+                            }`}>
+                              {isCompleted
+                                ? <Check size={9} className="text-white" strokeWidth={3} />
+                                : isActive
+                                ? <span className="w-1.5 h-1.5 rounded-full bg-sky-400 block" />
+                                : <span className="w-1 h-1 rounded-full bg-gray-300 block" />
+                              }
+                            </div>
+                            {!isLast && (
+                              <div
+                                className="w-px flex-1 my-0.5 min-h-[22px] transition-colors duration-300"
+                                style={{ backgroundColor: isCompleted ? '#a7f3d0' : '#e5e7eb' }}
+                              />
+                            )}
+                          </div>
+                          <div className={`pl-2.5 ${isLast ? 'pb-0' : 'pb-2.5'}`}>
+                            <span className={`text-[11px] font-bold leading-tight block transition-colors duration-300 ${
+                              isCompleted ? 'text-emerald-700' : isActive ? 'text-sky-700' : 'text-gray-300'
+                            }`}>
+                              {step.label}
+                            </span>
+                            <span className={`text-[9px] font-semibold block transition-colors duration-300 ${
+                              isCompleted ? 'text-emerald-500' : isActive ? 'text-sky-400' : 'text-gray-300'
+                            }`}>
+                              {isCompleted ? '✓ เสร็จแล้ว' : isActive ? '◉ กำลังทำ' : step.sub}
+                            </span>
+                          </div>
                         </div>
-                        {progressPercent > 0 && (
-                          <div
-                            className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-2 border-violet-500 shadow-[0_0_0_3px_rgba(139,92,246,0.2)] transition-all duration-700 pointer-events-none"
-                            style={{ left: `calc(${Math.min(progressPercent, 96)}% - 7px)` }}
-                          />
-                        )}
+                      );
+                    })}
+                    <div className="pt-2.5 mt-1 border-t border-gray-100">
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-violet-500 via-sky-400 to-emerald-400 transition-all duration-700"
+                          style={{ width: `${progressPercent}%` }}
+                        />
                       </div>
-                      <div className="mt-1.5 text-[10px] text-gray-400">{completedSteps}/{steps.length} ขั้นตอน</div>
+                      <div className="mt-1 text-[9px] text-gray-400 font-medium">{completedSteps}/{steps.length} ขั้นตอน</div>
                     </div>
                   </>
                 );
@@ -4899,14 +4823,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            <ReflectionSteps
+                            <StepBoxes
                               status={status} subjectLabel="หนังสือเล่มนี้"
                               understanding={understanding} setUnderstanding={setUnderstanding}
                               keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-                            </div>
 
                             <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
                               <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
@@ -5084,14 +5007,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            <ReflectionSteps
+                            <StepBoxes
                               status={status} subjectLabel="เอกสารนี้"
                               understanding={understanding} setUnderstanding={setUnderstanding}
                               keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-                            </div>
 
                             <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
                               <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
@@ -5317,14 +5239,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            <ReflectionSteps
+                            <StepBoxes
                               status={status} subjectLabel="คอร์สนี้"
                               understanding={understanding} setUnderstanding={setUnderstanding}
                               keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-                            </div>
 
                             <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
                               <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
@@ -5565,14 +5486,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            <ReflectionSteps
+                            <StepBoxes
                               status={status} subjectLabel="วิดีโอนี้"
                               understanding={understanding} setUnderstanding={setUnderstanding}
                               keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-                            </div>
 
                             <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
                               <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
@@ -5784,14 +5704,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            <ReflectionSteps
+                            <StepBoxes
                               status={status} subjectLabel="บทความนี้"
                               understanding={understanding} setUnderstanding={setUnderstanding}
                               keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-                            </div>
 
                             {/* Review reminder */}
                             <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
@@ -5903,14 +5822,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            <ReflectionSteps
+                            <StepBoxes
                               status={status} subjectLabel="เนื้อหานี้"
                               understanding={understanding} setUnderstanding={setUnderstanding}
                               keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-                            </div>
                           </>
                         );
                       })()}
@@ -6019,14 +5937,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            <ReflectionSteps
+                            <StepBoxes
                               status={status} subjectLabel="โพสต์นี้"
                               understanding={understanding} setUnderstanding={setUnderstanding}
                               keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-                            </div>
                           </>
                         );
                       })()}
@@ -6382,14 +6299,13 @@ function CourseDetailModal({
                               </div>
                             )}
 
-                            <ReflectionSteps
+                            <StepBoxes
                               status={status} subjectLabel="ตอนนี้"
                               understanding={understanding} setUnderstanding={setUnderstanding}
                               keyTakeaways={keyTakeaways} setKeyTakeaways={setKeyTakeaways}
                               application={application} setApplication={setApplication}
                               nextAction={nextAction} setNextAction={setNextAction}
                             />
-                            </div>
 
                             <div className="flex items-center gap-3 p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/60 to-pink-50/30">
                               <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
