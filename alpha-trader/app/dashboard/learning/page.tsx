@@ -4391,8 +4391,8 @@ function CourseDetailModal({
           style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
         >
           <motion.div
-            className={`flex w-full max-w-[1400px] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 transition-colors duration-500 ${readingMode ? 'bg-[#f4f6fb]' : 'bg-gray-50'}`}
-            style={{ height: '92vh' }}
+            className={`flex w-full max-w-[1800px] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 transition-colors duration-500 ${readingMode ? 'bg-[#f4f6fb]' : 'bg-gray-50'}`}
+            style={{ height: '96vh' }}
             initial={{ opacity: 0, scale: 0.94, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
