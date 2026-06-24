@@ -15,7 +15,7 @@ import {
   ExternalLink, RefreshCw, Globe, AlignLeft, Bell, BarChart2,
   GraduationCap, Headphones, Hash, Heart, Check, Bold, Underline, Highlighter,
   Heading1, Heading2, List, ListOrdered, Quote,
-  Share2, Image, Briefcase, MessageSquare, Music, Lock, Link2,
+  Share2, Image, Briefcase, MessageSquare, Music, Lock, Link2, Minus, Pencil,
 } from 'lucide-react';
 
 import { Aws, Github, Discord, Notion, Youtube, Instagram, Linkedin, X as XIcon } from '@thesvg/react';
@@ -115,6 +115,20 @@ function deriveStages(card: LearningCard): LearnStages {
   return { read, recap, apply, review };
 }
 
+// Derive progress % from card data — same formula as stepProgressPct inside Reading mode.
+function deriveProgress(card: LearningCard): number {
+  const hasUnderstanding = !isRichTextEmpty(card.understanding) && card.understanding !== 'Notes not added yet.';
+  const hasApplication   = !isRichTextEmpty(card.application)  && card.application  !== 'Application not added yet.';
+  return Math.round([
+    true,
+    card.status === 'Reading' || card.status === 'Done',
+    hasUnderstanding,
+    !!card.keyTakeaways?.trim(),
+    hasApplication,
+    !!card.nextAction?.trim(),
+  ].filter(Boolean).length / 6 * 100);
+}
+
 interface LearningCard {
   id: number;
   title: string;
@@ -195,6 +209,7 @@ interface LearningCard {
   fileSize?: number;
   documentOutline?: string;
   sourceOwner?: string;
+  carouselImages?: string[];
 }
 
 const SPACED_INTERVALS = [1, 3, 7, 14, 30];
@@ -283,6 +298,132 @@ function RichTextContent({
         dangerouslySetInnerHTML={{ __html: value || '' }}
       />
     </>
+  );
+}
+
+function ReadableContent({ value, className = '' }: { value?: string; className?: string }) {
+  if (!value?.trim()) return null;
+
+  // If it's HTML (from rich text editor), use RichTextContent
+  if (/<[a-z][\s\S]*>/i.test(value)) {
+    return <RichTextContent value={value} className={`text-[15px] leading-[1.9] text-gray-800 ${className}`} />;
+  }
+
+  // Parse plain text into readable blocks
+  const lines = value.split(/\n/).map(l => l.trim()).filter(Boolean);
+  type Block = { type: 'heading' | 'numbered' | 'bullet' | 'quote' | 'text'; n?: number; label?: string; body?: string; text?: string };
+  const blocks: Block[] = [];
+
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    // Numbered section: "1. title" or "1) title"
+    const numMatch = line.match(/^(\d+)[.)]\s+(.+)/);
+    if (numMatch) {
+      const n = parseInt(numMatch[1]);
+      const label = numMatch[2];
+      // Collect body lines until next numbered or end
+      const bodyLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].match(/^\d+[.)]\s+/)) {
+        bodyLines.push(lines[i]);
+        i++;
+      }
+      blocks.push({ type: 'numbered', n, label, body: bodyLines.join('\n') });
+      continue;
+    }
+    // Bullet: starts with - or •
+    if (line.match(/^[-•]\s+/)) {
+      blocks.push({ type: 'bullet', text: line.replace(/^[-•]\s+/, '') });
+      i++; continue;
+    }
+    // Quote: starts and ends with "
+    if ((line.startsWith('"') || line.startsWith('“')) && line.length > 10) {
+      blocks.push({ type: 'quote', text: line });
+      i++; continue;
+    }
+    // Hashtag heading
+    if (line.startsWith('#')) {
+      blocks.push({ type: 'heading', text: line.replace(/^#+\s*/, '') });
+      i++; continue;
+    }
+    blocks.push({ type: 'text', text: line });
+    i++;
+  }
+
+  // Group consecutive bullets
+  type GroupedBlock = { type: string; items?: string[]; n?: number; label?: string; body?: string; text?: string };
+  const grouped: GroupedBlock[] = [];
+  let j = 0;
+  while (j < blocks.length) {
+    if (blocks[j].type === 'bullet') {
+      const items: string[] = [];
+      while (j < blocks.length && blocks[j].type === 'bullet') {
+        items.push(blocks[j].text ?? '');
+        j++;
+      }
+      grouped.push({ type: 'bullets', items });
+    } else {
+      grouped.push(blocks[j]);
+      j++;
+    }
+  }
+
+  return (
+    <div className={`space-y-4 ${className}`}>
+      {grouped.map((block, idx) => {
+        if (block.type === 'numbered') {
+          const bodyLines = (block.body ?? '').split('\n').filter(Boolean);
+          return (
+            <div key={idx} className="rounded-xl border border-violet-100 bg-violet-50/30 overflow-hidden">
+              <div className="flex items-start gap-3 px-4 py-3 border-b border-violet-100/60">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-violet-500 text-white text-[11px] font-black flex items-center justify-center mt-0.5">{block.n}</span>
+                <p className="text-[14px] font-bold text-violet-900 leading-snug">{block.label}</p>
+              </div>
+              {bodyLines.length > 0 && (
+                <div className="px-4 py-3 space-y-2">
+                  {bodyLines.map((bl, bi) => {
+                    const isBullet = bl.match(/^[-•]\s+/);
+                    if (isBullet) {
+                      return (
+                        <div key={bi} className="flex items-start gap-2">
+                          <span className="shrink-0 w-1 h-1 rounded-full bg-violet-400 mt-2" />
+                          <p className="text-[13px] text-gray-700 leading-relaxed">{bl.replace(/^[-•]\s+/, '')}</p>
+                        </div>
+                      );
+                    }
+                    return <p key={bi} className="text-[13px] text-gray-700 leading-relaxed">{bl}</p>;
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        }
+        if (block.type === 'bullets') {
+          return (
+            <ul key={idx} className="space-y-1.5 pl-1">
+              {block.items?.map((item, ii) => (
+                <li key={ii} className="flex items-start gap-2.5">
+                  <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-gray-400 mt-2" />
+                  <span className="text-[14px] text-gray-700 leading-relaxed">{item}</span>
+                </li>
+              ))}
+            </ul>
+          );
+        }
+        if (block.type === 'quote') {
+          return (
+            <div key={idx} className="px-4 py-3 rounded-xl bg-amber-50 border-l-4 border-amber-400">
+              <p className="text-[13px] italic text-amber-800 leading-relaxed">{block.text}</p>
+            </div>
+          );
+        }
+        if (block.type === 'heading') {
+          return <p key={idx} className="text-[13px] font-black text-gray-900 uppercase tracking-wider pt-2">{block.text}</p>;
+        }
+        return <p key={idx} className="text-[14px] text-gray-700 leading-[1.85]">{block.text}</p>;
+      })}
+    </div>
   );
 }
 
@@ -455,13 +596,13 @@ const CONTENT_TYPES: {
   hasMins: boolean;
   hasUrl: boolean;
 }[] = [
-  { key: 'book',    label: 'Book',        Icon: BookOpen,      accentText: 'text-violet-600', accentBorder: 'border-violet-300', accentBg: 'bg-violet-50',  providerLabel: 'Author',          hasPages: true,  hasLessons: false, hasMins: false, hasUrl: false },
-  { key: 'course',  label: 'Course',      Icon: GraduationCap, accentText: 'text-sky-600',    accentBorder: 'border-sky-300',    accentBg: 'bg-sky-50',     providerLabel: 'Platform',        hasPages: false, hasLessons: true,  hasMins: false, hasUrl: false },
-  { key: 'video',   label: 'Video',       Icon: Video,         accentText: 'text-rose-600',   accentBorder: 'border-rose-300',   accentBg: 'bg-rose-50',    providerLabel: 'Channel',         hasPages: false, hasLessons: false, hasMins: true,  hasUrl: true  },
-  { key: 'article', label: 'Article',     Icon: FileText,      accentText: 'text-emerald-600',accentBorder: 'border-emerald-300',accentBg: 'bg-emerald-50', providerLabel: 'Author / Site',   hasPages: false, hasLessons: false, hasMins: false, hasUrl: true  },
-  { key: 'social',  label: 'Social Post', Icon: Globe,         accentText: 'text-orange-600', accentBorder: 'border-orange-300', accentBg: 'bg-orange-50',  providerLabel: 'Page / Account',  hasPages: false, hasLessons: false, hasMins: false, hasUrl: true  },
-  { key: 'podcast', label: 'Podcast',     Icon: Headphones,    accentText: 'text-teal-600',   accentBorder: 'border-teal-300',   accentBg: 'bg-teal-50',    providerLabel: 'Show Name',       hasPages: false, hasLessons: false, hasMins: true,  hasUrl: false },
-  { key: 'pdf',     label: 'PDF / Doc',   Icon: FileQuestion,  accentText: 'text-amber-600',  accentBorder: 'border-amber-300',  accentBg: 'bg-amber-50',   providerLabel: 'Source',          hasPages: true,  hasLessons: false, hasMins: false, hasUrl: true  },
+  { key: 'book',    label: 'Book',        Icon: BookOpen,      accentText: 'text-violet-600', accentBorder: 'border-violet-300', accentBg: 'bg-violet-50',  solidBg: 'bg-violet-500',  providerLabel: 'Author',          hasPages: true,  hasLessons: false, hasMins: false, hasUrl: false },
+  { key: 'course',  label: 'Course',      Icon: GraduationCap, accentText: 'text-sky-600',    accentBorder: 'border-sky-300',    accentBg: 'bg-sky-50',     solidBg: 'bg-sky-500',     providerLabel: 'Platform',        hasPages: false, hasLessons: true,  hasMins: false, hasUrl: false },
+  { key: 'video',   label: 'Video',       Icon: Video,         accentText: 'text-rose-600',   accentBorder: 'border-rose-300',   accentBg: 'bg-rose-50',    solidBg: 'bg-rose-500',    providerLabel: 'Channel',         hasPages: false, hasLessons: false, hasMins: true,  hasUrl: true  },
+  { key: 'article', label: 'Article',     Icon: FileText,      accentText: 'text-emerald-600',accentBorder: 'border-emerald-300',accentBg: 'bg-emerald-50', solidBg: 'bg-emerald-500', providerLabel: 'Author / Site',   hasPages: false, hasLessons: false, hasMins: false, hasUrl: true  },
+  { key: 'social',  label: 'Social Post', Icon: Globe,         accentText: 'text-orange-600', accentBorder: 'border-orange-300', accentBg: 'bg-orange-50',  solidBg: 'bg-orange-500',  providerLabel: 'Page / Account',  hasPages: false, hasLessons: false, hasMins: false, hasUrl: true  },
+  { key: 'podcast', label: 'Podcast',     Icon: Headphones,    accentText: 'text-teal-600',   accentBorder: 'border-teal-300',   accentBg: 'bg-teal-50',    solidBg: 'bg-teal-500',    providerLabel: 'Show Name',       hasPages: false, hasLessons: false, hasMins: true,  hasUrl: false },
+  { key: 'pdf',     label: 'PDF / Doc',   Icon: FileQuestion,  accentText: 'text-amber-600',  accentBorder: 'border-amber-300',  accentBg: 'bg-amber-50',   solidBg: 'bg-amber-500',   providerLabel: 'Source',          hasPages: true,  hasLessons: false, hasMins: false, hasUrl: true  },
 ];
 
 const INIT_LEARNING_CARDS: LearningCard[] = [
@@ -786,49 +927,118 @@ function SectionCard({ title, subtitle, action, children, className = '' }: {
   );
 }
 
+// ─── IG-style Carousel for Social Post reading mode ──────────────────
+function SocialCarousel({ slides }: { slides: string[] }) {
+  const [idx, setIdx] = useState(0);
+  const total = slides.length;
+  const prev = () => setIdx(i => (i - 1 + total) % total);
+  const next = () => setIdx(i => (i + 1) % total);
+  return (
+    <div className="mb-4">
+      <div className="relative rounded-2xl overflow-hidden border border-orange-100 bg-black select-none">
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={idx}
+            src={slides[idx]}
+            alt={`slide ${idx + 1}`}
+            className="w-full max-h-[520px] object-contain block"
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -30 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+          />
+        </AnimatePresence>
+
+        {total > 1 && (
+          <>
+            <button onClick={prev}
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition shadow-lg">
+              <ChevronRight size={18} className="rotate-180" />
+            </button>
+            <button onClick={next}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition shadow-lg">
+              <ChevronRight size={18} />
+            </button>
+            <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/55 text-white text-[11px] font-bold backdrop-blur-sm">
+              {idx + 1} / {total}
+            </div>
+          </>
+        )}
+      </div>
+
+      {total > 1 && (
+        <>
+          <div className="flex items-center justify-center gap-1.5 mt-2.5">
+            {slides.map((_, i) => (
+              <button key={i} onClick={() => setIdx(i)}
+                className={`rounded-full transition-all ${i === idx ? 'w-5 h-2 bg-orange-500' : 'w-2 h-2 bg-gray-300 hover:bg-orange-300'}`} />
+            ))}
+          </div>
+          <div className="flex gap-1.5 mt-2 overflow-x-auto pb-1">
+            {slides.map((src, i) => (
+              <button key={i} onClick={() => setIdx(i)}
+                className={`shrink-0 w-14 h-14 rounded-xl overflow-hidden border-2 transition ${i === idx ? 'border-orange-500 shadow-md' : 'border-transparent opacity-60 hover:opacity-90'}`}>
+                <img src={src} alt={`thumb ${i + 1}`} className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ─── Stage progress bar (computed, adjustable) ───────────────────────
 function StageProgress({
   stages,
   progress,
-  onToggle,
 }: {
   stages: LearnStages;
   progress: number;
-  onToggle: (key: StageKey) => void;
+  onToggle?: (key: StageKey) => void;
 }) {
+  const statusLabel = progress === 0 ? 'Unread' : progress === 100 ? 'Mastered' : 'In Progress';
+  const statusStyle =
+    progress === 0
+      ? 'bg-gray-100 text-gray-400 border-gray-200'
+      : progress === 100
+      ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+      : 'bg-violet-50 text-violet-600 border-violet-200';
+
+  const stageItems = [
+    { key: 'read' as StageKey,   label: 'Read',   color: 'bg-violet-400' },
+    { key: 'recap' as StageKey,  label: 'Recap',  color: 'bg-sky-400' },
+    { key: 'apply' as StageKey,  label: 'Apply',  color: 'bg-amber-400' },
+    { key: 'review' as StageKey, label: 'Review', color: 'bg-emerald-400' },
+  ];
+
   return (
-    <div>
-      {/* Computed bar */}
-      <div className="flex items-center gap-2">
-        <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
-          <div
-            className="h-2 rounded-full bg-gradient-to-r from-violet-500 via-sky-500 to-emerald-500 transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <span className="text-[12px] font-extrabold text-gray-700 stat-num shrink-0 w-10 text-right">{progress}%</span>
+    <div className="space-y-2">
+      {/* Status badge + % */}
+      <div className="flex items-center justify-between">
+        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-bold tracking-wide ${statusStyle}`}>
+          {statusLabel}
+        </span>
+        <span className="text-[12px] font-extrabold tabular-nums bg-gradient-to-r from-violet-500 to-emerald-500 bg-clip-text text-transparent">{progress}%</span>
       </div>
 
-      {/* Stage toggles — adjustable */}
-      <div className="mt-2 grid grid-cols-4 gap-1.5">
-        {PROGRESS_STAGES.map(s => {
-          const on = stages[s.key];
-          const tone = STAGE_TONE[s.tone];
-          const Icon = s.Icon;
+      {/* Gradient strip */}
+      <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+        <div
+          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-violet-500 via-sky-400 to-emerald-400 transition-all duration-500"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      {/* Stage dots */}
+      <div className="flex items-center gap-1.5">
+        {stageItems.map(s => {
+          const done = stages[s.key];
           return (
-            <TipLabel key={s.key} label={`${s.label} · ${s.thai} (+${s.weight}%)`}>
-              <motion.button
-                type="button"
-                onClick={() => onToggle(s.key)}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-                className={`w-full flex flex-col items-center gap-1 rounded-lg border-2 px-2 py-2 text-xs font-semibold transition ${on ? tone.active : tone.idle}`}
-              >
-                <Icon size={16} strokeWidth={1.8} />
-                <span className="leading-tight text-center">{s.label}</span>
-              </motion.button>
-            </TipLabel>
+            <div key={s.key} className="flex items-center gap-1">
+              <div className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${done ? s.color : 'bg-gray-200'}`} />
+              <span className={`text-[10px] font-semibold transition-colors ${done ? 'text-gray-600' : 'text-gray-300'}`}>{s.label}</span>
+            </div>
           );
         })}
       </div>
@@ -1308,7 +1518,7 @@ function LearningCardItem({
 
           {/* 5. Stage buttons + progress bar */}
           <div className="mt-auto">
-            <StageProgress stages={stages} progress={card.progress} onToggle={key => onToggleStage(card.id, key)} />
+            <StageProgress stages={stages} progress={deriveProgress(card)} />
           </div>
 
           {/* Footer */}
@@ -2573,6 +2783,7 @@ type AddLearningFormState = {
   documentOutline: string;
   sourceOwner: string;
   pageIconUrl: string;
+  carouselImages: string[];
 };
 
 const TYPE_TAG_SUGGESTIONS: Record<ContentType, string[]> = {
@@ -2650,6 +2861,7 @@ function makeBlankAddLearningForm(type: ContentType = 'article'): AddLearningFor
     documentOutline: '',
     sourceOwner: '',
     pageIconUrl: '',
+    carouselImages: [],
   };
 }
 
@@ -2708,6 +2920,7 @@ function cardToAddLearningForm(card?: LearningCard): AddLearningFormState {
     pageCount: card.totalPages ? String(card.totalPages) : '',
     documentOutline: card.documentOutline ?? (type === 'pdf' ? legacySourceContent : ''),
     sourceOwner: card.sourceOwner ?? card.provider ?? '',
+    carouselImages: card.carouselImages ?? [],
   };
 }
 
@@ -2868,6 +3081,58 @@ function AddLearningModal({ onClose, onAdd, onUpdate, initialCard }: {
     reader.readAsDataURL(file);
   };
 
+  const processImagePasteAdd = (items: DataTransferItemList) => {
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.includes('image')) {
+        const file = items[i].getAsFile();
+        if (!file) continue;
+        if (file.size > 5 * 1024 * 1024) { alert('ไฟล์ต้องไม่เกิน 5MB'); return; }
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const img = document.createElement('img') as HTMLImageElement;
+          img.onload = () => {
+            const cover = shouldFitLearningImage(form.contentType) ? resizeImageToLearningFit(img, 0.88) : cropImageToLearningCover(img, 0.88);
+            setForm(f => ({ ...f, imageUrl: cover.dataUrl, imageWidth: cover.width, imageHeight: cover.height, imageSize: Number((file.size / (1024 * 1024)).toFixed(2)) }));
+          };
+          img.src = ev.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+    }
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type === 'text/html') {
+        items[i].getAsString((html) => {
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          const imgEl = doc.querySelector('img');
+          if (imgEl?.src?.startsWith('http')) {
+            const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(imgEl.src)}&w=800&output=webp`;
+            setForm(f => ({ ...f, imageUrl: proxyUrl }));
+          }
+        });
+        return;
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT' || (target as HTMLElement).isContentEditable) return;
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      let hasImage = false;
+      let hasHtml = false;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.includes('image')) hasImage = true;
+        if (items[i].type === 'text/html') hasHtml = true;
+      }
+      if (hasImage || hasHtml) { e.preventDefault(); processImagePasteAdd(items); }
+    };
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [form.contentType]);
+
   const addTag = (tag: string) => {
     const clean = tag.replace(/^#/, '').trim();
     if (clean && !form.tags.includes(clean)) update('tags', [...form.tags, clean]);
@@ -3011,6 +3276,7 @@ function AddLearningModal({ onClose, onAdd, onUpdate, initialCard }: {
       documentOutline: form.documentOutline || undefined,
       sourceOwner: form.sourceOwner || undefined,
       pageIconUrl: form.pageIconUrl?.trim() || undefined,
+      carouselImages: (form.carouselImages ?? []).length > 0 ? form.carouselImages : undefined,
     };
     if (isEdit && onUpdate) onUpdate(card);
     else onAdd(card);
@@ -3160,8 +3426,15 @@ function AddLearningModal({ onClose, onAdd, onUpdate, initialCard }: {
       {renderSourcePlatformPicker(['Website', 'Facebook', 'Instagram', 'LinkedIn', 'X'])}
       <div><label className={labelCls}>Estimated read time (min)</label><input type="number" className={inputCls} value={form.estimatedReadTime} onChange={e => update('estimatedReadTime', e.target.value)} /></div>
       <div className="col-span-2">
-        <label className={labelCls}>Article Content <span className="text-gray-400 font-normal">(วางเนื้อหาบทความ หรือสรุปย่อ)</span></label>
-        <textarea className={`${inputCls} resize-y`} rows={5} value={form.cleanArticleContent} onChange={e => update('cleanArticleContent', e.target.value)} placeholder="วาง copy ข้อความจากบทความ หรือเขียนสรุปสั้นๆ..." />
+        <label className={labelCls}>Article Content <span className="text-gray-400 font-normal">(รองรับ bold, หัวข้อ, bullet — จะแสดงตรงกันใน Reading mode)</span></label>
+        <div className="mt-1 rounded-xl border border-gray-200 bg-white focus-within:border-violet-400 overflow-hidden">
+          <RichTextEditor
+            value={form.cleanArticleContent}
+            onChange={v => update('cleanArticleContent', v)}
+            placeholder="วางเนื้อหา หรือพิมพ์สรุปย่อ... (Ctrl+B = ตัวหนา, Ctrl+I = ตัวเอียง)"
+            minHeight={160}
+          />
+        </div>
       </div>
       <div className="col-span-2">
         <label className={labelCls}>Page / Author Icon</label>
@@ -3185,6 +3458,42 @@ function AddLearningModal({ onClose, onAdd, onUpdate, initialCard }: {
     </div>
   );
 
+  const carouselImages = form.carouselImages ?? [];
+
+  const addCarouselImage = (dataUrl: string) => {
+    update('carouselImages', [...carouselImages, dataUrl]);
+  };
+
+  const removeCarouselImage = (idx: number) => {
+    update('carouselImages', carouselImages.filter((_, i) => i !== idx));
+  };
+
+  const handleCarouselUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => { if (ev.target?.result) addCarouselImage(ev.target.result as string); };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  };
+
+  const handleCarouselPaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/')) {
+        const file = items[i].getAsFile();
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = ev => { if (ev.target?.result) addCarouselImage(ev.target.result as string); };
+          reader.readAsDataURL(file);
+        }
+        break;
+      }
+    }
+  };
+
   const renderSocialFields = () => (
     <div className="grid grid-cols-2 gap-3">
       {renderSourcePlatformPicker(['Facebook', 'Instagram', 'X', 'LinkedIn', 'TikTok', 'Website'], true)}
@@ -3199,6 +3508,35 @@ function AddLearningModal({ onClose, onAdd, onUpdate, initialCard }: {
           minHeight={120}
         />
       </div>
+
+      {/* ── Carousel Images (IG-style multi-slide) ── */}
+      <div className="col-span-2">
+        <label className={labelCls}>
+          Carousel Images <span className="text-gray-400 font-normal">— อัปโหลดหลายภาพ หรือวาง (Ctrl+V) ทีละภาพ</span>
+        </label>
+        <div
+          className="mt-1 rounded-2xl border-2 border-dashed border-orange-200 bg-orange-50/30 p-3"
+          onPaste={handleCarouselPaste}
+        >
+          {carouselImages.length > 0 && (
+            <div className="flex gap-2 flex-wrap mb-3">
+              {carouselImages.map((src, idx) => (
+                <div key={idx} className="relative group shrink-0">
+                  <img src={src} alt={`slide ${idx + 1}`} className="w-20 h-20 rounded-xl object-cover border-2 border-white shadow-sm" />
+                  <div className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-orange-500 text-white flex items-center justify-center text-[9px] font-black shadow-sm">{idx + 1}</div>
+                  <button type="button" onClick={() => removeCarouselImage(idx)}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-[9px] font-black shadow-sm opacity-0 group-hover:opacity-100 transition">✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-white border border-dashed border-orange-300 px-4 py-3 text-[12px] font-bold text-orange-500 hover:bg-orange-50 transition">
+            <Image size={14} /> เพิ่มภาพ (หลายภาพได้) หรือกด Ctrl+V วางภาพในกรอบนี้
+            <input type="file" className="hidden" accept="image/*" multiple onChange={handleCarouselUpload} />
+          </label>
+        </div>
+      </div>
+
       <div className="col-span-2">
         <label className={labelCls}>Page / Creator Icon</label>
         <div className="flex items-center gap-2 mt-1">
@@ -3261,232 +3599,186 @@ function AddLearningModal({ onClose, onAdd, onUpdate, initialCard }: {
       transition={{ duration: 0.18, ease: 'easeOut' }}
     >
       <motion.div
-        className="flex h-[803px] max-h-[calc(100vh-24px)] w-[1040px] max-w-[calc(100vw-20px)] flex-col overflow-hidden rounded-3xl bg-white shadow-2xl shadow-violet-950/20"
+        className="flex h-[95vh] max-h-[calc(100vh-16px)] w-[1320px] max-w-[calc(100vw-16px)] flex-col overflow-hidden rounded-3xl bg-white shadow-2xl shadow-violet-950/20"
         initial={{ opacity: 0, y: 22, filter: 'blur(6px)' }}
         animate={closing ? { opacity: 0, y: 18, filter: 'blur(5px)' } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
         transition={{ type: 'spring', stiffness: 260, damping: 28, mass: 0.9 }}
       >
-        <div className="shrink-0 border-b border-violet-100 bg-gradient-to-r from-violet-50 via-white to-emerald-50 px-6 py-5">
-          <div className="flex items-start justify-between gap-4">
+        {/* ── Header ── */}
+        <div className="shrink-0 border-b border-gray-100 bg-white px-6 py-4">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-violet-500">Learning capture</p>
-              <h3 className="mt-1 text-lg font-extrabold text-gray-950">{isEdit ? 'Edit Learning Resource' : 'Add Learning Resource'}</h3>
-              <p className="text-xs text-gray-500">Fast capture first. Notes and deeper review can happen later in Read Mode.</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-violet-500">Learning Capture</p>
+              <h3 className="mt-0.5 text-[17px] font-extrabold text-gray-950">{isEdit ? 'Edit Learning Resource' : 'Add Learning Resource'}</h3>
             </div>
-            <button onClick={requestClose} className="rounded-xl p-2 text-gray-400 transition hover:bg-white hover:text-gray-700">
-              <X size={17} />
-            </button>
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            {[
-              { id: 1, label: 'Type' },
-              { id: 2, label: 'Details + Save' },
-            ].map(item => (
-              <button key={item.id} type="button" onClick={() => setStep(item.id as 1 | 2)}
-                className={`rounded-xl px-3 py-2 text-left text-xs font-bold transition ${step === item.id ? 'bg-violet-500 text-white shadow-lg shadow-violet-200' : 'bg-white text-gray-500 ring-1 ring-gray-100 hover:bg-violet-50'}`}>
-                <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px]">{item.id}</span>{item.label}
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={runAiAutofill}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 px-4 py-2 text-[12px] font-bold text-white shadow-lg shadow-violet-200 transition hover:opacity-90">
+                <Sparkles size={13} /> AI Auto-fill
               </button>
-            ))}
+              <button onClick={requestClose} className="rounded-xl p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700">
+                <X size={17} />
+              </button>
+            </div>
+          </div>
+
+          {/* Type selector — horizontal pills */}
+          <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1">
+            {CONTENT_TYPES.map(type => {
+              const Icon = type.Icon;
+              const active = form.contentType === type.key;
+              return (
+                <button key={type.key} type="button"
+                  onClick={() => setForm(f => ({ ...f, contentType: type.key, category: TYPE_CATEGORY_DEFAULTS[type.key], tags: TYPE_TAG_SUGGESTIONS[type.key].slice(0, 2) }))}
+                  className={`shrink-0 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[12px] font-bold transition-all ${
+                    active
+                      ? `border-transparent ${type.solidBg} text-white shadow-md`
+                      : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  }`}
+                >
+                  <Icon size={13} />
+                  {type.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-6">
-          <AnimatePresence mode="wait">
-          {step === 1 && (
-            <motion.div
-              key="type-step"
-              initial={{ opacity: 0, x: -14 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 14 }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            >
-            <div className="space-y-4">
-              <div className="rounded-2xl border border-violet-100 bg-violet-50/50 p-4">
-                <div className="text-sm font-bold text-gray-900">Select content type</div>
-                <div className="mt-1 text-xs text-gray-500">Each type has its own focused fields. No giant one-size-fits-all form.</div>
-              </div>
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                {CONTENT_TYPES.map(type => {
-                  const Icon = type.Icon;
-                  const active = form.contentType === type.key;
-                  return (
-                    <button key={type.key} type="button" onClick={() => selectType(type.key)}
-                      className={`rounded-2xl border p-3 text-left transition ${active ? 'border-violet-300 bg-violet-50 shadow-md shadow-violet-100' : 'border-gray-100 bg-white hover:border-violet-200 hover:bg-violet-50/50'}`}>
-                      <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl ${type.accentBg} ${type.accentText}`}>
-                        <Icon size={17} />
-                      </div>
-                      <div className="text-sm font-bold text-gray-900">{type.label}</div>
-                      <div className="mt-1 text-[11px] text-gray-500">{TYPE_CATEGORY_DEFAULTS[type.key]}</div>
-                    </button>
-                  );
-                })}
-              </div>
+        {/* ── Body — 2 column layout ── */}
+        <div className="flex flex-1 overflow-hidden">
+
+          {/* Left col — image + meta */}
+          <div className="flex w-[340px] shrink-0 flex-col gap-4 overflow-y-auto border-r border-gray-100 bg-gray-50/40 p-5">
+
+            {/* Cover image */}
+            <div className={`relative overflow-hidden rounded-2xl ${form.imageUrl ? 'bg-gray-100' : `bg-gradient-to-br ${typeDef.accentBg} opacity-80`}`} style={{ minHeight: 180 }}>
+              {form.imageUrl ? (
+                <>
+                  <img src={form.imageUrl} alt="cover" className="h-[180px] w-full object-contain" />
+                  <button type="button" onClick={() => update('imageUrl', '')}
+                    className="absolute right-2 top-2 rounded-lg bg-black/50 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm hover:bg-black/70">
+                    Remove
+                  </button>
+                </>
+              ) : (
+                <div className="flex h-[180px] flex-col items-center justify-center gap-2">
+                  <TypeIcon size={32} className="text-white/60" />
+                  <p className="text-[11px] font-semibold text-white/60">ยังไม่มีรูปปก</p>
+                </div>
+              )}
             </div>
-            </motion.div>
-          )}
 
-          {step === 2 && (
-            <motion.div
-              key="details-step"
-              initial={{ opacity: 0, x: -14 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 14 }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            >
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm">
-                <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${typeDef.accentBg} ${typeDef.accentText}`}>
-                  <TypeIcon size={20} />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-gray-900">{typeDef.label}</div>
-                  <div className="text-xs text-gray-500">Paste a link or upload a file, then review the key fields below. AI Auto-fill stays here when you want a faster draft.</div>
-                </div>
+            {/* Upload / paste hint */}
+            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-gray-200 bg-white py-2.5 text-[12px] font-semibold text-gray-500 transition hover:border-violet-300 hover:text-violet-600">
+              <Upload size={13} /> Upload รูปปก
+              <input type="file" className="hidden" onChange={handleCoverUpload} accept="image/*" />
+            </label>
+            <p className="text-center text-[10px] text-gray-400">หรือ Ctrl+V เพื่อวางรูปจาก clipboard</p>
+
+            {aiState === 'done' && (
+              <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-[11px] font-bold text-emerald-700">
+                ✓ AI drafted metadata — ตรวจสอบก่อนบันทึก
               </div>
+            )}
 
-              <div className="grid gap-3 md:grid-cols-[1fr_auto]">
-                <div>
-                  <label className={labelCls}>{form.contentType === 'pdf' ? 'Source URL (optional)' : 'Source URL'} <span className="text-rose-500">*</span></label>
-                  <input className={inputCls} value={form.sourceUrl}
-                    onChange={e => update('sourceUrl', e.target.value)}
-                    placeholder={form.contentType === 'video' ? 'https://youtube.com/watch...' : 'https://...'} />
-                  {fieldError('source')}
-                </div>
-                <label className="mt-5 flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-violet-200 px-4 py-2 text-xs font-bold text-violet-600 transition hover:bg-violet-50">
-                  <Upload size={14} /> Upload
+            {/* Source URL */}
+            <div>
+              <label className={labelCls}>{form.contentType === 'pdf' ? 'Source URL (optional)' : 'Source URL'}</label>
+              <div className="mt-1 flex gap-2">
+                <input className={`${inputCls} flex-1`} value={form.sourceUrl}
+                  onChange={e => update('sourceUrl', e.target.value)}
+                  placeholder={form.contentType === 'video' ? 'https://youtube.com/...' : 'https://...'} />
+                <label className="flex shrink-0 cursor-pointer items-center gap-1 rounded-xl border border-gray-200 px-3 text-[11px] font-bold text-gray-500 hover:bg-gray-50">
+                  <Upload size={12} />
                   <input type="file" className="hidden" onChange={handleSourceFile} accept={form.contentType === 'pdf' ? '.pdf,.doc,.docx' : '*'} />
                 </label>
               </div>
-
-              {form.fileName && (
-                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-semibold text-emerald-700">
-                  File ready: {form.fileName} {form.fileSize && <span className="text-emerald-500">({form.fileSize} MB)</span>}
-                </div>
-              )}
-
-              <div className="grid gap-3 md:grid-cols-[1fr_auto]">
-                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-gray-600 transition hover:bg-gray-50">
-                  <Upload size={14} /> Upload preview image
-                  <input type="file" className="hidden" onChange={handleCoverUpload} accept="image/*" />
-                </label>
-                <button type="button" onClick={runAiAutofill}
-                  className="rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-violet-200 transition hover:opacity-90">
-                  <Sparkles size={14} className="mr-1 inline" /> AI Auto-fill
-                </button>
+              {fieldError('source')}
+            </div>
+            {form.fileName && (
+              <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-2.5 text-[11px] font-semibold text-emerald-700">
+                {form.fileName} {form.fileSize && `(${form.fileSize} MB)`}
               </div>
+            )}
 
-              {form.imageUrl && (
-                <div className="rounded-2xl border border-violet-100 bg-white p-3 shadow-sm">
-                  <div className="mb-2 flex items-center justify-between">
-                    <div className="text-xs font-bold text-gray-800">Image preview</div>
-                    <button type="button" onClick={() => update('imageUrl', '')}
-                      className="rounded-lg border border-rose-200 px-2 py-1 text-[11px] font-bold text-rose-500 transition hover:bg-rose-50">
-                      Remove
-                    </button>
-                  </div>
-                  <div className="relative aspect-video overflow-hidden rounded-xl bg-gray-100">
-                    <img
-                      src={form.imageUrl}
-                      alt="Preview"
-                      className="absolute inset-0 h-full w-full object-cover"
-                    />
-                  </div>
-                </div>
-              )}
+            {/* Review reminder */}
+            <div>
+              <label className={labelCls}>Review reminder</label>
+              <select className={`${inputCls} mt-1`} value={form.reviewDays} onChange={e => update('reviewDays', Number(e.target.value) as AddLearningFormState['reviewDays'])}>
+                {[3, 5, 10, 30].map(d => <option key={d} value={d}>Review in {d} days</option>)}
+              </select>
+            </div>
 
-              {aiState === 'done' && (
-                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-bold text-emerald-700">
-                  Metadata drafted. Review before saving.
-                </div>
-              )}
+            {/* Tags */}
+            <div>{renderTags()}</div>
+          </div>
 
-              <div className="rounded-2xl border border-violet-100 bg-white p-4 shadow-sm">
-                <div className="mb-3 flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-bold text-gray-900">Review required fields</div>
-                    <div className="text-xs text-gray-500">Short by default. Advanced notes stay collapsed.</div>
-                  </div>
-                  <div className="rounded-xl bg-violet-50 px-3 py-1 text-[11px] font-bold text-violet-600">{typeDef.label}</div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="col-span-2">
-                    <label className={labelCls}>Title <span className="text-rose-500">*</span></label>
-                    <input className={inputCls} value={form.title} onChange={e => update('title', e.target.value)} />
-                    {fieldError('title')}
-                  </div>
-                  <div>
-                    <label className={labelCls}>Category <span className="text-rose-500">*</span></label>
-                    <input className={inputCls} value={form.category} onChange={e => update('category', e.target.value)} />
-                    {fieldError('category')}
-                  </div>
-                  <div>
-                    <label className={labelCls}>Review reminder <span className="text-rose-500">*</span></label>
-                    <select className={inputCls} value={form.reviewDays} onChange={e => update('reviewDays', Number(e.target.value) as AddLearningFormState['reviewDays'])}>
-                      {[3, 5, 10, 30].map(days => <option key={days} value={days}>Review in {days} days</option>)}
-                    </select>
-                  </div>
-                  <div className="col-span-2">{renderTags()}</div>
-                </div>
+          {/* Right col — main fields */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-5">
+
+            {/* Title + Tagline */}
+            <div className="space-y-3">
+              <div>
+                <label className={labelCls}>Title <span className="text-rose-500">*</span></label>
+                <input className={`${inputCls} mt-1 text-[15px] font-semibold`} value={form.title} onChange={e => update('title', e.target.value)} placeholder="ชื่อหนังสือ / คอร์ส / บทความ..." />
+                {fieldError('title')}
               </div>
-
-              <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-                <div className="mb-1 text-sm font-bold text-gray-900">{typeDef.label} fields</div>
-                <div className="mb-3 text-xs text-gray-500">Capture only the essentials here. Progress, extracted content, and deeper notes can wait for Reading Mode.</div>
-                {renderTypeFields()}
+              <div>
+                <label className={labelCls}>Tagline / Insight ส่วนตัว</label>
+                <textarea className={`${inputCls} mt-1 resize-none`} rows={2} value={form.keyInsight}
+                  onChange={e => update('keyInsight', e.target.value)}
+                  placeholder="เขียนในแบบของตัวเอง เช่น อ่านเพื่อเข้าใจ mindset นักลงทุน" />
               </div>
-
-              <div className="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm">
-                <div className="mb-3 flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-bold text-gray-900">Quick Notes & Highlights</div>
-                    <div className="text-xs text-gray-500">Keep this short. Deeper reflection can wait for Reading Mode.</div>
-                  </div>
-                  <div className="rounded-xl bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-600">Rich Text</div>
-                </div>
-                <div>
-                  <label className={labelCls}>Key Takeaways</label>
-                  {textArea('keyTakeaways', 'Use bold, underline, highlight, headings, lists, or quotes for the key parts...', 5)}
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
-                <button type="button" onClick={() => setAdvancedOpen(o => !o)}
-                  className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-bold text-gray-900">
-                  Show Advanced Fields
-                  <ChevronRight size={16} className={`transition ${advancedOpen ? 'rotate-90' : ''}`} />
-                </button>
-                {advancedOpen && (
-                  <div className="space-y-3 border-t border-gray-100 p-4">
-                    <div><label className={labelCls}>AI Summary</label>{textArea('aiSummary', 'AI generated or manual summary...', 3)}</div>
-                    <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-500">
-                      Understanding, application, review questions, and action steps are now meant to be added in Reading Mode.
-                    </div>
-                  </div>
-                )}
+              <div>
+                <label className={labelCls}>Category <span className="text-rose-500">*</span></label>
+                <input className={`${inputCls} mt-1`} value={form.category} onChange={e => update('category', e.target.value)} />
+                {fieldError('category')}
               </div>
             </div>
-            </motion.div>
-          )}
-          </AnimatePresence>
+
+            {/* Type-specific fields */}
+            <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+              <div className="mb-3 flex items-center gap-2">
+                <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${typeDef.accentBg} ${typeDef.accentText}`}>
+                  <TypeIcon size={14} />
+                </div>
+                <span className="text-[13px] font-bold text-gray-900">{typeDef.label} Details</span>
+              </div>
+              {renderTypeFields()}
+            </div>
+
+            {/* Key Takeaways */}
+            <div className="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[13px] font-bold text-gray-900">Key Takeaways</span>
+                <span className="rounded-lg bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-600">Rich Text</span>
+              </div>
+              {textArea('keyTakeaways', 'จดสิ่งที่สำคัญ — รองรับ bold, highlight, bullet...', 4)}
+            </div>
+
+            {/* Advanced */}
+            <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+              <button type="button" onClick={() => setAdvancedOpen(o => !o)}
+                className="flex w-full items-center justify-between px-4 py-3 text-left text-[13px] font-bold text-gray-600">
+                Advanced Fields
+                <ChevronRight size={15} className={`transition ${advancedOpen ? 'rotate-90' : ''}`} />
+              </button>
+              {advancedOpen && (
+                <div className="space-y-3 border-t border-gray-100 p-4">
+                  <div><label className={labelCls}>AI Summary</label>{textArea('aiSummary', 'AI generated or manual summary...', 3)}</div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-gray-100 bg-white px-6 py-5">
+        {/* ── Footer ── */}
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-gray-100 bg-white px-6 py-4">
           <button onClick={requestClose} className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-bold text-gray-600 transition hover:bg-gray-50">Cancel</button>
-          <div className="flex gap-2">
-            {step > 1 && <button onClick={() => setStep(1)}
-              className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-bold text-gray-600 transition hover:bg-gray-50">Back</button>}
-            {step < 2 ? (
-              <button onClick={goNext}
-                className="rounded-xl bg-violet-500 px-5 py-2 text-sm font-bold text-white shadow-lg shadow-violet-200 transition hover:bg-violet-600">
-                Next
-              </button>
-            ) : (
-              <button onClick={save}
-                className="rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 px-5 py-2 text-sm font-bold text-white shadow-lg shadow-violet-200 transition hover:opacity-90">
-                {isEdit ? 'Save Changes' : 'Save Learning'}
-              </button>
-            )}
-          </div>
+          <button onClick={save}
+            className="rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 px-6 py-2 text-sm font-bold text-white shadow-lg shadow-violet-200 transition hover:opacity-90">
+            {isEdit ? 'Save Changes' : 'Save Learning'}
+          </button>
         </div>
       </motion.div>
     </motion.div>,
@@ -3618,7 +3910,7 @@ function StepBoxes({
   const boxes = [
     {
       n: 1, label: 'Understand', sub: 'จับใจความสำคัญ', icon: Lightbulb,
-      accent: 'bg-violet-400', numCls: 'bg-violet-100 text-violet-700',
+      accent: 'bg-violet-400', numCls: 'bg-violet-100 text-violet-700', ringCls: 'ring-violet-200',
       value: understanding === 'Notes not added yet.' ? '' : understanding,
       set: setUnderstanding,
       placeholder: `สิ่งสำคัญที่ได้จาก${subjectLabel}คืออะไร...`,
@@ -3626,14 +3918,14 @@ function StepBoxes({
     },
     {
       n: 2, label: 'Connect', sub: 'เชื่อมกับชีวิตจริง', icon: Link2,
-      accent: 'bg-sky-400', numCls: 'bg-sky-100 text-sky-700',
+      accent: 'bg-sky-400', numCls: 'bg-sky-100 text-sky-700', ringCls: 'ring-sky-200',
       value: keyTakeaways, set: setKeyTakeaways,
       placeholder: 'เนื้อหานี้เชื่อมโยงกับชีวิต/งานของคุณยังไง...',
       done: filled(keyTakeaways),
     },
     {
       n: 3, label: 'Apply', sub: 'วางแผนใช้ยังไง', icon: Target,
-      accent: 'bg-emerald-400', numCls: 'bg-emerald-100 text-emerald-700',
+      accent: 'bg-emerald-400', numCls: 'bg-emerald-100 text-emerald-700', ringCls: 'ring-emerald-200',
       value: application === 'Application not added yet.' ? '' : application,
       set: setApplication,
       placeholder: 'จะนำไอเดียนี้ไปใช้จริงยังไง...',
@@ -3641,72 +3933,159 @@ function StepBoxes({
     },
     {
       n: 4, label: 'Act', sub: 'action เล็กๆ', icon: Zap,
-      accent: 'bg-amber-400', numCls: 'bg-amber-100 text-amber-700',
+      accent: 'bg-amber-400', numCls: 'bg-amber-100 text-amber-700', ringCls: 'ring-amber-200',
       value: nextAction, set: setNextAction,
       placeholder: 'action เล็กๆ ที่จะลงมือทำวันนี้...',
       done: filled(nextAction),
     },
   ];
 
+  // Auto-open the first unfilled step
+  const firstUnfilledN = boxes.find(b => !b.done)?.n ?? null;
+  const [expandedStep, setExpandedStep] = useState<number | null>(firstUnfilledN);
+
+  const toggleStep = (n: number) => setExpandedStep(prev => prev === n ? null : n);
+
+  const handleConfirm = (n: number) => {
+    setConfirmedSteps(prev => new Set([...prev, n]));
+    // Auto-close this step and open next unfilled
+    const nextUnfilled = boxes.find(b => b.n > n && !b.done && !confirmedSteps.has(b.n));
+    setExpandedStep(nextUnfilled?.n ?? null);
+  };
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2.5">
       {boxes.map(box => {
         const Icon = box.icon;
         const isConfirmed = confirmedSteps.has(box.n) || box.done;
+        const isExpanded = expandedStep === box.n;
         const hasText = !!box.value?.trim();
+        const previewText = box.value?.trim().slice(0, 60);
+
         return (
           <div
             key={box.n}
-            className={`relative rounded-2xl border-2 overflow-hidden bg-white transition-all duration-300 ${
+            className={`rounded-2xl border overflow-hidden bg-white transition-all duration-300 ${
               isConfirmed
-                ? 'border-emerald-300 shadow-[0_0_0_3px_rgba(52,211,153,0.10)]'
-                : 'border-gray-200 focus-within:border-violet-200'
+                ? 'border-emerald-200 shadow-[0_2px_12px_rgba(52,211,153,0.10)]'
+                : isExpanded
+                ? `border-gray-200 shadow-[0_4px_20px_rgba(0,0,0,0.06)] ring-2 ${box.ringCls}`
+                : 'border-gray-100 shadow-sm hover:border-gray-200'
             }`}
           >
-            <div className={`h-1 w-full ${isConfirmed ? 'bg-emerald-400' : box.accent} opacity-75 transition-colors duration-300`} />
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-3">
+            {/* Collapsed / Header row — always visible */}
+            <div
+              onClick={() => toggleStep(box.n)}
+              className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50/60 cursor-pointer"
+            >
+              {/* Step number */}
+              <span className={`shrink-0 text-[10px] font-black px-1.5 py-0.5 rounded-lg tabular-nums leading-none ${
+                isConfirmed ? 'bg-emerald-100 text-emerald-700' : box.numCls
+              }`}>
+                {String(box.n).padStart(2, '0')}
+              </span>
+
+              {/* Label + sub */}
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-lg tabular-nums leading-none ${box.numCls}`}>
-                    {String(box.n).padStart(2, '0')}
+                  <span className={`text-[13px] font-bold leading-none ${isConfirmed ? 'text-emerald-700' : 'text-gray-800'}`}>
+                    {box.label}
                   </span>
-                  <div>
-                    <div className="text-[13px] font-bold text-gray-800 leading-none">{box.label}</div>
-                    <div className={`text-[10px] font-semibold mt-0.5 ${isConfirmed ? 'text-emerald-600' : 'text-gray-400'}`}>
-                      {box.sub}
-                    </div>
-                  </div>
+                  <span className={`text-[10px] font-semibold ${isConfirmed ? 'text-emerald-500' : 'text-gray-400'}`}>
+                    {box.sub}
+                  </span>
                 </div>
-                <Icon size={14} className={`${isConfirmed ? 'text-emerald-400' : 'text-gray-300'} transition-colors shrink-0`} />
+                {/* Preview text when collapsed */}
+                {!isExpanded && previewText && (
+                  <p className="text-[11px] text-gray-400 mt-0.5 truncate leading-relaxed">
+                    {previewText}{(box.value?.trim().length ?? 0) > 60 ? '…' : ''}
+                  </p>
+                )}
+                {!isExpanded && !previewText && (
+                  <p className="text-[11px] text-gray-300 mt-0.5 italic">ยังไม่ได้บันทึก</p>
+                )}
               </div>
-              <textarea
-                value={box.value}
-                onChange={e => {
-                  box.set(e.target.value);
-                  if (confirmedSteps.has(box.n)) {
-                    setConfirmedSteps(prev => { const next = new Set(prev); next.delete(box.n); return next; });
-                  }
-                }}
-                placeholder={box.placeholder}
-                rows={3}
-                className="w-full text-[13px] bg-transparent resize-none focus:outline-none text-gray-700 placeholder:text-gray-300 leading-relaxed border-0"
-              />
-              <div className="mt-3 flex justify-end">
-                <button
-                  onClick={() => { if (hasText) setConfirmedSteps(prev => new Set([...prev, box.n])); }}
-                  disabled={!hasText}
-                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-[11px] font-bold transition-all duration-200 ${
-                    isConfirmed
-                      ? 'bg-emerald-500 text-white'
-                      : hasText
-                      ? 'bg-sky-500 hover:bg-sky-600 text-white'
-                      : 'bg-gray-100 text-gray-300 cursor-not-allowed'
-                  }`}
-                >
-                  {isConfirmed ? <><Check size={11} strokeWidth={3} /> บันทึกแล้ว</> : 'เสร็จแล้ว'}
-                </button>
+
+              {/* Status badge + edit/toggle */}
+              <div className="flex items-center gap-2 shrink-0">
+                {isConfirmed ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
+                    <Check size={9} strokeWidth={3} /> บันทึกแล้ว
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 text-[10px] font-semibold">
+                    ยังไม่ได้บันทึก
+                  </span>
+                )}
+                {isConfirmed && !isExpanded && (
+                  <motion.button
+                    onClick={e => { e.stopPropagation(); toggleStep(box.n); }}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-gray-200 bg-white text-gray-400 text-[10px] font-semibold hover:border-violet-300 hover:text-violet-500 transition-colors"
+                    whileHover={{ scale: 1.08, y: -1 }}
+                    whileTap={{ scale: 0.93 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                  >
+                    <Pencil size={9} /> แก้ไข
+                  </motion.button>
+                )}
+                {!isConfirmed && (
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${
+                    isExpanded ? 'bg-gray-100 border-gray-200' : 'bg-white border-gray-200 hover:border-gray-300'
+                  }`}>
+                    {isExpanded
+                      ? <Minus size={10} className="text-gray-500" />
+                      : <Plus size={10} className="text-gray-500" />
+                    }
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Expanded body */}
+            <AnimatePresence initial={false}>
+            {isExpanded && (
+              <motion.div
+                key="body"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                style={{ overflow: 'hidden' }}
+              >
+                <div className="px-4 pb-4">
+                  <div className={`h-px w-full mb-3 ${isConfirmed ? 'bg-emerald-100' : 'bg-gray-100'}`} />
+                  <textarea
+                    value={box.value}
+                    onChange={e => {
+                      box.set(e.target.value);
+                      if (confirmedSteps.has(box.n)) {
+                        setConfirmedSteps(prev => { const next = new Set(prev); next.delete(box.n); return next; });
+                      }
+                    }}
+                    placeholder={box.placeholder}
+                    rows={3}
+                    autoFocus
+                    className="w-full text-[13px] bg-transparent resize-none focus:outline-none text-gray-700 placeholder:text-gray-300 leading-relaxed"
+                  />
+                  <div className="mt-3 flex justify-end">
+                    <button
+                      onClick={() => { if (hasText) handleConfirm(box.n); }}
+                      disabled={!hasText}
+                      className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-[11px] font-bold transition-all duration-200 ${
+                        isConfirmed
+                          ? 'bg-emerald-500 text-white'
+                          : hasText
+                          ? 'bg-sky-500 hover:bg-sky-600 text-white'
+                          : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                      }`}
+                    >
+                      {isConfirmed ? <><Check size={11} strokeWidth={3} /> บันทึกแล้ว</> : 'เสร็จแล้ว'}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+            </AnimatePresence>
           </div>
         );
       })}
@@ -3767,10 +4146,10 @@ function CourseDetailModal({
   const stepProgressPct = Math.round([
     true,
     status === 'Reading' || status === 'Done',
-    !!(card.understanding?.trim() && card.understanding !== 'Notes not added yet.'),
-    !!(card.keyTakeaways?.trim()),
-    !!(card.application?.trim() && card.application !== 'Application not added yet.'),
-    !!(card.nextAction?.trim()),
+    !!(understanding?.trim() && understanding !== 'Notes not added yet.'),
+    !!(keyTakeaways?.trim()),
+    !!(application?.trim() && application !== 'Application not added yet.'),
+    !!(nextAction?.trim()),
   ].filter(Boolean).length / 6 * 100);
 
   // Pomodoro
@@ -3885,11 +4264,13 @@ function CourseDetailModal({
     if (!mounted) return;
     overlayRef.current?.focus({ preventScroll: true });
   }, [mounted]);
+  const handleSaveCloseRef = useRef<() => void>(() => {});
+  useEffect(() => { handleSaveCloseRef.current = handleSaveClose; });
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleSaveCloseRef.current(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
 
   const processImagePaste = (items: DataTransferItemList) => {
     for (let i = 0; i < items.length; i++) {
@@ -4138,7 +4519,7 @@ function CourseDetailModal({
     const newNextReview = didClarityWork ? nextReviewDate(newCount) : card.nextReviewAt;
     onSave(
       card.id, understanding.trim(), application.trim(), rating, userTags,
-      content.trim(), status, progress, keyTakeaways.trim(), nextAction.trim(),
+      content.trim(), status, stepProgressPct, keyTakeaways.trim(), nextAction.trim(),
       clarityQ1.trim(), clarityQ2.trim(), clarityBelief || undefined,
       newNextReview, newCount || undefined,
       typeNotes.trim() || undefined,
@@ -4455,6 +4836,16 @@ function CourseDetailModal({
                 <Image size={20} className="text-white" />
               </div>
             </label>
+
+            {/* Quote box — shows understanding note under cover image */}
+            <div className="mt-3 p-3 rounded-xl bg-violet-50 border border-violet-100">
+              <div className="text-violet-300 text-2xl leading-none mb-1 font-serif">"</div>
+              {!isRichTextEmpty(understanding) && understanding !== 'Notes not added yet.'
+                ? <RichTextContent value={understanding} className="text-[11px] font-medium italic leading-relaxed text-violet-800 line-clamp-4" />
+                : <p className="text-[11px] italic text-violet-300">ยังไม่มี insight...</p>
+              }
+              <p className="text-[10px] text-violet-400 mt-1.5 font-semibold">— {card.provider}</p>
+            </div>
           </div>
 
           <div className="px-4 pb-4 flex flex-col gap-3 flex-1">
@@ -4635,12 +5026,23 @@ function CourseDetailModal({
                 Comfort Reading
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setReadingMode(false)}
-                  className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-gray-500 shadow-sm transition hover:text-gray-700"
-                >
-                  Normal Mode
-                </button>
+                {/* Reading / Focus Mode toggle */}
+                <div className="flex items-center rounded-full border border-violet-100 bg-violet-50/60 p-0.5">
+                  <button
+                    onClick={() => setReadingMode(true)}
+                    className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold transition-all ${readingMode ? 'bg-white text-violet-600 shadow-sm' : 'text-violet-400 hover:text-violet-600'}`}
+                  >
+                    <BookOpen size={11} />
+                    Reading
+                  </button>
+                  <button
+                    onClick={() => setReadingMode(false)}
+                    className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold transition-all ${!readingMode ? 'bg-white text-amber-600 shadow-sm' : 'text-amber-400 hover:text-amber-600'}`}
+                  >
+                    <Zap size={11} />
+                    Focus
+                  </button>
+                </div>
                 <button
                   onClick={onClose}
                   className="flex h-8 w-8 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-400 shadow-sm transition hover:bg-red-100"
@@ -4652,8 +5054,8 @@ function CourseDetailModal({
           </div>
           )}
 
-          <div className={`flex-1 overflow-y-auto ${readingMode ? 'px-6 py-6 sm:px-8 sm:py-7' : 'px-6 py-5'}`}>
-            <div className={`${readingMode ? 'mx-auto w-full max-w-[1080px]' : ''}`}>
+          <div className={`flex-1 overflow-y-auto ${readingMode ? 'px-10 py-5' : 'px-6 py-5'}`}>
+            <div className={`${readingMode ? 'w-full' : ''}`}>
             {/* Title block — skip for article/social (own title) AND for reading mode types that render their own header */}
             {card.contentType !== 'article' && card.contentType !== 'social' && !(readingMode && (card.contentType === 'book' || card.contentType === 'video' || card.contentType === 'podcast' || card.contentType === 'course' || card.contentType === 'pdf')) && (
             <div className="mb-5">
@@ -4664,7 +5066,7 @@ function CourseDetailModal({
             </div>
             )}
 
-            {!isRichTextEmpty(understanding) && !(readingMode && card.contentType === 'book') && (
+            {!isRichTextEmpty(understanding) && !(readingMode && card.contentType === 'book') && !(readingMode && card.contentType === 'social') && (
               <div className="mb-5 p-4 rounded-xl bg-violet-50 border-l-4 border-violet-400">
                 <div className="text-violet-300 text-3xl leading-none mb-1 font-serif">"</div>
                 <RichTextContent value={understanding} className="text-sm font-medium italic leading-relaxed text-violet-800" />
@@ -4828,12 +5230,12 @@ function CourseDetailModal({
                           <>
                             {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto shadow-[0_4px_24px_rgba(0,0,0,0.07)] ring-1 ring-gray-100">
                                 <div className="flex items-center gap-2 mb-3">
                                   <AlignLeft size={13} className="text-gray-400" />
                                   <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
                                 </div>
-                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
+                                <ReadableContent value={content} />
                               </div>
                             ) : (
                               <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
@@ -4993,12 +5395,12 @@ function CourseDetailModal({
                           <>
                             {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto shadow-[0_4px_24px_rgba(0,0,0,0.07)] ring-1 ring-gray-100">
                                 <div className="flex items-center gap-2 mb-3">
                                   <AlignLeft size={13} className="text-gray-400" />
                                   <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
                                 </div>
-                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
+                                <ReadableContent value={content} />
                               </div>
                             ) : (
                               <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
@@ -5213,12 +5615,12 @@ function CourseDetailModal({
                           <>
                             {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto shadow-[0_4px_24px_rgba(0,0,0,0.07)] ring-1 ring-gray-100">
                                 <div className="flex items-center gap-2 mb-3">
                                   <AlignLeft size={13} className="text-gray-400" />
                                   <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
                                 </div>
-                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
+                                <ReadableContent value={content} />
                               </div>
                             ) : (
                               <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
@@ -5448,12 +5850,12 @@ function CourseDetailModal({
                           <>
                             {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto shadow-[0_4px_24px_rgba(0,0,0,0.07)] ring-1 ring-gray-100">
                                 <div className="flex items-center gap-2 mb-3">
                                   <AlignLeft size={13} className="text-gray-400" />
                                   <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
                                 </div>
-                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
+                                <ReadableContent value={content} />
                               </div>
                             ) : (
                               <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
@@ -5654,12 +6056,12 @@ function CourseDetailModal({
                           <>
                             {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto shadow-[0_4px_24px_rgba(0,0,0,0.07)] ring-1 ring-gray-100">
                                 <div className="flex items-center gap-2 mb-3">
                                   <AlignLeft size={13} className="text-gray-400" />
                                   <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
                                 </div>
-                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
+                                <ReadableContent value={content} />
                               </div>
                             ) : (
                               <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
@@ -5752,12 +6154,12 @@ function CourseDetailModal({
                           <>
                             {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto shadow-[0_4px_24px_rgba(0,0,0,0.07)] ring-1 ring-gray-100">
                                 <div className="flex items-center gap-2 mb-3">
                                   <AlignLeft size={13} className="text-gray-400" />
                                   <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
                                 </div>
-                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
+                                <ReadableContent value={content} />
                               </div>
                             ) : (
                               <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
@@ -5795,8 +6197,14 @@ function CourseDetailModal({
                   if (p.includes('threads')) return { name: 'Threads', color: 'from-gray-800 to-black' };
                   return { name: card.provider ?? 'Social', color: 'from-orange-400 to-pink-500' };
                 })();
+
+                // Build slide list: carouselImages first, else fall back to single imageUrl
+                const allSlides: string[] = card.carouselImages && card.carouselImages.length > 0
+                  ? card.carouselImages
+                  : card.imageUrl ? [card.imageUrl] : [];
+
                 return (
-                  <div className="max-w-[720px] mx-auto">
+                  <div className="w-full">
                     {/* ═══ 1. Content Header (compact) ═══ */}
                     <div className="mb-6 pb-5 border-b border-orange-100">
                       {/* AI-generated Title */}
@@ -5831,23 +6239,26 @@ function CourseDetailModal({
                       </div>
                     </div>
 
-                    {/* ═══ 2. Main Content Body — Compact original preview ═══ */}
-                    <div className="mb-4">
-                      <div className="rounded-2xl border border-orange-100 bg-orange-50/20 overflow-hidden">
-                        {card.imageUrl && (
-                          <div className="w-full overflow-hidden">
-                            <img src={card.imageUrl} alt={card.title}
-                              className="w-full h-auto block" />
-                          </div>
-                        )}
-                        {card.tags.length > 0 && (
-                          <div className="px-4 py-3.5 flex flex-wrap gap-1.5">
-                            {card.tags.map((t, i) => (
-                              <span key={i} className="text-[11px] text-sky-500 font-medium">{t}</span>
-                            ))}
-                          </div>
-                        )}
+                    {/* ═══ 2. Carousel / Single image ═══ */}
+                    {allSlides.length > 0 && <SocialCarousel slides={allSlides} />}
+
+                    {/* Tags */}
+                    {card.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {card.tags.map((t, i) => (
+                          <span key={i} className="text-[11px] text-sky-500 font-medium">{t}</span>
+                        ))}
                       </div>
+                    )}
+
+                    {/* Quote / Understand note — shown under image */}
+                    <div className="mb-6 p-4 rounded-xl bg-violet-50 border-l-4 border-violet-400">
+                      <div className="text-violet-300 text-3xl leading-none mb-1 font-serif">"</div>
+                      {!isRichTextEmpty(understanding) && understanding !== 'Notes not added yet.'
+                        ? <RichTextContent value={understanding} className="text-sm font-medium italic leading-relaxed text-violet-800" />
+                        : <p className="text-sm italic text-violet-300">ยังไม่มี insight...</p>
+                      }
+                      <p className="text-xs text-violet-500 mt-2 font-medium">— {card.provider}</p>
                     </div>
 
                     {/* ═══ 3. Reflection & Application ═══ */}
@@ -5865,20 +6276,14 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
-                            {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
+                            {/* Caption / Post Text — preserves RichText highlights from Add Learning */}
+                            {!isRichTextEmpty(card.extractedPostText) && (
+                              <div className="rounded-2xl border border-orange-100 bg-white p-5 max-h-[400px] overflow-y-auto shadow-sm">
                                 <div className="flex items-center gap-2 mb-3">
-                                  <AlignLeft size={13} className="text-gray-400" />
-                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
+                                  <AlignLeft size={13} className="text-orange-400" />
+                                  <span className="text-[11px] font-black text-orange-500 uppercase tracking-wide">Caption / Post Text</span>
                                 </div>
-                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
-                              </div>
-                            ) : (
-                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
-                                <FileText size={28} className="text-gray-200 mx-auto mb-2" />
-                                <p className="text-[13px] font-semibold text-gray-400">ยังไม่มีเนื้อหา</p>
-                                <p className="text-[11px] text-gray-300 mt-1">กด Edit เพื่อเพิ่มเนื้อหาจาก Add Learning</p>
+                                <RichTextContent value={card.extractedPostText} className="text-[15px] leading-[1.9] text-gray-800" />
                               </div>
                             )}
 
@@ -6216,12 +6621,12 @@ function CourseDetailModal({
                           <>
                             {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
                             {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto">
+                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto shadow-[0_4px_24px_rgba(0,0,0,0.07)] ring-1 ring-gray-100">
                                 <div className="flex items-center gap-2 mb-3">
                                   <AlignLeft size={13} className="text-gray-400" />
                                   <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
                                 </div>
-                                <RichTextContent value={content} className="text-[15px] leading-[1.9] text-gray-800" />
+                                <ReadableContent value={content} />
                               </div>
                             ) : (
                               <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
@@ -6330,11 +6735,13 @@ function CourseDetailModal({
 
           {/* Bottom bar — reading progress driven by stepper */}
           <div className="shrink-0 px-6 py-2.5 border-t border-gray-100 bg-white flex items-center gap-3">
-            <BookOpen size={10} className="text-violet-400 shrink-0" />
+            <div className="shrink-0 w-6 h-6 rounded-lg bg-violet-100 flex items-center justify-center">
+              <BookOpen size={13} className="text-violet-600" />
+            </div>
             <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
               <div className="h-full rounded-full transition-all duration-700 bg-gradient-to-r from-violet-500 via-sky-400 to-emerald-400" style={{ width: `${stepProgressPct}%` }} />
             </div>
-            <span className="text-[11px] font-extrabold text-gray-700 font-mono shrink-0">{stepProgressPct}%</span>
+            <span className="text-[13px] font-black tabular-nums shrink-0 bg-gradient-to-r from-violet-600 to-emerald-500 bg-clip-text text-transparent">{stepProgressPct}%</span>
           </div>
         </div>
         </div>
