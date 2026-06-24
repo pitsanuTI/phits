@@ -4701,7 +4701,7 @@ function CourseDetailModal({
                   .filter(line => /^(chapter|บทที่|ch\.|part)/i.test(line.trim()))
                   .slice(0, 12);
                 return (
-                  <div className="max-w-[1060px] mx-auto">
+                  <div className="w-full">
                     {/* ═══ 1. Content Header (compact) ═══ */}
                     <div className="mb-8 pb-6 border-b border-violet-100">
                       <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -4872,7 +4872,7 @@ function CourseDetailModal({
                   return 'PDF';
                 })();
                 return (
-                  <div className="max-w-[1060px] mx-auto">
+                  <div className="w-full">
                     {/* ═══ 1. Content Header (compact, document-style) ═══ */}
                     <div className="mb-6 pb-5 border-b border-violet-100">
                       <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -5073,7 +5073,7 @@ function CourseDetailModal({
                 const lessonPct = card.totalLessons ? Math.min(100, Math.round(((card.lessonsRead ?? 0) / card.totalLessons) * 100)) : 0;
                 const modules = typeNotes.split('\n').filter(l => /^(module|section|lesson|week|unit|\d+[.:])/i.test(l.trim()));
                 return (
-                  <div className="max-w-[1060px] mx-auto">
+                  <div className="w-full">
 
                     {/* 1. Compact header */}
                     <div className="mb-5 pb-5 border-b border-sky-100">
@@ -5292,7 +5292,7 @@ function CourseDetailModal({
                 const watchPct = card.totalMins ? Math.min(100, Math.round(((card.watchedMins ?? 0) / card.totalMins) * 100)) : 0;
                 const chapterLines = typeNotes.split('\n').filter(l => /^(chapter|ch\.|part|section|\d+[.:])/i.test(l.trim()));
                 return (
-                  <div className="max-w-[1060px] mx-auto">
+                  <div className="w-full">
 
                     {/* 1. Compact header */}
                     <div className="mb-5 pb-5 border-b border-rose-100">
@@ -5736,7 +5736,7 @@ function CourseDetailModal({
                       )}
                     </div>
 
-                    <div className="border-t border-gray-100 pt-6 max-w-[1060px] mx-auto space-y-4">
+                    <div className="border-t border-gray-100 pt-6 w-full space-y-4">
                       <div className="flex items-center gap-2 mb-4">
                         <Brain size={14} className="text-emerald-500" />
                         <p className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">Reflection &amp; Application</p>
@@ -6023,7 +6023,7 @@ function CourseDetailModal({
               if (ct === 'podcast' && readingMode) {
                 const listenPct = card.totalMins ? Math.min(100, Math.round(((card.watchedMins ?? 0) / card.totalMins) * 100)) : 0;
                 return (
-                  <div className="max-w-[1060px] mx-auto">
+                  <div className="w-full">
 
                     {/* 1. Episode header */}
                     <div className="mb-5 pb-5 border-b border-teal-100">
