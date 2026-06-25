@@ -400,159 +400,199 @@ export default function MoodCalendar({
         {days.map((dy, i) => {
           const future = isFutureDay(dy.day);
           const today = isTodayDay(dy.day);
-          // For future days, never show mock data — only saved data
           const moodLevel = (!future && showMoods && dy.mood) ? dy.mood : null;
           const mood = moodLevel ? MOODS[moodLevel] : null;
           const isSelected = dy.day === selected;
           const savedEntry = savedEntries[dy.day];
           const hasSaved = savedDaySet.has(dy.day);
           const feelings = savedEntry?.feelings ?? [];
-          // Title: only show saved title, or mock title for past/today
           const displayTitle = savedEntry?.title || (!future ? dy.title : undefined);
-
-          // Score — prefer saved, fall back to mock score from current view
           const scoreVal: number | undefined = savedEntry?.score ?? (!future && dy.score > 0 ? dy.score : undefined);
-
-          // Energy: prefer saved, fall back to mock for past days only
-          const energyVal: number | undefined = savedEntry?.energy ?? (!future && dy.energy > 0 ? dy.energy : undefined);
-          const eColor = energyVal !== undefined ? energyColor(energyVal) : null;
 
           return (
             <motion.button
               key={dy.day}
-              onClick={() => handleSelect(dy.day)}
-              whileHover={{ scale: 1.025, y: -2, boxShadow: '0 10px 26px -8px rgba(124,58,237,0.22)' }}
+              onClick={() => setSelected(dy.day === selected ? 0 : dy.day)}
+              whileHover={!future ? { y: -2, boxShadow: `0 8px 20px -6px ${mood?.color ?? 'rgba(124,58,237,0.25)'}55` } : {}}
               whileTap={{ scale: 0.97 }}
-              initial={{ opacity: 0, scale: 0.92 }}
+              initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.006 }}
-              className={`relative rounded-2xl border flex flex-col items-start justify-start p-3 pb-5 transition-colors h-[148px] overflow-hidden text-left subpixel-antialiased
+              transition={{ delay: i * 0.005 }}
+              className={`relative rounded-xl border flex flex-col items-start p-2.5 h-[108px] overflow-hidden text-left transition-all
                 ${today
-                  ? 'border-2 border-purple-500 dark:border-purple-400 bg-gradient-to-br from-violet-50 via-fuchsia-50 to-pink-50 dark:from-purple-500/20 dark:via-fuchsia-500/15 dark:to-pink-500/15 ring-4 ring-purple-200/60 dark:ring-purple-500/30 shadow-[0_8px_28px_-8px_rgba(168,85,247,0.45)]'
+                  ? 'border-2 border-purple-500 ring-2 ring-purple-200/60 shadow-lg'
                   : isSelected
-                    ? 'border-purple-400 dark:border-purple-500 bg-purple-50/80 dark:bg-purple-900/30 ring-2 ring-purple-200 dark:ring-purple-700/40 shadow-md'
-                    : hasSaved
-                      ? 'border-purple-200 dark:border-purple-700/60 bg-gradient-to-b from-purple-50/60 dark:from-purple-900/30 to-white dark:to-[#181a2c] hover:border-purple-300 hover:shadow-sm'
-                      : future
-                        ? 'border-gray-50 dark:border-white/5 bg-white/60 dark:bg-white/5 hover:border-purple-100 opacity-50'
-                        : mood
-                          ? 'border-gray-100 dark:border-white/8 hover:border-purple-200 bg-white dark:bg-[#1e2035] hover:shadow-sm'
-                          : 'border-gray-50 dark:border-white/5 bg-gray-50/40 dark:bg-white/[0.03] hover:border-gray-200 dark:hover:border-white/10'}`}
+                    ? 'border-purple-400 ring-2 ring-purple-100 shadow-md'
+                    : future
+                      ? 'border-gray-100 dark:border-white/5 opacity-35 cursor-default'
+                      : 'border-gray-100 dark:border-white/8 hover:border-purple-200 hover:shadow-sm'}`}
+              style={{
+                background: today
+                  ? 'linear-gradient(135deg,#f5f3ff,#fdf4ff)'
+                  : mood?.bg ?? (hasSaved ? '#faf8ff' : 'white'),
+              }}
             >
-              {/* Pulsing glow ring for Today */}
+              {/* Today pulse ring */}
               {today && (
-                <motion.span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 rounded-2xl"
-                  style={{ boxShadow: 'inset 0 0 0 1px rgba(168,85,247,0.4)' }}
-                  animate={{ opacity: [0.6, 1, 0.6] }}
-                  transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+                <motion.span aria-hidden
+                  className="pointer-events-none absolute inset-0 rounded-xl"
+                  style={{ boxShadow: 'inset 0 0 0 1px rgba(168,85,247,0.35)' }}
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
                 />
               )}
 
-              {/* ── Row 1: Day number + Today badge ── */}
-              <div className="relative flex items-center gap-1.5 w-full">
-                <span className={`text-[16px] leading-none font-black tracking-tight tabular-nums ${
-                  today
-                    ? 'w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white flex items-center justify-center shadow-md ring-2 ring-white dark:ring-purple-950'
-                    : isSelected
-                      ? 'w-7 h-7 rounded-full bg-purple-600 text-white flex items-center justify-center'
-                      : hasSaved
-                        ? 'text-purple-700 dark:text-purple-300'
-                        : future
-                          ? 'text-gray-300 dark:text-white/20'
-                          : 'text-slate-700 dark:text-slate-300'
-                }`}>
+              {/* Row 1: day number + today badge + saved dot */}
+              <div className="flex items-center justify-between w-full">
+                <span className={`text-[13px] font-black tabular-nums leading-none
+                  ${today ? 'w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white flex items-center justify-center text-[11px] shadow-sm'
+                    : isSelected ? 'text-purple-700 dark:text-purple-300'
+                    : hasSaved ? 'text-purple-600 dark:text-purple-300'
+                    : future ? 'text-gray-300 dark:text-white/20'
+                    : 'text-slate-600 dark:text-slate-300'}`}>
                   {dy.day}
                 </span>
-                {today && (
-                  <motion.span
-                    initial={{ opacity: 0, x: -4 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="inline-flex items-center rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-2 py-[3px] text-[11px] font-black uppercase tracking-wider text-white shadow-sm"
-                  >
-                    Today
-                  </motion.span>
-                )}
+                <div className="flex items-center gap-1">
+                  {today && (
+                    <span className="text-[9px] font-black uppercase bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-1.5 py-0.5 rounded-full tracking-wide">
+                      TODAY
+                    </span>
+                  )}
+                  {!today && hasSaved && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                  )}
+                </div>
               </div>
 
-              {/* ── Row 2: Mood icon + Score (headline) ── */}
-              {showMoods && (mood || scoreVal !== undefined) && (
-                <div className="mt-2 flex items-center gap-2">
-                  {mood && moodLevel && (() => {
-                    const Icon = MOOD_ICONS[moodLevel];
-                    return (
-                      <div className="flex h-7 w-7 items-center justify-center rounded-lg shadow-inner" style={{ background: mood.bg }} title={mood.labelTh}>
-                        <Icon size={17} strokeWidth={2.5} style={{ color: mood.color }} />
-                      </div>
-                    );
-                  })()}
-                  {scoreVal !== undefined && (
-                    <span className="text-[17px] leading-none font-black tracking-tight tabular-nums" style={{ color: mood?.color ?? '#7c5cbf' }}>
-                      {scoreVal}
-                      <span className="text-[11px] text-slate-400 font-extrabold ml-0.5">/10</span>
-                    </span>
-                  )}
+              {/* Row 2: Score — large gradient number */}
+              {scoreVal !== undefined && (
+                <div className="mt-1 flex items-baseline gap-0.5">
+                  <span
+                    className="text-[22px] font-black leading-none tracking-tight tabular-nums"
+                    style={{
+                      background: `linear-gradient(135deg, ${mood?.color ?? '#7c3aed'}, ${mood?.color ?? '#a78bfa'})`,
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    }}
+                  >
+                    {scoreVal}
+                  </span>
+                  <span className="text-[10px] font-semibold text-slate-400">/10</span>
                 </div>
               )}
 
-              {/* ── Row 3: Feelings tags OR title ── */}
-              {showFeelings && feelings.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1 w-full">
-                  {feelings.slice(0, 2).map((f, fi) => (
-                    <span key={fi} className="text-[12px] leading-none flex items-center gap-1 bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200 px-2 py-[4px] rounded-md font-extrabold">
-                      {f.icon && <span className="text-[13px]">{f.icon}</span>}
-                      <span className="truncate max-w-[80px]">{f.label}</span>
-                    </span>
-                  ))}
-                  {feelings.length > 2 && (
-                    <span className="text-[11px] text-purple-500 font-extrabold self-center">+{feelings.length - 2}</span>
-                  )}
+              {/* Row 3: Mood label bold */}
+              {mood && (
+                <div className="mt-0.5 text-[11px] font-black tracking-tight" style={{ color: mood.color }}>
+                  {mood.labelTh}
                 </div>
               )}
 
-              {showFeelings && feelings.length === 0 && displayTitle && (
-                <span className="mt-2 text-[12.5px] font-extrabold text-slate-700 dark:text-slate-300 leading-tight w-full truncate tracking-tight">
-                  {displayTitle}
-                </span>
-              )}
-
-              {/* ── Row 4: Energy bar at bottom ── */}
-              {showEnergyBar && eColor && energyVal !== undefined && (
-                <div className="absolute bottom-2 left-3 right-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      <Zap size={10} strokeWidth={2.6} className="text-slate-500 dark:text-slate-400" />
-                      Energy
-                    </span>
-                    <span className="text-[12px] font-black tabular-nums" style={{ color: eColor.bar.includes('10b981') ? '#059669' : eColor.bar.includes('f59e0b') ? '#b45309' : '#be123c' }}>
-                      {energyVal}<span className="text-slate-400 font-extrabold">/10</span>
-                    </span>
-                  </div>
-                  <div className="h-[4px] rounded-full overflow-hidden" style={{ background: eColor.bg }}>
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(energyVal / 10) * 100}%` }}
-                      transition={{ duration: 0.6, delay: i * 0.01, ease: 'easeOut' }}
-                      className="h-full rounded-full"
-                      style={{ background: eColor.bar }}
-                    />
-                  </div>
+              {/* Row 4: Title or first feeling tag */}
+              {(displayTitle || feelings[0]?.label) && (
+                <div className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate w-full leading-tight">
+                  {displayTitle ?? feelings[0]?.label}
                 </div>
               )}
 
-              {/* Saved indicator dot */}
-              {showJournalDot && hasSaved && (
-                <motion.span
-                  initial={{ scale: 0 }} animate={{ scale: 1 }}
-                  transition={{ delay: 0.1 + i * 0.006, type: 'spring', stiffness: 360, damping: 22 }}
-                  className="absolute top-2.5 right-2.5 w-3 h-3 rounded-full bg-purple-500 ring-2 ring-white shadow-sm"
-                />
+              {/* Bottom mood color bar */}
+              {mood && (
+                <div className="absolute bottom-0 left-0 right-0 h-[3px] rounded-b-xl" style={{ background: mood.color }} />
               )}
             </motion.button>
           );
         })}
       </div>
+
+      {/* ── Detail Panel ─────────────────────────────────────────────── */}
+      {selected > 0 && (() => {
+        const dy = days.find(d => d.day === selected);
+        if (!dy) return null;
+        const future = isFutureDay(dy.day);
+        const savedEntry = savedEntries[selected];
+        const scoreVal = savedEntry?.score ?? (!future && dy.score > 0 ? dy.score : undefined);
+        const energyVal: number | undefined = savedEntry?.energy ?? (!future && dy.energy > 0 ? dy.energy : undefined);
+        const moodLvl = dy.mood as MoodLevel | null;
+        const mood = moodLvl ? MOODS[moodLvl] : null;
+        const feelings = savedEntry?.feelings ?? [];
+        const title = savedEntry?.title ?? (!future ? dy.title : undefined);
+        const eColor = energyVal !== undefined ? energyColor(energyVal) : null;
+
+        return (
+          <motion.div
+            key={selected}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="mt-4 rounded-2xl border border-purple-100 dark:border-white/10 bg-white dark:bg-[#1e2035] p-4 shadow-sm"
+            style={{ borderLeftWidth: 4, borderLeftColor: mood?.color ?? '#8b5cf6' }}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  {selected} {MONTH_NAMES[month - 1]} {year}
+                </div>
+                {title && (
+                  <div className="mt-1 text-[17px] font-black text-slate-800 dark:text-slate-100 leading-tight tracking-tight">
+                    {title}
+                  </div>
+                )}
+                {mood && (
+                  <span className="mt-2 inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-black" style={{ background: mood.bg, color: mood.color }}>
+                    {mood.labelTh}
+                  </span>
+                )}
+              </div>
+              {scoreVal !== undefined && (
+                <div className="flex-shrink-0 flex items-baseline gap-0.5">
+                  <span className="text-[36px] font-black leading-none tracking-tight tabular-nums" style={{ color: mood?.color ?? '#7c3aed' }}>
+                    {scoreVal}
+                  </span>
+                  <span className="text-[14px] font-semibold text-slate-400">/10</span>
+                </div>
+              )}
+            </div>
+
+            {energyVal !== undefined && eColor && (
+              <div className="mt-3">
+                <div className="flex justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1.5">
+                  <span>พลังงาน</span>
+                  <span className="tabular-nums">{energyVal}/10</span>
+                </div>
+                <div className="h-2 rounded-full overflow-hidden bg-gray-100 dark:bg-white/10">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(energyVal / 10) * 100}%` }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                    className="h-full rounded-full"
+                    style={{ background: eColor.bar }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {feelings.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {feelings.map((f, fi) => (
+                  <span key={fi} className="text-[11px] font-bold bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2.5 py-1 rounded-lg">
+                    {f.label}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-3 flex justify-end">
+              <button
+                onClick={() => onSelectDay?.(selected, year, month)}
+                className="text-[12px] font-bold text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 dark:text-purple-300 px-3 py-1.5 rounded-xl transition"
+              >
+                {savedEntries[selected] ? 'แก้ไขบันทึก' : 'เพิ่มบันทึก'} →
+              </button>
+            </div>
+          </motion.div>
+        );
+      })()}
 
       {/* Legend */}
       <div className="flex items-center justify-center gap-5 mt-4 pt-4 border-t border-gray-100 dark:border-white/5 flex-wrap">
