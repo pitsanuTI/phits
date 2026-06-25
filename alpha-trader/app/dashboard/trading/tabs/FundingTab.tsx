@@ -528,7 +528,7 @@ function AddFundingModal({
   return (
     <div className="fixed inset-0 z-[75] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-[#191a2c]">
+      <div className="relative z-10 w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-[#191a2c]">
         <div className="flex items-center justify-between px-6 py-4 border-b border-purple-100 dark:border-white/10">
           <div>
             <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">Add Funding Account</h2>
