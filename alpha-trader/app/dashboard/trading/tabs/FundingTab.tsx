@@ -580,6 +580,19 @@ function AddFundingModal({
     reader.readAsDataURL(file);
   };
 
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = Array.from(e.clipboardData?.items ?? []);
+      const imageItem = items.find(item => item.type.startsWith('image/'));
+      if (imageItem) {
+        const file = imageItem.getAsFile();
+        if (file) handleIconUpload(file);
+      }
+    };
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, []);
+
   useEscClose(onClose);
 
   return (
@@ -611,8 +624,8 @@ function AddFundingModal({
                 )}
               </div>
               <div className="text-[11px] text-gray-400">
-                <div>อัพโหลดรูป Icon ของบริษัท</div>
-                <div>เช่น โลโก้ FTMO, The 5%ers ฯลฯ</div>
+                <div className="font-semibold text-gray-500">คลิกเพื่อเลือกไฟล์ หรือ <span className="text-purple-500">Ctrl+V</span> วางรูปได้เลย</div>
+                <div className="mt-0.5">เช่น โลโก้ FTMO, The 5%ers ฯลฯ</div>
               </div>
               <input ref={fileRef} type="file" accept="image/*" className="hidden"
                 onChange={(e) => { const file = e.target.files?.[0]; if (file) handleIconUpload(file); e.target.value = ''; }} />
