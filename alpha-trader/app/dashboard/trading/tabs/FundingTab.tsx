@@ -1,5 +1,5 @@
 'use client';
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -9,10 +9,67 @@ import {
   propFirmAccounts, fundingCostData, fundingIncomeData, capitalDistribution,
 } from '@/lib/mockData';
 import KpiCard from '@/components/KpiCard';
-import { CheckCircle, AlertTriangle, Wallet, Gift, RefreshCw, TrendingUp, Plus, Trash2, X, ChevronLeft, ChevronRight, BarChart3, Calendar, DollarSign, Target, Camera, Clock, CreditCard, Landmark, Lightbulb, ClipboardList, Sparkles, Zap } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Wallet, Gift, RefreshCw, TrendingUp, Plus, Trash2, X, ChevronLeft, ChevronRight, BarChart3, Calendar, DollarSign, Target, Camera, Clock, CreditCard, Landmark, Lightbulb, ClipboardList, Sparkles, Zap, ChevronDown, Check } from 'lucide-react';
 import { Wise, Tether, Stripe, Binance, Tradingview, Bitcoin, Ethereum, Coinbase } from '@thesvg/react';
 import { PropFirmLogo } from '@/components/trading/PropFirmLogos';
 import { useEscClose } from '@/lib/useEscClose';
+import { motion, AnimatePresence } from 'framer-motion';
+
+function CustomSelect({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-3 py-2 rounded-xl border border-purple-200 bg-white text-[12px] text-gray-800 dark:border-white/10 dark:bg-[#14162a] dark:text-white hover:border-purple-400 transition-colors"
+      >
+        <span>{value}</span>
+        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown size={14} className="text-gray-400" />
+        </motion.div>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.97 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            className="absolute top-full left-0 right-0 mt-1.5 z-[100] bg-white dark:bg-[#191a2c] border border-purple-100 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden"
+          >
+            {options.map(opt => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => { onChange(opt); setOpen(false); }}
+                className={`w-full flex items-center justify-between px-4 py-2.5 text-[12px] transition-colors ${
+                  value === opt
+                    ? 'bg-purple-50 text-purple-700 font-bold dark:bg-purple-900/20 dark:text-purple-300'
+                    : 'text-gray-700 hover:bg-purple-50/60 dark:text-gray-300 dark:hover:bg-white/5'
+                }`}
+              >
+                <span>{opt}</span>
+                {value === opt && <Check size={13} className="text-purple-500" />}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 const kpis = [
   { title: 'Active Challenges', value: '4', change: 'กำลังทำอยู่', positive: true, icon: <CheckCircle size={20} color="#fff"/>, iconBg:'#d1fae5', color:'#10b981' },
@@ -575,12 +632,12 @@ function AddFundingModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400">Type</label>
-              <select value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}
-                className="w-full mt-1 px-3 py-2 rounded-xl border border-purple-200 text-[12px] dark:border-white/10 dark:bg-[#14162a] dark:text-white">
-                <option>CFO</option>
-                <option>Futures</option>
-              </select>
+              <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 mb-1 block">Type</label>
+              <CustomSelect
+                value={f.type}
+                onChange={(v) => setF({ ...f, type: v })}
+                options={['CFO', 'Futures']}
+              />
             </div>
             <div>
               <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400">Account Size *</label>
@@ -595,42 +652,34 @@ function AddFundingModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400">Phase</label>
-              <select value={f.phase} onChange={(e) => setF({ ...f, phase: e.target.value })}
-                className="w-full mt-1 px-3 py-2 rounded-xl border border-purple-200 text-[12px] dark:border-white/10 dark:bg-[#14162a] dark:text-white">
-                <option>Evaluation</option>
-                <option>High Stakes</option>
-                <option>Verification</option>
-                <option>Funded</option>
-              </select>
+              <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 mb-1 block">Phase</label>
+              <CustomSelect
+                value={f.phase}
+                onChange={(v) => setF({ ...f, phase: v })}
+                options={['Evaluation', 'High Stakes', 'Verification', 'Funded']}
+              />
             </div>
             <div>
-              <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400">Status</label>
-              <select value={f.status} onChange={(e) => setF({ ...f, status: e.target.value as any })}
-                className="w-full mt-1 px-3 py-2 rounded-xl border border-purple-200 text-[12px] dark:border-white/10 dark:bg-[#14162a] dark:text-white">
-                <option>Active</option>
-                <option>Funded</option>
-                <option>Failed</option>
-                <option>Paused</option>
-              </select>
+              <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 mb-1 block">Status</label>
+              <CustomSelect
+                value={f.status}
+                onChange={(v) => setF({ ...f, status: v as any })}
+                options={['Active', 'Funded', 'Failed', 'Paused']}
+              />
             </div>
           </div>
 
           {/* Challenge Duration */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 flex items-center gap-1">
+              <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 flex items-center gap-1 mb-1">
                 <Clock size={10} /> Challenge Duration
               </label>
-              <select value={f.duration || '30 days'} onChange={(e) => setF({ ...f, duration: e.target.value })}
-                className="w-full mt-1 px-3 py-2 rounded-xl border border-purple-200 text-[12px] dark:border-white/10 dark:bg-[#14162a] dark:text-white">
-                <option>14 days</option>
-                <option>30 days</option>
-                <option>45 days</option>
-                <option>60 days</option>
-                <option>90 days</option>
-                <option>Unlimited</option>
-              </select>
+              <CustomSelect
+                value={f.duration || '30 days'}
+                onChange={(v) => setF({ ...f, duration: v })}
+                options={['14 days', '30 days', '45 days', '60 days', '90 days', 'Unlimited']}
+              />
             </div>
             <div>
               <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400">Progress %</label>
