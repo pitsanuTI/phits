@@ -150,7 +150,7 @@ export default function FundingTab() {
         <h3 className="font-semibold text-gray-800">ภาพรวมบัญชีทุนสอบและ Funding</h3>
         <div className="flex items-center gap-3">
           <button
-            onClick={handleAddFunding}
+            onClick={() => setEditingFunding(blankFunding())}
             className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-500 px-4 py-2 text-[12px] font-extrabold text-white shadow-sm hover:shadow-md transition-all hover:opacity-90"
           >
             <Plus size={14} /> Add Account
