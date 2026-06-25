@@ -201,8 +201,8 @@ function StatCard({
       style={{ background: `linear-gradient(135deg, ${from}, ${to})`, boxShadow: `0 12px 30px ${glow}` }}
     >
       {/* Large ghost icon — decorative background */}
-      <div className="pointer-events-none absolute -bottom-3 -right-3 select-none" style={{ opacity: 0.18 }}>
-        <Icon size={88} color="#fff" strokeWidth={1} />
+      <div className="pointer-events-none absolute -bottom-2 -right-2 select-none" style={{ opacity: 0.18 }}>
+        <Icon size={48} color="#fff" strokeWidth={1} />
       </div>
 
       {/* Sparkle accents */}
