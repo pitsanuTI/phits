@@ -166,6 +166,7 @@ body {
 .vivid-card > * { position: relative; z-index: 1; }
 
 /* force lucide icons white inside a frosted chip */
+.icon-frost { border-radius: 28% !important; }
 .icon-frost svg { stroke: #fff; }
 
 /* ── Sparkle twinkle animation ───────────────────────────────────────────── */
