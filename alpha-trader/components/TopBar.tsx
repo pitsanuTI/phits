@@ -30,18 +30,30 @@ export default function TopBar({ title, subtitle }: Props) {
     <div className="flex items-start justify-between mb-5 gap-3 flex-wrap">
       {/* Left: title + subtitle (mobile nav now lives in a bottom icon bar) */}
       <div className="flex items-start gap-2 min-w-0">
+        {/* gradient left bar */}
+        <div
+          className="w-[3.5px] rounded-full flex-shrink-0 mt-0.5"
+          style={{ background: 'linear-gradient(180deg, #6d28d9, #a78bfa)', alignSelf: 'stretch', minHeight: '28px' }}
+        />
         <div className="min-w-0">
-        <h1
-          className="text-[22px] font-bold leading-tight tracking-tight text-[#1e1b4b] dark:text-[#eef0fb]"
-          style={{ fontFamily: 'var(--font-sans)', letterSpacing: '-0.01em' }}
-        >
-          {title}
-        </h1>
-        {subtitle && (
-          <p className="text-[12px] text-gray-400 mt-0.5 leading-snug" style={{ fontFamily: 'var(--font-sans)' }}>
-            {subtitle}
-          </p>
-        )}
+          <h1
+            className="text-[22px] font-bold leading-tight"
+            style={{
+              fontFamily: 'var(--font-sans)',
+              letterSpacing: '-0.01em',
+              background: 'linear-gradient(90deg, #5b21b6, #8b5cf6)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="text-[12px] text-gray-400 mt-0.5 leading-snug" style={{ fontFamily: 'var(--font-sans)' }}>
+              {subtitle}
+            </p>
+          )}
         </div>
       </div>
 
