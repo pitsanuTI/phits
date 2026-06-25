@@ -200,12 +200,20 @@ function StatCard({
       className="vivid-card relative overflow-hidden rounded-2xl p-4"
       style={{ background: `linear-gradient(135deg, ${from}, ${to})`, boxShadow: `0 12px 30px ${glow}` }}
     >
-      <span className="spark-dot" style={{ top: 12, right: 14, width: 6, height: 6 }} />
-      <span className="spark-dot" style={{ top: 26, right: 26, width: 3.5, height: 3.5, opacity: 0.7 }} />
+      {/* Large ghost icon — decorative background */}
+      <div className="pointer-events-none absolute -bottom-3 -right-3 select-none" style={{ opacity: 0.18 }}>
+        <Icon size={88} color="#fff" strokeWidth={1} />
+      </div>
+
+      {/* Sparkle accents */}
+      <span className="spark-dot text-white" style={{ top: 8, right: 12, fontSize: 13, lineHeight: 1, '--sp-dur': '2.6s' } as React.CSSProperties}>✦</span>
+      <span className="spark-dot text-white" style={{ top: 24, right: 30, fontSize: 7, lineHeight: 1, '--sp-delay': '0.9s', '--sp-dur': '3.4s' } as React.CSSProperties}>✦</span>
+      <span className="spark-dot text-white" style={{ bottom: 12, left: '45%', fontSize: 9, lineHeight: 1, '--sp-delay': '1.5s', '--sp-dur': '3s' } as React.CSSProperties}>✦</span>
+
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="text-[11px] font-bold text-white/85">{label}</div>
-          <div className="stat-num mt-1 text-[21px] font-extrabold leading-none text-white drop-shadow-sm">{animatedValue}</div>
+          <div className="stat-num mt-1 text-[22px] font-extrabold leading-none text-white drop-shadow-sm">{animatedValue}</div>
           <div className="mt-2 text-[11px] font-semibold text-white/90">{note}</div>
           {typeof progress === 'number' && (
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/25">
