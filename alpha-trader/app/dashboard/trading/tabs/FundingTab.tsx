@@ -148,7 +148,15 @@ export default function FundingTab() {
       {/* Section header */}
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-800">ภาพรวมบัญชีทุนสอบและ Funding</h3>
-        <button onClick={() => setShowModal(true)} className="text-xs text-purple-600 hover:underline font-semibold">ดูทั้งหมด →</button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleAddFunding}
+            className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-500 px-4 py-2 text-[12px] font-extrabold text-white shadow-sm hover:shadow-md transition-all hover:opacity-90"
+          >
+            <Plus size={14} /> Add Account
+          </button>
+          <button onClick={() => setShowModal(true)} className="text-xs text-purple-600 hover:underline font-semibold">ดูทั้งหมด →</button>
+        </div>
       </div>
 
       {/* Prop firm cards — 4-card grid, or horizontal scroll if >4 */}
@@ -520,13 +528,16 @@ function AddFundingModal({
   return (
     <div className="fixed inset-0 z-[75] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-[#191a2c]">
+      <div className="relative z-10 w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-[#191a2c]">
         <div className="flex items-center justify-between px-6 py-4 border-b border-purple-100 dark:border-white/10">
-          <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">Add Funding Account</h2>
+          <div>
+            <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">Add Funding Account</h2>
+            <p className="text-[11px] text-gray-400 mt-0.5">เพิ่มบัญชีทุนสอบหรือ Funded Account ใหม่</p>
+          </div>
           <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-white/10"><X size={16} /></button>
         </div>
 
-        <div className="space-y-3 p-6 max-h-[60vh] overflow-y-auto">
+        <div className="space-y-4 p-6 max-h-[72vh] overflow-y-auto">
           {/* Icon Upload */}
           <div>
             <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400">Account Icon</label>

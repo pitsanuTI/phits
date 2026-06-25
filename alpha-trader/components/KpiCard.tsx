@@ -1,10 +1,9 @@
-﻿'use client';
+'use client';
 
 import { ReactNode, useId } from 'react';
 import { motion } from 'framer-motion';
 import { resolveTone, toneGradient } from '@/lib/cardTones';
 
-// â”€â”€â”€ 4-pointed sparkle star â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const STAR_PATH = 'M5,0 C5,0 5.2,3.8 5.6,4.4 C6.2,4.8 10,5 10,5 C10,5 6.2,5.2 5.6,5.6 C5.2,6.2 5,10 5,10 C5,10 4.8,6.2 4.4,5.6 C3.8,5.2 0,5 0,5 C0,5 3.8,4.8 4.4,4.4 C4.8,3.8 5,0 5,0 Z';
 
 type StarProps = {
@@ -33,7 +32,6 @@ function SparkStar({ size, top, bottom, left, right, delay, duration }: StarProp
   );
 }
 
-// â”€â”€â”€ Catmull-Rom sparkline â€” organic waves with peaks/valleys â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function DimensionalSparkline({ data, uid }: { data: { v: number }[]; uid: string }) {
   const values = data.map(d => d.v);
   if (values.length < 2) return null;
@@ -43,12 +41,10 @@ function DimensionalSparkline({ data, uid }: { data: { v: number }[]; uid: strin
   const max = Math.max(...values);
   const range = max - min || 1;
 
-  // y: top = high value, bottom = low value
   const sy = (v: number) => PY + (1 - (v - min) / range) * (H - PY * 2);
   const sx = (i: number) => PX + (i / (values.length - 1)) * (W - PX * 2);
   const pts: [number, number][] = values.map((v, i) => [sx(i), sy(v)]);
 
-  // Catmull-Rom â†’ Cubic Bezier for smooth organic curves through every point
   const linePath = pts.reduce((acc, p, i) => {
     if (i === 0) return `M ${p[0].toFixed(2)} ${p[1].toFixed(2)}`;
     const p0 = pts[Math.max(0, i - 2)];
@@ -75,8 +71,8 @@ function DimensionalSparkline({ data, uid }: { data: { v: number }[]; uid: strin
     >
       <defs>
         <linearGradient id={areaId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="white" stopOpacity={0.5} />
-          <stop offset="55%"  stopColor="white" stopOpacity={0.18} />
+          <stop offset="0%" stopColor="white" stopOpacity={0.5} />
+          <stop offset="55%" stopColor="white" stopOpacity={0.18} />
           <stop offset="100%" stopColor="white" stopOpacity={0} />
         </linearGradient>
         <filter id={glowId} x="-5%" y="-120%" width="110%" height="340%">
@@ -85,27 +81,22 @@ function DimensionalSparkline({ data, uid }: { data: { v: number }[]; uid: strin
         </filter>
       </defs>
 
-      {/* Soft glow halo behind line */}
       <path d={linePath} stroke="rgba(255,255,255,0.22)" strokeWidth={7}
         fill="none" strokeLinecap="round" strokeLinejoin="round"
         style={{ filter: 'blur(5px)' }} />
 
-      {/* Area fill under curve */}
       <path d={areaPath} fill={`url(#${areaId})`} />
 
-      {/* Main curve line */}
       <path d={linePath} stroke="rgba(255,255,255,0.92)" strokeWidth={2.2}
         fill="none" strokeLinecap="round" strokeLinejoin="round"
         filter={`url(#${glowId})`} />
 
-      {/* Animated pulse ring at last point */}
       <motion.circle cx={last[0]} cy={last[1]} r={3}
         fill="none" stroke="white" strokeWidth={1.2}
         initial={{ r: 3, opacity: 0.85 }}
         animate={{ r: 10, opacity: 0 }}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeOut' }} />
 
-      {/* Solid endpoint dot */}
       <circle cx={last[0]} cy={last[1]} r={3} fill="white" opacity={0.95}
         filter={`url(#${glowId})`} />
       <circle cx={last[0]} cy={last[1]} r={1.6} fill="white" />
@@ -113,7 +104,6 @@ function DimensionalSparkline({ data, uid }: { data: { v: number }[]; uid: strin
   );
 }
 
-// â”€â”€â”€ Props â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface Props {
   title: string;
   value: string;
@@ -130,7 +120,6 @@ const FALLBACK_SPARK = [
   { v: 50 }, { v: 95 }, { v: 38 }, { v: 87 }, { v: 44 }, { v: 90 },
 ];
 
-// â”€â”€â”€ Main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function KpiCard({
   title,
   value,
@@ -140,9 +129,9 @@ export default function KpiCard({
   color = '#7c3aed',
   sparkData,
 }: Props) {
-  const tone      = resolveTone(color);
-  const uid       = useId().replace(/:/g, '');
-  const data      = sparkData ?? FALLBACK_SPARK;
+  const tone = resolveTone(color);
+  const uid  = useId().replace(/:/g, '');
+  const data = sparkData ?? FALLBACK_SPARK;
 
   return (
     <motion.div
@@ -157,12 +146,10 @@ export default function KpiCard({
         boxShadow: `0 14px 32px ${tone.glow}`,
       }}
     >
-      {/* Sparkle stars */}
       <SparkStar size={14} top={6}    right={68} delay={0}   duration={3.0} />
       <SparkStar size={9}  bottom={30} left={14} delay={1.4} duration={2.6} />
       <SparkStar size={7}  bottom={8}  right={14} delay={2.3} duration={3.4} />
 
-      {/* Top section */}
       <div className="flex flex-1 min-h-0 items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="truncate text-[11px] font-bold leading-tight text-white/85">{title}</div>
@@ -171,7 +158,7 @@ export default function KpiCard({
           </div>
           {change && (
             <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-white/22 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
-              <span>{positive ? 'â–²' : 'â–¼'}</span>
+              <span>{positive ? '▲' : '▼'}</span>
               {change}
             </div>
           )}
@@ -184,11 +171,9 @@ export default function KpiCard({
         )}
       </div>
 
-      {/* Sparkline */}
       <div className="mt-1.5 h-7 flex-shrink-0">
         <DimensionalSparkline data={data} uid={uid} />
       </div>
     </motion.div>
   );
 }
-
