@@ -76,9 +76,16 @@ export function ApexTraderLogo({ size = 36, ...props }: Props) {
 }
 
 /* ── Generic fallback ─────────────────────────────────────────────────────*/
-export function PropFirmLogo({ firm, color, logo, size = 36 }: {
-  firm: string; color: string; logo: string; size?: number;
+export function PropFirmLogo({ firm, color, logo, size = 36, iconImage }: {
+  firm: string; color: string; logo: string; size?: number; iconImage?: string;
 }) {
+  if (iconImage) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={iconImage} alt={firm} width={size} height={size}
+        style={{ width: size, height: size, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+    );
+  }
   switch (firm) {
     case 'FTMO':                 return <FtmoLogo size={size} />;
     case 'The 5%ers':            return <FivePercentersLogo size={size} />;

@@ -239,7 +239,7 @@ export default function FundingTab() {
               {/* Header */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <PropFirmLogo firm={acc.firm} color={acc.color} logo={acc.logo} size={36} />
+                  <PropFirmLogo firm={acc.firm} color={acc.color} logo={acc.logo} size={36} iconImage={acc.iconImage} />
                   <div>
                     <div className="font-bold text-xs text-gray-800">{acc.firm}</div>
                     <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-medium">{acc.type}</span>
@@ -526,7 +526,7 @@ function FundingModal({
             <div key={acc.id} className="flex items-center justify-between p-4 border border-purple-50 rounded-2xl hover:bg-purple-50/30 dark:border-white/10 dark:hover:bg-white/5">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <PropFirmLogo firm={acc.firm} color={acc.color} logo={acc.logo} size={36} />
+                  <PropFirmLogo firm={acc.firm} color={acc.color} logo={acc.logo} size={36} iconImage={acc.iconImage} />
                   <div>
                     <div className="font-bold text-sm text-gray-800 dark:text-white">{acc.firm} ({acc.type})</div>
                     <div className="text-[11px] text-gray-500 dark:text-gray-400">{acc.phase} · ${acc.size.toLocaleString()} · {acc.progress}% progress</div>
@@ -783,7 +783,7 @@ function AccountDetailPopup({ account, onClose }: { account: FundingAccount; onC
         <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-purple-100 px-6 py-4 rounded-t-3xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <PropFirmLogo firm={account.firm} color={account.color} logo={account.logo} size={56} />
+              <PropFirmLogo firm={account.firm} color={account.color} logo={account.logo} size={56} iconImage={account.iconImage} />
               <div>
                 <h3 className="font-extrabold text-gray-800 text-xl">{account.firm}</h3>
                 <div className="flex items-center gap-2 text-[12px] text-gray-500 mt-0.5">
