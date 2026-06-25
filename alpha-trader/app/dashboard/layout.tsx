@@ -9,10 +9,10 @@ import { initColorTheme } from '@/lib/colorTheme';
 function DashboardShell({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar();
   return (
-    <div className="min-h-screen bg-[#f5f3ff] dark:bg-[#0c0d1a]">
+    <div className="min-h-screen bg-[var(--background)] dark:bg-[#0c0d1a]">
       <Sidebar />
       <main
-        className={`min-w-0 overflow-auto transition-all duration-300 bg-[#f5f3ff] dark:bg-[#0c0d1a] ${collapsed ? 'lg:ml-20' : 'lg:ml-[200px]'}`}
+        className={`min-w-0 overflow-auto transition-all duration-300 bg-[var(--background)] dark:bg-[#0c0d1a] ${collapsed ? 'lg:ml-20' : 'lg:ml-[200px]'}`}
       >
         <div className="mx-auto w-full max-w-[1600px] px-3 py-4 pb-24 sm:px-5 lg:px-6 lg:py-6 lg:pb-6">
           {children}
@@ -37,7 +37,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (ready === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#f5f3ff' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center animate-pulse"
             style={{ background: 'linear-gradient(135deg,#7c5cbf,#a78bfa)' }}>

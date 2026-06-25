@@ -4,7 +4,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f5f3ff;
+  --background: #f9f9fb;
   --foreground: #1e1b4b;
   --color-primary: #7c5cbf;
   --color-primary-light: #ede9ff;
@@ -52,15 +52,15 @@ body {
 /* ── Scrollbar ───────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar          { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track    { background: transparent; }
-::-webkit-scrollbar-thumb    { background: #d1c4e9; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #a78bfa; }
+::-webkit-scrollbar-thumb    { background: #d4d4d8; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
 
 /* ── Recharts tooltip global fix ─────────────────────────────────────────── */
 .recharts-tooltip-wrapper { outline: none; }
 .recharts-default-tooltip {
   border-radius: 12px !important;
   border: 1px solid #ede9ff !important;
-  box-shadow: 0 8px 24px rgba(124,92,191,0.12) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.10) !important;
   font-family: var(--font-sans) !important;
   font-size: 11px !important;
 }
@@ -69,8 +69,8 @@ body {
 .card {
   background: #fff;
   border-radius: 18px;
-  border: 1px solid #ede9ff;
-  box-shadow: 0 1px 3px rgba(124,92,191,0.06);
+  border: 1px solid #e8e8ed;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
 /* ── Responsive overflow guard ───────────────────────────────────────────── */
