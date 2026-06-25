@@ -102,11 +102,10 @@ export default function Sidebar() {
                 whileHover={{ x: isActive ? 0 : 3, backgroundColor: isActive ? undefined : 'rgba(139,92,246,0.08)' }}
                 whileTap={{ scale: 0.97 }}
                 transition={{ duration: 0.18, ease: 'easeOut' }}
+                style={isActive ? { background: 'linear-gradient(135deg, #6d28d9, #8b5cf6)' } : {}}
                 className={[
                   'flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer',
-                  isActive
-                    ? 'bg-purple-200/60 text-purple-900 font-semibold shadow-sm'
-                    : 'text-gray-600',
+                  isActive ? 'text-white font-semibold shadow-md' : 'text-gray-600',
                 ].join(' ')}
               >
                 <Icon size={20} className="flex-shrink-0" />
@@ -130,11 +129,10 @@ export default function Sidebar() {
                 whileHover={{ x: isActive ? 0 : 3, backgroundColor: isActive ? undefined : 'rgba(139,92,246,0.08)' }}
                 whileTap={{ scale: 0.97 }}
                 transition={{ duration: 0.18, ease: 'easeOut' }}
+                style={isActive ? { background: 'linear-gradient(135deg, #6d28d9, #8b5cf6)' } : {}}
                 className={[
                   'flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer',
-                  isActive
-                    ? 'bg-purple-200/60 text-purple-900 font-semibold shadow-sm'
-                    : 'text-gray-600',
+                  isActive ? 'text-white font-semibold shadow-md' : 'text-gray-600',
                 ].join(' ')}
               >
                 <Icon size={20} className="flex-shrink-0" />
