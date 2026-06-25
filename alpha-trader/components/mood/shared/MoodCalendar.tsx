@@ -181,14 +181,18 @@ export default function MoodCalendar({
       >
         {/* KPI tiles */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {/* Most Frequent Mood — Purple primary */}
-          <motion.div whileHover={{ y: -2, boxShadow: '0 12px 28px -10px rgba(124,58,237,0.3)' }} transition={{ duration: 0.18 }}
-            className="relative overflow-hidden rounded-2xl border border-purple-100 bg-gradient-to-br from-white via-purple-50/40 to-violet-50/30 dark:from-white/5 dark:to-violet-500/5 dark:border-white/10 p-4 shadow-sm"
+          {/* Most Frequent Mood */}
+          <motion.div
+            whileHover={{ y: -4, boxShadow: '0 18px 40px rgba(124,58,237,0.40)' }}
+            transition={{ duration: 0.18 }}
+            className="vivid-card relative overflow-hidden rounded-2xl p-4"
+            style={{ background: 'linear-gradient(135deg,#7c3aed,#a855f7)', boxShadow: '0 12px 28px rgba(124,58,237,0.35)' }}
           >
-            <div aria-hidden className="pointer-events-none absolute -top-6 -right-6 h-20 w-20 rounded-full bg-violet-200/30 blur-2xl" />
+            <span className="spark-dot text-white" style={{ top: 7, right: 11, fontSize: 12, lineHeight: 1, '--sp-dur': '2.8s' } as React.CSSProperties}>✦</span>
+            <span className="spark-dot text-white" style={{ bottom: 10, left: '40%', fontSize: 8, lineHeight: 1, '--sp-delay': '1.4s', '--sp-dur': '3.2s' } as React.CSSProperties}>✦</span>
             <div className="relative flex items-center justify-between">
-              <div className="text-[10.5px] font-black uppercase tracking-wider text-purple-500/80">อารมณ์บ่อยสุด</div>
-              <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 shadow-sm">
+              <div className="text-[10.5px] font-black uppercase tracking-wider text-white/80">อารมณ์บ่อยสุด</div>
+              <div className="icon-frost flex h-7 w-7 items-center justify-center bg-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]">
                 <TrendingUp size={14} className="text-white" strokeWidth={2.6} />
               </div>
             </div>
@@ -197,89 +201,101 @@ export default function MoodCalendar({
                 const Icon = MOOD_ICONS[monthStats.mostFrequent.level];
                 return (
                   <>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl shadow-inner" style={{ background: monthStats.mostFrequent.bg }}>
-                      <Icon size={20} strokeWidth={2.4} style={{ color: monthStats.mostFrequent.color }} />
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/25">
+                      <Icon size={20} strokeWidth={2.4} className="text-white" />
                     </div>
-                    <span className="text-[16px] font-black tracking-tight" style={{ color: monthStats.mostFrequent.color }}>
+                    <span className="text-[16px] font-black tracking-tight text-white">
                       {monthStats.mostFrequent.labelTh}
                     </span>
                   </>
                 );
               })() : (
-                <span className="text-[14px] font-extrabold text-slate-300">—</span>
+                <span className="text-[14px] font-extrabold text-white/50">—</span>
               )}
             </div>
-            <div className="relative mt-2 text-[11px] font-bold text-slate-500 dark:text-slate-400 tabular-nums">
+            <div className="relative mt-2 text-[11px] font-bold text-white/75 tabular-nums">
               {monthStats.mostFrequentCount} วันในเดือนนี้
             </div>
           </motion.div>
 
-          {/* Average Score — Violet/Fuchsia gradient (primary premium) */}
-          <motion.div whileHover={{ y: -2, boxShadow: '0 12px 28px -10px rgba(168,85,247,0.3)' }} transition={{ duration: 0.18 }}
-            className="relative overflow-hidden rounded-2xl border border-purple-100 bg-gradient-to-br from-white via-violet-50/40 to-fuchsia-50/30 dark:from-white/5 dark:to-fuchsia-500/5 dark:border-white/10 p-4 shadow-sm"
+          {/* Average Score */}
+          <motion.div
+            whileHover={{ y: -4, boxShadow: '0 18px 40px rgba(168,85,247,0.40)' }}
+            transition={{ duration: 0.18 }}
+            className="vivid-card relative overflow-hidden rounded-2xl p-4"
+            style={{ background: 'linear-gradient(135deg,#c026d3,#a855f7)', boxShadow: '0 12px 28px rgba(168,85,247,0.35)' }}
           >
-            <div aria-hidden className="pointer-events-none absolute -top-6 -right-6 h-20 w-20 rounded-full bg-fuchsia-200/30 blur-2xl" />
+            <span className="spark-dot text-white" style={{ top: 7, right: 11, fontSize: 12, lineHeight: 1, '--sp-dur': '3.0s', '--sp-delay': '0.3s' } as React.CSSProperties}>✦</span>
+            <span className="spark-dot text-white" style={{ bottom: 10, left: '40%', fontSize: 8, lineHeight: 1, '--sp-delay': '1.7s', '--sp-dur': '2.6s' } as React.CSSProperties}>✦</span>
             <div className="relative flex items-center justify-between">
-              <div className="text-[10.5px] font-black uppercase tracking-wider text-fuchsia-500/80">คะแนนเฉลี่ย</div>
-              <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-violet-500 shadow-sm">
+              <div className="text-[10.5px] font-black uppercase tracking-wider text-white/80">คะแนนเฉลี่ย</div>
+              <div className="icon-frost flex h-7 w-7 items-center justify-center bg-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]">
                 <Smile size={14} className="text-white" strokeWidth={2.4} />
               </div>
             </div>
             <div className="relative mt-2.5 flex items-baseline gap-1">
-              <span className="text-[28px] leading-none font-black tracking-tight tabular-nums bg-gradient-to-br from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+              <span className="text-[28px] leading-none font-black tracking-tight tabular-nums text-white drop-shadow-sm">
                 {monthStats.avgScore > 0 ? monthStats.avgScore.toFixed(1) : '—'}
               </span>
-              <span className="text-[14px] font-extrabold text-slate-400">/10</span>
+              <span className="text-[14px] font-extrabold text-white/70">/10</span>
             </div>
-            <div className="relative mt-2 text-[11px] font-bold text-slate-500 dark:text-slate-400 tabular-nums">
+            <div className="relative mt-2 text-[11px] font-bold text-white/75 tabular-nums">
               จาก {monthStats.scoreCount} วัน
             </div>
           </motion.div>
 
-          {/* Streak — Soft Orange (warm, warning warmth) */}
-          <motion.div whileHover={{ y: -2, boxShadow: '0 12px 28px -10px rgba(251,146,60,0.3)' }} transition={{ duration: 0.18 }}
-            className="relative overflow-hidden rounded-2xl border border-orange-100/80 bg-gradient-to-br from-white via-orange-50/40 to-amber-50/30 dark:from-orange-500/5 dark:to-amber-500/5 dark:border-orange-400/15 p-4 shadow-sm"
+          {/* Streak */}
+          <motion.div
+            whileHover={{ y: -4, boxShadow: '0 18px 40px rgba(251,146,60,0.40)' }}
+            transition={{ duration: 0.18 }}
+            className="vivid-card relative overflow-hidden rounded-2xl p-4"
+            style={{ background: 'linear-gradient(135deg,#f97316,#fbbf24)', boxShadow: '0 12px 28px rgba(251,146,60,0.35)' }}
           >
-            <div aria-hidden className="pointer-events-none absolute -top-6 -right-6 h-20 w-20 rounded-full bg-orange-200/35 blur-2xl" />
+            <span className="spark-dot text-white" style={{ top: 7, right: 11, fontSize: 12, lineHeight: 1, '--sp-dur': '2.6s', '--sp-delay': '0.6s' } as React.CSSProperties}>✦</span>
+            <span className="spark-dot text-white" style={{ bottom: 10, left: '40%', fontSize: 8, lineHeight: 1, '--sp-delay': '2.0s', '--sp-dur': '3.4s' } as React.CSSProperties}>✦</span>
             <div className="relative flex items-center justify-between">
-              <div className="text-[10.5px] font-black uppercase tracking-wider text-orange-500/85">Streak ปัจจุบัน</div>
+              <div className="text-[10.5px] font-black uppercase tracking-wider text-white/80">Streak ปัจจุบัน</div>
               <motion.div
                 animate={monthStats.streak >= 3 ? { scale: [1, 1.08, 1] } : undefined}
                 transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-                className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 shadow-sm"
+                className="icon-frost flex h-7 w-7 items-center justify-center bg-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]"
               >
                 <Flame size={14} className="text-white" strokeWidth={2.4} />
               </motion.div>
             </div>
             <div className="relative mt-2.5 flex items-baseline gap-1.5">
-              <span className="text-[28px] leading-none font-black tracking-tight tabular-nums text-orange-600 dark:text-orange-300">
+              <span className="text-[28px] leading-none font-black tracking-tight tabular-nums text-white drop-shadow-sm">
                 {monthStats.streak}
               </span>
-              <span className="text-[13px] font-extrabold text-orange-500/80">วันติด</span>
+              <span className="text-[13px] font-extrabold text-white/75">วันติด</span>
             </div>
-            <div className="relative mt-2 text-[11px] font-bold text-orange-700/70 dark:text-orange-400/70">
+            <div className="relative mt-2 text-[11px] font-bold text-white/75">
               {monthStats.streak === 0 ? 'เริ่มวันนี้!' : monthStats.streak < 3 ? 'ทำต่อให้สม่ำเสมอ' : 'ดีมาก รักษาไว้นะ'}
             </div>
           </motion.div>
 
-          {/* Total entries — Mint/Teal success */}
-          <motion.div whileHover={{ y: -2, boxShadow: '0 12px 28px -10px rgba(20,184,166,0.3)' }} transition={{ duration: 0.18 }}
-            className="relative overflow-hidden rounded-2xl border border-teal-100/80 bg-gradient-to-br from-white via-teal-50/40 to-emerald-50/30 dark:from-teal-500/5 dark:to-emerald-500/5 dark:border-teal-400/15 p-4 shadow-sm"
+          {/* Total entries */}
+          <motion.div
+            whileHover={{ y: -4, boxShadow: '0 18px 40px rgba(20,184,166,0.40)' }}
+            transition={{ duration: 0.18 }}
+            className="vivid-card relative overflow-hidden rounded-2xl p-4"
+            style={{ background: 'linear-gradient(135deg,#0d9488,#34d399)', boxShadow: '0 12px 28px rgba(20,184,166,0.35)' }}
           >
-            <div aria-hidden className="pointer-events-none absolute -top-6 -right-6 h-20 w-20 rounded-full bg-teal-200/35 blur-2xl" />
+            <span className="spark-dot text-white" style={{ top: 7, right: 11, fontSize: 12, lineHeight: 1, '--sp-dur': '3.2s', '--sp-delay': '0.8s' } as React.CSSProperties}>✦</span>
+            <span className="spark-dot text-white" style={{ bottom: 10, left: '40%', fontSize: 8, lineHeight: 1, '--sp-delay': '2.2s', '--sp-dur': '2.8s' } as React.CSSProperties}>✦</span>
             <div className="relative flex items-center justify-between">
-              <div className="text-[10.5px] font-black uppercase tracking-wider text-teal-500/85">บันทึกที่มี</div>
-              <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 shadow-sm">
+              <div className="text-[10.5px] font-black uppercase tracking-wider text-white/80">บันทึกที่มี</div>
+              <div className="icon-frost flex h-7 w-7 items-center justify-center bg-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]">
                 <BookOpenCheck size={14} className="text-white" strokeWidth={2.4} />
               </div>
             </div>
             <div className="relative mt-2.5 flex items-baseline gap-1">
-              <span className="text-[28px] leading-none font-black tracking-tight tabular-nums text-teal-600 dark:text-teal-300">
+              <span className="text-[28px] leading-none font-black tracking-tight tabular-nums text-white drop-shadow-sm">
                 {monthStats.savedEntriesCount}
               </span>
-              <span className="text-[13px] font-extrabold text-teal-500/80">/ {monthStats.daysInMonth}</span>
+              <span className="text-[13px] font-extrabold text-white/75">/ {monthStats.daysInMonth}</span>
             </div>
-            <div className="relative mt-2 text-[11px] font-bold text-teal-700/70 dark:text-teal-400/70 tabular-nums">
+            <div className="relative mt-2 text-[11px] font-bold text-white/75 tabular-nums">
               {Math.round((monthStats.savedEntriesCount / Math.max(monthStats.daysInMonth, 1)) * 100)}% ของเดือน
             </div>
           </motion.div>
