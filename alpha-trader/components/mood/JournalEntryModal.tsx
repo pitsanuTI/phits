@@ -117,7 +117,7 @@ export default function JournalEntryModal({ open, dayKey, dayLabel, onClose, onS
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
             transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-            className="relative z-10 w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-[#191a2c]"
+            className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-[#191a2c]"
           >
             {/* header */}
             <div className="flex items-center justify-between px-6 py-5 text-white"
