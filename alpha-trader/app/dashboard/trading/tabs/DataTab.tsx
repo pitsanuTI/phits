@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
+import { useThemeColors } from '@/lib/useThemeColors';
 import {
   AreaChart, Area, BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine,
 } from 'recharts';
@@ -75,6 +76,7 @@ function buildPath(t: Trade) {
 }
 
 export default function DataTab() {
+  const tc = useThemeColors();
   // Shared source of truth — the same trades the Calendar & Analytics tabs read.
   const { trades, setTrades, resetTrades } = useTradingData();
 
@@ -304,15 +306,15 @@ export default function DataTab() {
             <AreaChart data={equity} margin={{ top: 8, right: 4, left: -18, bottom: 0 }}>
               <defs>
                 <linearGradient id="dataEq" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#7c5cbf" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#7c5cbf" stopOpacity={0} />
+                  <stop offset="5%" stopColor={tc.primary} stopOpacity={0.25} />
+                  <stop offset="95%" stopColor={tc.primary} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(124,58,237,0.10)" vertical={false} />
               <XAxis dataKey="i" hide />
               <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v: number) => [usd(v), 'Equity']} labelFormatter={() => ''} />
-              <Area type="monotone" dataKey="equity" stroke="#7c5cbf" strokeWidth={2} fill="url(#dataEq)" dot={false} />
+              <Area type="monotone" dataKey="equity" stroke={tc.primary} strokeWidth={2} fill="url(#dataEq)" dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

@@ -1,5 +1,6 @@
 'use client';
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import { useThemeColors } from '@/lib/useThemeColors';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
   PieChart, Pie, ReferenceLine,
@@ -20,7 +21,7 @@ import {
 } from 'lucide-react';
 import IconGlyph from '@/components/IconGlyph';
 
-const setupColors = ['#7c5cbf','#10b981','#38bdf8','#f97316','#f43f5e','#06b6d4','#a78bfa','#f59e0b'];
+const SETUP_COLORS_STATIC = ['#10b981','#38bdf8','#f97316','#f43f5e','#06b6d4','#a78bfa','#f59e0b'];
 
 const emotionIconToken: Record<string, string> = {
   Confident: 'strength', Calm: 'calm', Anxious: 'lowMood', Impulsive: 'energy', Greedy: 'money', Focused: 'target', Neutral: 'neutral',
@@ -58,6 +59,8 @@ function saveAssetImages(m: Record<string, string>) {
 // Main Journal Tab
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 export default function JournalTab() {
+  const tc = useThemeColors();
+  const setupColors = [tc.primary, ...SETUP_COLORS_STATIC];
   const { trades } = useTradingData();
   const [showAllTrades, setShowAllTrades] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
@@ -165,7 +168,7 @@ export default function JournalTab() {
   }, [trades]);
 
   const kpiCards = [
-    { title: 'Total Trades', value: String(kpis.total), change: `${kpis.wins}W / ${kpis.losses}L`, positive: true, icon: <BarChart2 size={20} color="#fff"/>, color:'#7c5cbf' },
+    { title: 'Total Trades', value: String(kpis.total), change: `${kpis.wins}W / ${kpis.losses}L`, positive: true, icon: <BarChart2 size={20} color="#fff"/>, color: tc.primary },
     { title: 'Win Rate', value: `${kpis.winRate.toFixed(1)}%`, change: `${kpis.breakeven} BE`, positive: kpis.winRate >= 50, icon: <Target size={20} color="#fff"/>, color:'#10b981' },
     { title: 'Profit Factor', value: kpis.profitFactor.toFixed(2), change: `PF ${kpis.profitFactor >= 1 ? 'edge' : 'risk'}`, positive: kpis.profitFactor >= 1, icon: <Award size={20} color="#fff"/>, color:'#38bdf8' },
     { title: 'Average R', value: `${kpis.avgR >= 0 ? '+' : ''}${kpis.avgR.toFixed(2)}R`, change: `win ${kpis.avgWin >= 0 ? '+' : ''}${kpis.avgWin.toFixed(2)}R`, positive: kpis.avgR >= 0, icon: <TrendingUp size={20} color="#fff"/>, color:'#f59e0b' },
@@ -331,7 +334,7 @@ export default function JournalTab() {
                   <div className="relative w-14 h-14 mx-auto mb-1">
                     <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                       <circle cx="18" cy="18" r="14" fill="none" stroke="#f0ebff" strokeWidth="4"/>
-                      <circle cx="18" cy="18" r="14" fill="none" stroke="#7c5cbf" strokeWidth="4"
+                      <circle cx="18" cy="18" r="14" fill="none" stroke={tc.primary} strokeWidth="4"
                         strokeDasharray={`${q.score * 0.88} 88`} strokeLinecap="round"/>
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -381,7 +384,7 @@ export default function JournalTab() {
               <div className="text-[11px] text-gray-400 mb-4">เพิ่มเทรดใหม่พร้อมรายละเอียดครบถ้วน</div>
               <button onClick={() => setShowAddTrade(true)}
                 className="w-full py-2.5 rounded-xl text-xs text-white font-semibold transition hover:opacity-90"
-                style={{background:'linear-gradient(135deg,#7c5cbf,#a78bfa)'}}>
+                style={{background:`linear-gradient(135deg,${tc.primary},${tc.primarySoft})`}}>
                 <Plus size={14} className="inline mr-1" /> Add Trade
               </button>
             </div>

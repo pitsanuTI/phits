@@ -1,5 +1,6 @@
 'use client';
 import { useMemo, useState } from 'react';
+import { useThemeColors } from '@/lib/useThemeColors';
 import { useRouter } from 'next/navigation';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -28,6 +29,7 @@ function getWRColor(v: number): string {
 }
 
 export default function ReviewTab() {
+  const tc = useThemeColors();
   const router = useRouter();
   const { trades } = useTradingData();
   const [toast, setToast] = useState<string | null>(null);
@@ -152,11 +154,11 @@ export default function ReviewTab() {
   const improvementScore = Math.round((psych + discipline) / 2);
 
   const kpiCards = [
-    { title: 'Week P&L', value: `${weekly.weekPnl >= 0 ? '+' : ''}${usd(weekly.weekPnl)}`, change: `${weekly.prevPnl !== 0 ? (((weekly.weekPnl - weekly.prevPnl) / Math.abs(weekly.prevPnl)) * 100).toFixed(1) : '0'}%`, positive: weekly.weekPnl >= 0, icon: <Camera size={20} color="#fff" />, color: '#7c5cbf', sparkData: spark },
+    { title: 'Week P&L', value: `${weekly.weekPnl >= 0 ? '+' : ''}${usd(weekly.weekPnl)}`, change: `${weekly.prevPnl !== 0 ? (((weekly.weekPnl - weekly.prevPnl) / Math.abs(weekly.prevPnl)) * 100).toFixed(1) : '0'}%`, positive: weekly.weekPnl >= 0, icon: <Camera size={20} color="#fff" />, color: tc.primary, sparkData: spark },
     { title: 'Month P&L (MTD)', value: `${lastMonth.pnl >= 0 ? '+' : ''}${usd(lastMonth.pnl)}`, change: `${monthChangePct.toFixed(1)}%`, positive: lastMonth.pnl >= 0, icon: <DollarSign size={20} color="#fff" />, color: '#10b981', sparkData: spark },
     { title: 'Win Rate', value: `${kpis.winRate.toFixed(1)}%`, change: `${kpis.wins}W / ${kpis.losses}L`, positive: kpis.winRate >= 50, icon: <Target size={20} color="#fff" />, color: '#f59e0b', sparkData: spark },
     { title: 'Profit Factor', value: kpis.profitFactor >= 99 ? '∞' : kpis.profitFactor.toFixed(2), change: `Payoff ${adv.payoff.toFixed(2)}`, positive: kpis.profitFactor >= 1, icon: <Award size={20} color="#fff" />, color: '#38bdf8', sparkData: spark },
-    { title: 'Psychology Score', value: `${psych} / 100`, change: `${psych >= 60 ? 'Healthy' : 'Watch'}`, positive: psych >= 60, icon: <Brain size={20} color="#fff" />, color: '#a78bfa', sparkData: spark },
+    { title: 'Psychology Score', value: `${psych} / 100`, change: `${psych >= 60 ? 'Healthy' : 'Watch'}`, positive: psych >= 60, icon: <Brain size={20} color="#fff" />, color: tc.primarySoft, sparkData: spark },
     { title: 'Improvement Score', value: `${improvementScore} / 100`, change: `Discipline ${discipline}`, positive: improvementScore >= 60, icon: <BarChart2 size={20} color="#fff" />, color: '#0d9488', sparkData: spark },
   ];
 
@@ -202,7 +204,7 @@ export default function ReviewTab() {
               <Tooltip formatter={(v: number) => [usd(v), 'P&L']} />
               <ReferenceLine y={0} stroke="#e5e7eb" />
               <Bar dataKey="equity" radius={[6, 6, 0, 0]} barSize={14}>
-                {weekly.data.map((d, i) => <Cell key={i} fill={d.equity >= 0 ? '#7c5cbf' : '#f43f5e'} />)}
+                {weekly.data.map((d, i) => <Cell key={i} fill={d.equity >= 0 ? tc.primary : '#f43f5e'} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -216,15 +218,15 @@ export default function ReviewTab() {
             <AreaChart data={equityTrend}>
               <defs>
                 <linearGradient id="rvEq" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#7c5cbf" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#7c5cbf" stopOpacity={0} />
+                  <stop offset="5%" stopColor={tc.primary} stopOpacity={0.2} />
+                  <stop offset="95%" stopColor={tc.primary} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0ebff" />
+              <CartesianGrid strokeDasharray="3 3" stroke={tc.grid} />
               <XAxis dataKey="date" tick={{ fontSize: 8, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
               <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} tick={{ fontSize: 8, fill: '#9ca3af' }} axisLine={false} tickLine={false} width={35} domain={['dataMin - 2000', 'dataMax + 2000']} />
               <Tooltip formatter={(v: number) => [usd(v), 'Equity']} />
-              <Area type="monotone" dataKey="equity" stroke="#7c5cbf" strokeWidth={1.8} fill="url(#rvEq)" dot={{ fill: '#7c5cbf', r: 2.2 }} activeDot={{ r: 3.5 }} />
+              <Area type="monotone" dataKey="equity" stroke={tc.primary} strokeWidth={1.8} fill="url(#rvEq)" dot={{ fill: tc.primary, r: 2.2 }} activeDot={{ r: 3.5 }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -331,8 +333,8 @@ export default function ReviewTab() {
               <XAxis dataKey="date" tick={{ fontSize: 7, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
               <YAxis domain={[0, 100]} tick={{ fontSize: 7, fill: '#9ca3af' }} axisLine={false} tickLine={false} width={25} />
               <Tooltip />
-              <Line type="monotone" dataKey="score" stroke="#7c5cbf" strokeWidth={1.8} dot={{ fill: '#7c5cbf', r: 2 }} activeDot={{ r: 3.5 }} />
-              <Line type="monotone" dataKey="mood" stroke="#a78bfa" strokeWidth={1.2} strokeDasharray="4 2" dot={false} />
+              <Line type="monotone" dataKey="score" stroke={tc.primary} strokeWidth={1.8} dot={{ fill: tc.primary, r: 2 }} activeDot={{ r: 3.5 }} />
+              <Line type="monotone" dataKey="mood" stroke={tc.primarySoft} strokeWidth={1.2} strokeDasharray="4 2" dot={false} />
             </LineChart>
           </ResponsiveContainer>
           <div className="flex items-center justify-end gap-1 text-lg font-bold text-purple-700 mt-1">{psych} <Smile size={17} /></div>
@@ -373,8 +375,8 @@ export default function ReviewTab() {
                 ? { label: 'Asset to Watch', sub: worstAsset.name, detail: `WR ${worstAsset.winRate.toFixed(0)}% · ${usd(worstAsset.pnl)}`, color: '#f43f5e', bg: '#fff1f2' }
                 : { label: 'Asset to Watch', sub: '—', detail: '', color: '#f43f5e', bg: '#fff1f2' },
               bestSession
-                ? { label: 'Session to Focus', sub: bestSession.session, detail: `WR ${bestSession.winRate.toFixed(0)}% · ${usd(bestSession.pnl)}`, color: '#7c5cbf', bg: '#ede9ff' }
-                : { label: 'Session to Focus', sub: '—', detail: '', color: '#7c5cbf', bg: '#ede9ff' },
+                ? { label: 'Session to Focus', sub: bestSession.session, detail: `WR ${bestSession.winRate.toFixed(0)}% · ${usd(bestSession.pnl)}`, color: tc.primary, bg: '#ede9ff' }
+                : { label: 'Session to Focus', sub: '—', detail: '', color: tc.primary, bg: '#ede9ff' },
             ].map((c) => (
               <div key={c.label} className="rounded-xl p-3 border" style={{ background: c.bg + '80', borderColor: c.color + '40' }}>
                 <div className="text-[9px] font-semibold mb-1" style={{ color: c.color }}>{c.label}</div>
@@ -397,7 +399,7 @@ export default function ReviewTab() {
             ].map((r, i) => (
               <div key={i} className="flex gap-3 items-start">
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                  style={{ background: 'linear-gradient(135deg,#7c5cbf,#a78bfa)' }}>{i + 1}</div>
+                  style={{ background: `linear-gradient(135deg,${tc.primary},${tc.primarySoft})` }}>{i + 1}</div>
                 <div className="text-xs text-gray-600">{r}</div>
               </div>
             ))}

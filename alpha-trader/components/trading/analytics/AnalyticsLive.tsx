@@ -11,6 +11,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useMemo, useState } from 'react';
+import { useThemeColors } from '@/lib/useThemeColors';
 import {
   AreaChart, Area, BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine,
 } from 'recharts';
@@ -45,6 +46,7 @@ const GRADE_GRAD: Record<string, string> = {
 };
 
 export default function AnalyticsLive() {
+  const tc = useThemeColors();
   const { trades } = useTradingData();
   const [account, setAccount] = useState<string>('all');
   const [toast, setToast] = useState('');
@@ -236,15 +238,15 @@ export default function AnalyticsLive() {
             <AreaChart data={equity} margin={{ top: 6, right: 6, left: -14, bottom: 0 }}>
               <defs>
                 <linearGradient id="liveEq" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#7c5cbf" stopOpacity={0.28} />
-                  <stop offset="95%" stopColor="#7c5cbf" stopOpacity={0} />
+                  <stop offset="5%" stopColor={tc.primary} stopOpacity={0.28} />
+                  <stop offset="95%" stopColor={tc.primary} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(124,58,237,0.10)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={tc.grid} vertical={false} />
               <XAxis dataKey="i" hide />
               <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v: number) => [usd(v), 'Equity']} labelFormatter={() => ''} />
-              <Area type="monotone" dataKey="equity" stroke="#7c5cbf" strokeWidth={2} fill="url(#liveEq)" dot={false} />
+              <Area type="monotone" dataKey="equity" stroke={tc.primary} strokeWidth={2} fill="url(#liveEq)" dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -283,10 +285,10 @@ export default function AnalyticsLive() {
           <div className="mb-3 text-[11px] font-medium text-slate-400">รูปร่างของกำไร/ขาดทุน — มองหาหางขวาที่ยาว (let winners run)</div>
           <ResponsiveContainer width="100%" height={210}>
             <BarChart data={rDist} margin={{ top: 6, right: 6, left: -18, bottom: 0 }} barCategoryGap="22%">
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(124,58,237,0.10)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={tc.grid} vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} interval={0} />
               <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <Tooltip formatter={(v: number, n) => [`${v} เทรด`, n === 'wins' ? 'Win' : 'Loss']} cursor={{ fill: 'rgba(124,58,237,0.05)' }} />
+              <Tooltip formatter={(v: number, n) => [`${v} เทรด`, n === 'wins' ? 'Win' : 'Loss']} cursor={{ fill: tc.cursor }} />
               <Bar dataKey="losses" stackId="r" fill="#fb7185" radius={[0, 0, 0, 0]} maxBarSize={42} />
               <Bar dataKey="wins" stackId="r" fill="#34d399" radius={[4, 4, 0, 0]} maxBarSize={42} />
             </BarChart>
@@ -298,10 +300,10 @@ export default function AnalyticsLive() {
           <div className="mb-3 text-[11px] font-medium text-slate-400">วันไหนเป็นวันทำเงิน — วันไหนควรเบามือ</div>
           <ResponsiveContainer width="100%" height={210}>
             <BarChart data={dow} margin={{ top: 6, right: 6, left: -14, bottom: 0 }} barCategoryGap="24%">
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(124,58,237,0.10)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={tc.grid} vertical={false} />
               <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
               <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <Tooltip formatter={(v: number, _n, p) => [`${usd(v)} · ${p?.payload?.trades ?? 0} เทรด · WR ${pct(p?.payload?.winRate ?? 0)}`, 'P&L']} cursor={{ fill: 'rgba(124,58,237,0.05)' }} />
+              <Tooltip formatter={(v: number, _n, p) => [`${usd(v)} · ${p?.payload?.trades ?? 0} เทรด · WR ${pct(p?.payload?.winRate ?? 0)}`, 'P&L']} cursor={{ fill: tc.cursor }} />
               <ReferenceLine y={0} stroke="#cbd5e1" />
               <Bar dataKey="pnl" radius={[5, 5, 0, 0]} maxBarSize={46}>
                 {dow.map((d, i) => <Cell key={i} fill={d.pnl >= 0 ? '#10b981' : '#f43f5e'} />)}

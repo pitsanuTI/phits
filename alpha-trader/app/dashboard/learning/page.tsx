@@ -1,6 +1,7 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useThemeColors } from '@/lib/useThemeColors';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import TopBar from '@/components/TopBar';
@@ -16,6 +17,7 @@ import {
   GraduationCap, Headphones, Hash, Heart, Check, Bold, Underline, Highlighter,
   Heading1, Heading2, List, ListOrdered, Quote,
   Share2, Image, Briefcase, MessageSquare, Music, Lock, Link2, Minus, Pencil,
+  Moon, Sun,
 } from 'lucide-react';
 
 import { Aws, Github, Discord, Notion, Youtube, Instagram, Linkedin, X as XIcon } from '@thesvg/react';
@@ -45,7 +47,7 @@ import {
 
 // ── Tabs ──────────────────────────────────────────────────────────────
 const TABS = [
-  'Overall', 'Skill Roadmap', 'Courses', 'Course Builder',
+  'Overall', 'Daily Review', 'Skill Roadmap', 'Courses', 'Course Builder',
   'Practice Lab', 'Resource Inbox', 'Schedule Planner',
   'Exams & Certificates', 'Review & Portfolio',
 ] as const;
@@ -262,6 +264,24 @@ function isRichTextEmpty(value?: string): boolean {
   return richTextToPlainText(value).length === 0;
 }
 
+function cleanRichHtml(html: string): string {
+  const cleaned = html.replace(
+    /<(p|div|li)([^>]*)>([\s\S]*?)<\/\1>/gi,
+    (match, _tag, _attrs, inner) => {
+      const visible = inner
+        .replace(/<br\s*\/?>/gi, '')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/[.·•\s]/g, '')
+        .trim();
+      return visible === '' ? '' : match;
+    }
+  );
+  return cleaned
+    .replace(/(<br\s*\/?>\s*){3,}/gi, '<br><br>')
+    .trim();
+}
+
 function RichTextContent({
   value,
   className = '',
@@ -270,6 +290,7 @@ function RichTextContent({
   className?: string;
 }) {
   if (isRichTextEmpty(value)) return null;
+  const cleaned = cleanRichHtml(value || '');
   return (
     <>
       <style jsx global>{`
@@ -292,10 +313,14 @@ function RichTextContent({
           padding: 0 0.14em;
           border-radius: 0.2em;
         }
+        .learning-rich-content li:empty,
+        .learning-rich-content li:has(> br:only-child) {
+          display: none;
+        }
       `}</style>
       <div
         className={`learning-rich-content ${className}`}
-        dangerouslySetInnerHTML={{ __html: value || '' }}
+        dangerouslySetInnerHTML={{ __html: cleaned }}
       />
     </>
   );
@@ -4117,7 +4142,7 @@ function CourseDetailModal({
   const [application, setApplication] = useState(defaultA);
   const [keyTakeaways, setKeyTakeaways] = useState(richTextToPlainText(card.keyTakeaways));
   const [nextAction, setNextAction] = useState(card.nextAction ?? '');
-  const [content, setContent] = useState(richTextToPlainText(card.content));
+  const [content, setContent] = useState(card.cleanArticleContent ?? card.extractedPostText ?? card.content ?? '');
   // Clarity Filter
   const [clarityQ1, setClarityQ1] = useState(card.clarityQ1 ?? '');
   const [clarityQ2, setClarityQ2] = useState(card.clarityQ2 ?? '');
@@ -4165,17 +4190,22 @@ function CourseDetailModal({
   const [shortBreakMin, setShortBreakMin] = useState(5);
   const [longBreakMin, setLongBreakMin] = useState(15);
 
-  // Audio
-  const [musicType, setMusicType] = useState<'off' | 'lofi' | 'white' | 'brown' | 'binaural' | 'file' | 'youtube'>('off');
-  const [volumeLevel, setVolumeLevel] = useState(60);
-  const [customAudio, setCustomAudio] = useState<Array<{ name: string; url: string }>>([]);
-  const [selectedCustomAudio, setSelectedCustomAudio] = useState(0);
+  // Audio — persisted to localStorage
+  const POMO_KEY = 'alphatrader_pomodoro_settings';
+  const loadPomoSettings = () => {
+    try { return JSON.parse(localStorage.getItem(POMO_KEY) || '{}'); } catch { return {}; }
+  };
+  const pomoInit = loadPomoSettings();
+  const [musicType, setMusicType] = useState<'off' | 'lofi' | 'white' | 'brown' | 'binaural' | 'file' | 'youtube'>(pomoInit.musicType ?? 'off');
+  const [volumeLevel, setVolumeLevel] = useState<number>(pomoInit.volumeLevel ?? 60);
+  const [customAudio, setCustomAudio] = useState<Array<{ name: string; url: string }>>(pomoInit.customAudio ?? []);
+  const [selectedCustomAudio, setSelectedCustomAudio] = useState<number>(pomoInit.selectedCustomAudio ?? 0);
   const [audioCurrentTime, setAudioCurrentTime] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
-  const [customImages, setCustomImages] = useState<Array<{ name: string; url: string }>>([]);
-  const [selectedCustomImage, setSelectedCustomImage] = useState(0);
-  const [youtubeUrl, setYoutubeUrl] = useState('');
-  const [youtubeVideoId, setYoutubeVideoId] = useState('');
+  const [customImages, setCustomImages] = useState<Array<{ name: string; url: string }>>(pomoInit.customImages ?? []);
+  const [selectedCustomImage, setSelectedCustomImage] = useState<number>(pomoInit.selectedCustomImage ?? 0);
+  const [youtubeUrl, setYoutubeUrl] = useState<string>(pomoInit.youtubeUrl ?? '');
+  const [youtubeVideoId, setYoutubeVideoId] = useState<string>(pomoInit.youtubeVideoId ?? '');
   const [showAddMusic, setShowAddMusic] = useState(false);
   const [addMusicMode, setAddMusicMode] = useState<'youtube' | 'file'>('youtube');
   // Video utility
@@ -4197,6 +4227,16 @@ function CourseDetailModal({
   pomodoroMinRef.current = pomodoroMin;
   shortBreakMinRef.current = shortBreakMin;
   longBreakMinRef.current = longBreakMin;
+
+  // Persist pomodoro audio/image settings to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(POMO_KEY, JSON.stringify({
+        musicType, volumeLevel, customAudio, selectedCustomAudio,
+        customImages, selectedCustomImage, youtubeUrl, youtubeVideoId,
+      }));
+    } catch {}
+  }, [musicType, volumeLevel, customAudio, selectedCustomAudio, customImages, selectedCustomImage, youtubeUrl, youtubeVideoId]);
 
   const clockStyleOptions = [
     { key: 'ring', label: 'Ring' },
@@ -4250,7 +4290,10 @@ function CourseDetailModal({
   const scrollAtOpen = useRef(0);
   const [mounted, setMounted] = useState(false);
   const isReadingType = card.contentType === 'article' || card.contentType === 'social' || card.contentType === 'book';
-  const [readingMode, setReadingMode] = useState(isReadingType);
+  const readingMode = true;
+  const setReadingMode = (_v: boolean) => {};
+  const [darkMode, setDarkMode] = useState(false);
+  const [fontSize, setFontSize] = useState<'sm' | 'md' | 'lg'>('md');
   const [p3Tab, setP3Tab] = useState<'timer'|'review'>('timer');
   const fitImage = shouldFitLearningImage(card.contentType);
   const showReadingUtilityRail = true;
@@ -4772,12 +4815,31 @@ function CourseDetailModal({
           style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
         >
           <motion.div
-            className={`flex w-full max-w-[1800px] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 transition-colors duration-500 ${readingMode ? 'bg-[#f4f6fb]' : 'bg-gray-50'}`}
+            className={`flex w-full max-w-[1800px] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 transition-colors duration-300 ${darkMode ? 'rdm bg-[#111827]' : readingMode ? 'bg-[#f4f6fb]' : 'bg-gray-50'}`}
             style={{ height: '96vh' }}
             initial={{ opacity: 0, scale: 0.94, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
           >
+        {darkMode && (
+          <style>{`
+            .rdm .text-gray-950,.rdm .text-gray-900{color:rgb(241 245 249)!important}
+            .rdm .text-gray-800{color:rgb(226 232 240)!important}
+            .rdm .text-gray-700{color:rgb(203 213 225)!important}
+            .rdm .text-gray-600{color:rgb(148 163 184)!important}
+            .rdm .text-gray-500{color:rgb(100 116 139)!important}
+            .rdm .text-gray-400{color:rgb(71 85 105)!important}
+            .rdm .border-gray-100{border-color:rgb(255 255 255/0.07)!important}
+            .rdm .border-gray-200{border-color:rgb(255 255 255/0.1)!important}
+            .rdm .bg-white{background-color:rgb(30 41 59)!important}
+            .rdm .bg-gray-50{background-color:rgb(15 23 42)!important}
+            .rdm .bg-gray-100{background-color:rgb(30 41 59)!important}
+            .rdm .bg-violet-50{background-color:rgb(30 27 75/0.5)!important}
+            .rdm .bg-rose-50{background-color:rgb(69 10 10/0.3)!important}
+            .rdm .bg-emerald-50{background-color:rgb(6 40 27/0.4)!important}
+            .rdm .bg-amber-50{background-color:rgb(69 39 0/0.3)!important}
+          `}</style>
+        )}
 
         {/* ══ PANEL 1: Left Info ═══════════════════════════════════════ */}
         <AnimatePresence initial={false}>
@@ -4788,9 +4850,9 @@ function CourseDetailModal({
           exit={{ width: 0, opacity: 0 }}
           transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1], opacity: { delay: 0.18, duration: 0.28 } }}
           style={{ flexShrink: 0 }}
-          className="border-r border-gray-200 flex flex-col bg-white overflow-y-auto overflow-x-hidden"
+          className={`border-r flex flex-col overflow-y-auto overflow-x-hidden transition-colors duration-300 ${darkMode ? 'border-white/10 bg-gray-900' : 'border-gray-200 bg-white'}`}
         >
-          <div className="p-4">
+          <div className={`p-4 ${darkMode ? 'text-gray-300' : ''}`}>
             <label className={`block relative w-full aspect-video rounded-xl overflow-hidden shadow-md cursor-pointer group ${!modalImageUrl ? `bg-gradient-to-br ${card.coverGradient}` : ''}`} title="คลิกเพื่อเปลี่ยนรูปปก หรือ Ctrl+V วางรูปได้เลย">
               <input type="file" accept="image/*" className="sr-only" onChange={e => {
                 const file = e.target.files?.[0];
@@ -4989,62 +5051,41 @@ function CourseDetailModal({
 
         {/* ══ PANEL 2: Center Reading ══════════════════════════════════ */}
         <div className={readingMode ? 'flex-1 flex items-center justify-center py-4 px-3 overflow-hidden' : 'relative flex min-w-0 flex-1 flex-col bg-white'}>
-        <div className={`${readingMode ? 'relative flex h-full max-h-full w-full max-w-[1140px] flex-col overflow-hidden rounded-[30px] border border-violet-100/80 bg-white shadow-[0_24px_64px_rgba(15,23,42,0.08)]' : 'relative flex min-w-0 flex-1 flex-col bg-white'}`}>
+        <div className={`relative flex h-full max-h-full w-full max-w-[1140px] flex-col overflow-hidden rounded-[30px] border shadow-[0_24px_64px_rgba(15,23,42,0.08)] transition-colors duration-300 ${darkMode ? 'border-white/10 bg-gray-900' : 'border-violet-100/80 bg-white'}`}>
 
-          {/* Header bar — only in normal mode */}
-          {!readingMode && (
-          <div className="flex items-center justify-between px-5 py-2.5 border-b border-gray-100 shrink-0">
-            <div className="flex items-center gap-1.5 text-[11px] text-gray-500 min-w-0">
-              <BookOpen size={11} className="text-violet-400 shrink-0" />
-              <span>Library</span>
-              <ChevronRight size={9} className="shrink-0" />
-              <span className="truncate max-w-[120px] text-gray-700 font-medium">{card.title}</span>
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <button onClick={() => setReadingMode(true)}
-                className="px-2.5 py-1 rounded-lg text-xs font-semibold transition border border-gray-200 text-gray-600 hover:bg-gray-100">
-                Read Mode
-              </button>
-              <button className="w-6 h-6 rounded-md border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
-                <ChevronRight size={11} className="rotate-180 text-gray-500" />
-              </button>
-              <button className="w-6 h-6 rounded-md border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
-                <ChevronRight size={11} className="text-gray-500" />
-              </button>
-              <button onClick={onClose} className="w-6 h-6 rounded-md border border-red-100 bg-red-50 flex items-center justify-center hover:bg-red-100 transition">
-                <X size={11} className="text-red-400" />
-              </button>
-            </div>
-          </div>
-          )}
-
-          {readingMode && (
-          <div className="shrink-0 border-b border-violet-100/70 bg-white/92 backdrop-blur-sm">
-            <div className="mx-auto flex w-full max-w-[1080px] items-center justify-between gap-3 px-6 py-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-violet-100 bg-violet-50/70 px-3 py-1 text-[11px] font-semibold text-violet-600">
-                <BookOpen size={12} />
-                Comfort Reading
-              </div>
-              <div className="flex items-center gap-2">
-                {/* Reading / Focus Mode toggle */}
-                <div className="flex items-center rounded-full border border-violet-100 bg-violet-50/60 p-0.5">
-                  <button
-                    onClick={() => setReadingMode(true)}
-                    className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold transition-all ${readingMode ? 'bg-white text-violet-600 shadow-sm' : 'text-violet-400 hover:text-violet-600'}`}
-                  >
-                    <BookOpen size={11} />
-                    Reading
-                  </button>
-                  <button
-                    onClick={() => setReadingMode(false)}
-                    className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold transition-all ${!readingMode ? 'bg-white text-amber-600 shadow-sm' : 'text-amber-400 hover:text-amber-600'}`}
-                  >
-                    <Zap size={11} />
-                    Focus
-                  </button>
+          {/* Reading mode toolbar */}
+          <div className={`shrink-0 border-b backdrop-blur-sm ${darkMode ? 'border-white/10 bg-gray-900/95' : 'border-violet-100/70 bg-white/95'}`}>
+            <div className="mx-auto flex w-full max-w-[1140px] items-center justify-between gap-3 px-6 py-2.5">
+              {/* Left: type badge + reading label */}
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-bold shrink-0 ${darkMode ? 'border-violet-500/40 bg-violet-500/15 text-violet-300' : 'border-violet-100 bg-violet-50 text-violet-600'}`}>
+                  <BookOpen size={11} />
+                  {card.contentType === 'article' ? 'Article' : card.contentType === 'social' ? 'Social' : card.contentType === 'book' ? 'Book' : card.contentType === 'video' ? 'Video' : card.contentType === 'podcast' ? 'Podcast' : card.contentType === 'course' ? 'Course' : 'PDF'}
                 </div>
-                <button
-                  onClick={onClose}
+                <span className={`text-[11px] font-semibold truncate max-w-[200px] ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>{card.title}</span>
+              </div>
+              {/* Right: Aa + Dark + Close */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                {/* Font size Aa button group */}
+                <div className={`flex items-center rounded-xl border p-0.5 gap-0.5 ${darkMode ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-gray-50'}`}>
+                  {(['sm', 'md', 'lg'] as const).map((s, i) => (
+                    <button key={s} onClick={() => setFontSize(s)}
+                      className={`rounded-lg px-2 py-1 font-bold transition-all ${fontSize === s ? (darkMode ? 'bg-violet-500/30 text-violet-300' : 'bg-white text-violet-600 shadow-sm') : (darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600')}`}
+                      style={{ fontSize: i === 0 ? 10 : i === 1 ? 12 : 14 }}
+                    >
+                      Aa
+                    </button>
+                  ))}
+                </div>
+                {/* Dark mode toggle */}
+                <button onClick={() => setDarkMode(d => !d)}
+                  className={`flex h-8 w-8 items-center justify-center rounded-xl border transition ${darkMode ? 'border-violet-500/40 bg-violet-500/20 text-violet-300 hover:bg-violet-500/30' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+                  title={darkMode ? 'Light mode' : 'Dark mode'}
+                >
+                  {darkMode ? <Sun size={13} /> : <Moon size={13} />}
+                </button>
+                {/* Close */}
+                <button onClick={onClose}
                   className="flex h-8 w-8 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-400 shadow-sm transition hover:bg-red-100"
                 >
                   <X size={12} />
@@ -5052,9 +5093,8 @@ function CourseDetailModal({
               </div>
             </div>
           </div>
-          )}
 
-          <div className={`flex-1 overflow-y-auto ${readingMode ? 'px-10 py-5' : 'px-6 py-5'}`}>
+          <div className={`flex-1 overflow-y-auto px-10 py-5 transition-colors duration-300 ${darkMode ? 'text-gray-200' : ''}`}>
             <div className={`${readingMode ? 'w-full' : ''}`}>
             {/* Title block — skip for article/social (own title) AND for reading mode types that render their own header */}
             {card.contentType !== 'article' && card.contentType !== 'social' && !(readingMode && (card.contentType === 'book' || card.contentType === 'video' || card.contentType === 'podcast' || card.contentType === 'course' || card.contentType === 'pdf')) && (
@@ -5079,7 +5119,7 @@ function CourseDetailModal({
               <div className="mb-8 pb-6 border-b border-gray-100">
                 <RichTextContent
                   value={content}
-                  className={`${readingMode ? 'max-w-[1060px] text-[18px] leading-[2.0]' : 'max-w-[760px] text-[16px] leading-[1.95]'} mx-auto tracking-[0.003em] font-normal text-gray-800`}
+                  className={`max-w-[1060px] mx-auto tracking-[0.003em] font-normal ${darkMode ? 'text-gray-200' : 'text-gray-800'} ${fontSize === 'sm' ? 'text-[15px] leading-[1.85]' : fontSize === 'lg' ? 'text-[21px] leading-[2.1]' : 'text-[18px] leading-[2.0]'}`}
                 />
               </div>
             )}
@@ -5982,7 +6022,7 @@ function CourseDetailModal({
                       </div>
 
                       {/* Title */}
-                      <h1 className="text-[32px] font-extrabold text-gray-950 leading-[1.15] tracking-tight mb-4">
+                      <h1 className={`text-[32px] font-extrabold leading-[1.15] tracking-tight mb-4 ${darkMode ? 'text-white' : 'text-gray-950'}`}>
                         {card.title}
                       </h1>
 
@@ -6007,19 +6047,7 @@ function CourseDetailModal({
                     {/* ═══ 2. Main Content Body ═══ */}
                     <div className="mb-10">
                       {!isRichTextEmpty(articleContentHtml) ? (
-                        <div>
-                          <RichTextContent value={articleContentHtml} className="text-[17px] leading-[1.95] tracking-[0.003em] text-gray-800" />
-                          <div className="mt-4 border border-dashed border-emerald-200 rounded-2xl p-3">
-                            <p className="text-[10px] font-bold text-emerald-600 mb-1.5 uppercase tracking-wide">แก้ไข / เพิ่มเนื้อหา</p>
-                            <textarea
-                              value={content}
-                              onChange={e => setContent(e.target.value)}
-                              rows={5}
-                              placeholder="วางหรือพิมพ์เนื้อหาเพิ่มเติม..."
-                              className="w-full text-[14px] text-gray-700 placeholder:text-gray-300 resize-y focus:outline-none leading-relaxed bg-transparent"
-                            />
-                          </div>
-                        </div>
+                        <RichTextContent value={articleContentHtml} className={`tracking-[0.003em] ${darkMode ? 'text-gray-200' : 'text-gray-800'} ${fontSize === 'sm' ? 'text-[15px] leading-[1.85]' : fontSize === 'lg' ? 'text-[21px] leading-[2.1]' : 'text-[17px] leading-[1.95]'}`} />
                       ) : (
                         <div className="border border-dashed border-emerald-200 rounded-2xl bg-emerald-50/20 p-5">
                           <div className="flex items-center gap-2 mb-3">
@@ -6054,23 +6082,6 @@ function CourseDetailModal({
 
                         return (
                           <>
-                            {/* CONTENT DISPLAY — read-only, content was added via Add Learning */}
-                            {!isRichTextEmpty(content) ? (
-                              <div className="rounded-2xl border border-gray-200 bg-white p-5 max-h-[560px] overflow-y-auto shadow-[0_4px_24px_rgba(0,0,0,0.07)] ring-1 ring-gray-100">
-                                <div className="flex items-center gap-2 mb-3">
-                                  <AlignLeft size={13} className="text-gray-400" />
-                                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-wide">Content</span>
-                                </div>
-                                <ReadableContent value={content} />
-                              </div>
-                            ) : (
-                              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/20 p-6 text-center">
-                                <FileText size={28} className="text-gray-200 mx-auto mb-2" />
-                                <p className="text-[13px] font-semibold text-gray-400">ยังไม่มีเนื้อหา</p>
-                                <p className="text-[11px] text-gray-300 mt-1">กด Edit เพื่อเพิ่มเนื้อหาจาก Add Learning</p>
-                              </div>
-                            )}
-
                             <StepBoxes
                               status={status} subjectLabel="บทความนี้"
                               understanding={understanding} setUnderstanding={setUnderstanding}
@@ -6756,7 +6767,7 @@ function CourseDetailModal({
           exit={{ width: 0, opacity: 0 }}
           transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1], opacity: { delay: 0.18, duration: 0.28 } }}
           style={{ flexShrink: 0 }}
-          className="border-l border-gray-100 bg-white flex flex-col overflow-y-auto overflow-x-hidden"
+          className={`border-l flex flex-col overflow-y-auto overflow-x-hidden transition-colors duration-300 ${darkMode ? 'border-white/10 bg-gray-900' : 'border-gray-100 bg-white'}`}
         >
           {/* ══ VideoRail — shown instead of Pomodoro for video content ══ */}
           {card.contentType === 'video' && (() => {
@@ -7659,14 +7670,15 @@ function CourseDetailModal({
 }
 
 // ─── Tab: Overall ─────────────────────────────────────────────────────
-function OverallTab({ showToast, learningCards, setLearningCards }: {
+function OverallTab({ showToast, learningCards, setLearningCards, onGoToReview }: {
   showToast: (msg: string) => void;
   learningCards: LearningCard[];
   setLearningCards: React.Dispatch<React.SetStateAction<LearningCard[]>>;
+  onGoToReview: () => void;
 }) {
+  const tc = useThemeColors();
   const [showAddCard, setShowAddCard] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
-  const [reviewingCardId, setReviewingCardId] = useState<number | null>(null);
   const [editCardId, setEditCardId] = useState<number | null>(null);
   const selectedCard = selectedCardId !== null ? learningCards.find(c => c.id === selectedCardId) ?? null : null;
   const editCard = editCardId !== null ? learningCards.find(c => c.id === editCardId) ?? null : null;
@@ -7678,7 +7690,7 @@ function OverallTab({ showToast, learningCards, setLearningCards }: {
         {KPI.map(k => <KpiCard key={k.label} item={k} />)}
       </div>
 
-      {/* Due for Review Banner — Premium Pastel Design */}
+      {/* Due for Review — Compact teaser */}
       <AnimatePresence>
       {dueCards.length > 0 && (
         <motion.div
@@ -7686,239 +7698,55 @@ function OverallTab({ showToast, learningCards, setLearningCards }: {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
-          className="relative overflow-hidden rounded-3xl border border-amber-200/60 bg-gradient-to-br from-amber-50/90 via-rose-50/70 to-violet-50/80 p-5 shadow-[0_8px_28px_-12px_rgba(251,191,36,0.25)] dark:border-amber-400/15 dark:from-amber-500/[0.08] dark:via-rose-500/[0.06] dark:to-violet-500/[0.08] dark:shadow-[0_8px_28px_-12px_rgba(0,0,0,0.4)]"
+          className="relative overflow-hidden rounded-3xl border border-amber-200/60 bg-gradient-to-br from-amber-50/90 via-rose-50/70 to-violet-50/80 p-5 shadow-[0_8px_28px_-12px_rgba(251,191,36,0.25)]"
         >
-          {/* Ambient orbs */}
-          <div aria-hidden className="pointer-events-none absolute -top-12 -right-12 h-40 w-40 rounded-full bg-gradient-to-br from-amber-200/40 to-rose-200/30 blur-3xl dark:from-amber-400/15 dark:to-rose-400/10" />
-          <div aria-hidden className="pointer-events-none absolute -bottom-16 -left-10 h-44 w-44 rounded-full bg-gradient-to-br from-violet-200/35 to-sky-200/25 blur-3xl dark:from-violet-400/15 dark:to-sky-400/10" />
+          {/* Ambient orb */}
+          <div aria-hidden className="pointer-events-none absolute -top-12 -right-12 h-40 w-40 rounded-full bg-gradient-to-br from-amber-200/40 to-rose-200/30 blur-3xl" />
 
-          {/* Header */}
-          <div className="relative flex items-start justify-between gap-3 mb-4">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <motion.div
-                  animate={{ scale: [1, 1.15, 1], opacity: [0.6, 0.3, 0.6] }}
-                  transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-                  className="absolute inset-0 rounded-2xl bg-amber-300/40 blur-md"
-                />
-                <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-rose-400 shadow-[0_4px_12px_-2px_rgba(251,146,60,0.5)]">
+          <div className="relative flex items-center justify-between gap-4">
+            {/* Left: icon + title + thumbnails */}
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="relative shrink-0">
+                <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.2, 0.5] }} transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }} className="absolute inset-0 rounded-2xl bg-amber-300/50 blur-lg" />
+                <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-rose-400 shadow-[0_6px_18px_-4px_rgba(251,146,60,0.55)]">
                   <RefreshCw size={16} className="text-white" strokeWidth={2.5} />
                 </div>
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-[14px] font-extrabold tracking-tight text-slate-900 dark:text-white">Due for Review Today</h3>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-extrabold text-amber-700 shadow-sm ring-1 ring-amber-200/70 dark:bg-amber-400/15 dark:text-amber-300 dark:ring-amber-400/20">
-                    <Sparkles size={9} /> {dueCards.length}
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-[14px] font-black tracking-tight text-slate-900">Due for Review</h3>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-rose-400 px-2.5 py-0.5 text-[10px] font-black text-white shadow-sm">
+                    <Sparkles size={9} /> {dueCards.length} cards
                   </span>
                 </div>
-                <p className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-                  ปิดโน้ตแล้วเขียนจากความจำก่อนเปิดอ่าน — เพื่อความจำระยะยาว
-                </p>
+                <div className="flex items-center gap-1.5 mt-2">
+                  {dueCards.slice(0, 5).map(c => {
+                    const cardCt = c.contentType ? CONTENT_TYPES.find(ct => ct.key === c.contentType) ?? null : null;
+                    const CardCtI = cardCt?.Icon ?? BookOpen;
+                    return (
+                      <div key={c.id} className={`w-7 h-7 rounded-lg bg-gradient-to-br ${c.coverGradient} flex items-center justify-center shadow-sm ring-1 ring-white/60`}>
+                        <CardCtI size={12} className="text-white/90" />
+                      </div>
+                    );
+                  })}
+                  {dueCards.length > 5 && (
+                    <div className="w-7 h-7 rounded-lg bg-white/60 border border-white/80 flex items-center justify-center">
+                      <span className="text-[9px] font-black text-amber-600">+{dueCards.length - 5}</span>
+                    </div>
+                  )}
+                  <span className="ml-1 text-[11px] text-slate-400 font-medium">ไปที่ Daily Review tab เพื่อเริ่ม session</span>
+                </div>
               </div>
             </div>
+
+            {/* CTA button */}
+            <button
+              onClick={onGoToReview}
+              className="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-400 text-white text-[12px] font-black hover:from-amber-500 hover:to-orange-500 transition-all shadow-[0_4px_14px_-4px_rgba(251,146,60,0.45)] hover:-translate-y-px"
+            >
+              <RefreshCw size={13} /> เริ่ม Review Session
+            </button>
           </div>
-
-          {/* Card chips — click to expand review panel */}
-          <div className="relative flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-thin">
-            {dueCards.map((c, idx) => {
-              const cs = computeClarityScore(c.clarityQ1, c.clarityQ2, c.clarityBelief);
-              const clarityPct = Math.min(100, Math.max(0, cs));
-              const circumference = 2 * Math.PI * 14;
-              const dashOffset = circumference * (1 - clarityPct / 100);
-              return (
-                <motion.button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setReviewingCardId(prev => prev === c.id ? null : c.id)}
-                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.28, ease: 'easeOut', delay: idx * 0.04 }}
-                  whileHover={{ y: -3, scale: 1.015 }}
-                  whileTap={{ scale: 0.985 }}
-                  className="group flex-shrink-0 flex items-center gap-3 rounded-2xl border border-white/80 bg-white/85 px-3 py-2.5 text-left shadow-[0_4px_14px_-6px_rgba(124,58,237,0.18)] backdrop-blur-sm transition-colors hover:border-violet-200 hover:bg-white hover:shadow-[0_10px_24px_-8px_rgba(124,58,237,0.28)] dark:border-white/10 dark:bg-white/5 dark:hover:border-violet-400/30 dark:hover:bg-white/[0.08]"
-                >
-                  {/* Cover with clarity ring */}
-                  <div className="relative shrink-0">
-                    {cs > 0 && (
-                      <svg className="absolute inset-0 -rotate-90" width="44" height="44" viewBox="0 0 36 36">
-                        <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-violet-100 dark:text-white/10" />
-                        <circle
-                          cx="18" cy="18" r="14" fill="none"
-                          stroke="url(#clarityGrad)" strokeWidth="2.5" strokeLinecap="round"
-                          strokeDasharray={circumference} strokeDashoffset={dashOffset}
-                          style={{ transition: 'stroke-dashoffset 0.6s ease' }}
-                        />
-                        <defs>
-                          <linearGradient id="clarityGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#a78bfa" />
-                            <stop offset="100%" stopColor="#f472b6" />
-                          </linearGradient>
-                        </defs>
-                      </svg>
-                    )}
-                    <div className={`relative w-11 h-11 m-[2px] rounded-xl bg-gradient-to-br ${c.coverGradient} flex items-center justify-center shadow-inner`}>
-                      <IconGlyph token={c.coverEmoji} size={20} color="rgba(255,255,255,0.95)" />
-                    </div>
-                  </div>
-
-                  {/* Text */}
-                  <div className="min-w-0 pr-1">
-                    <div className="text-[12px] font-extrabold tracking-tight text-slate-800 dark:text-slate-100 truncate max-w-[160px] group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors">
-                      {c.title}
-                    </div>
-                    <div className="mt-1 flex items-center gap-1.5">
-                      {cs > 0 && (
-                        <span className="inline-flex items-center gap-0.5 rounded-md bg-gradient-to-r from-violet-100 to-fuchsia-100 px-1.5 py-[1px] text-[9px] font-extrabold text-violet-700 dark:from-violet-500/20 dark:to-fuchsia-500/20 dark:text-violet-200">
-                          <BarChart2 size={8} strokeWidth={3}/>{cs}
-                        </span>
-                      )}
-                      {c.reviewCount != null && c.reviewCount > 0 && (
-                        <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-slate-400 dark:text-slate-500">
-                          <RefreshCw size={8} />{c.reviewCount}x
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Arrow hint */}
-                  <motion.div
-                    className="ml-auto text-violet-400 dark:text-violet-300/70 opacity-0 group-hover:opacity-100"
-                    initial={false}
-                    animate={{ x: 0 }}
-                    whileHover={{ x: 2 }}
-                  >
-                    <ChevronRight size={14} strokeWidth={2.5} />
-                  </motion.div>
-                </motion.button>
-              );
-            })}
-          </div>
-
-          {/* Quick Review Panel */}
-          <AnimatePresence>
-            {reviewingCardId !== null && (() => {
-              const rc = dueCards.find(c => c.id === reviewingCardId);
-              if (!rc) return null;
-              const ctBadge = rc.contentType ? CONTENT_TYPES.find(c => c.key === rc.contentType) ?? null : null;
-              const CtIcon = ctBadge?.Icon ?? null;
-              const hasUnderstanding = rc.understanding && rc.understanding !== 'Notes not added yet.' && richTextToPlainText(rc.understanding).trim();
-              const hasApplication = rc.application && rc.application !== 'Application not added yet.' && richTextToPlainText(rc.application ?? '').trim();
-              return (
-                <motion.div
-                  key={reviewingCardId}
-                  initial={{ opacity: 0, y: -8, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: 'auto' }}
-                  exit={{ opacity: 0, y: -8, height: 0 }}
-                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                  className="overflow-hidden"
-                >
-                  <div className="mt-4 rounded-2xl bg-white/90 border border-white shadow-[0_4px_20px_-8px_rgba(139,92,246,0.2)] backdrop-blur-sm p-4">
-
-                    {/* Panel header */}
-                    <div className="flex items-start justify-between gap-3 mb-4">
-                      <div className="flex items-center gap-2.5">
-                        {rc.pageIconUrl ? (
-                          <img src={rc.pageIconUrl} className="w-9 h-9 rounded-full object-cover ring-2 ring-white shadow-sm shrink-0" alt={rc.provider} />
-                        ) : (
-                          <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${rc.coverGradient} flex items-center justify-center shrink-0 shadow-sm`}>
-                            <IconGlyph token={rc.coverEmoji} size={18} color="rgba(255,255,255,0.95)" />
-                          </div>
-                        )}
-                        <div>
-                          <h4 className="text-[14px] font-bold text-gray-900 leading-tight">{rc.title}</h4>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            {ctBadge && CtIcon && (
-                              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${ctBadge.accentBg} ${ctBadge.accentText}`}>
-                                <CtIcon size={9} />{ctBadge.label}
-                              </span>
-                            )}
-                            <span className="text-[11px] text-gray-400">{rc.provider}</span>
-                            {rc.reviewCount != null && rc.reviewCount > 0 && (
-                              <span className="text-[10px] text-gray-400 flex items-center gap-0.5"><RefreshCw size={9} />{rc.reviewCount}x reviewed</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <button onClick={() => setReviewingCardId(null)} className="text-gray-300 hover:text-gray-500 transition-colors p-1 rounded-lg hover:bg-gray-50">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                      </button>
-                    </div>
-
-                    {/* Notes sections */}
-                    <div className="space-y-3 mb-4">
-                      {hasUnderstanding ? (
-                        <div className="bg-violet-50/60 rounded-xl p-3 border border-violet-100/80">
-                          <p className="text-[10px] font-bold text-violet-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                            สิ่งที่เรียนรู้ / ความเข้าใจ
-                          </p>
-                          <p className="text-[12.5px] text-gray-700 leading-relaxed whitespace-pre-line">{richTextToPlainText(rc.understanding)}</p>
-                        </div>
-                      ) : (
-                        <div className="bg-gray-50 rounded-xl p-3 border border-dashed border-gray-200">
-                          <p className="text-[11px] text-gray-400 italic">ยังไม่ได้เพิ่ม notes — กด Read More เพื่อเพิ่ม</p>
-                        </div>
-                      )}
-
-                      {hasApplication && (
-                        <div className="bg-emerald-50/60 rounded-xl p-3 border border-emerald-100/80">
-                          <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                            สิ่งที่นำไปใช้
-                          </p>
-                          <p className="text-[12.5px] text-gray-700 leading-relaxed whitespace-pre-line">{richTextToPlainText(rc.application ?? '')}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Review action buttons */}
-                    <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
-                      <button
-                        onClick={() => {
-                          setLearningCards(prev => prev.map(c => c.id === rc.id ? {
-                            ...c,
-                            reviewCount: (c.reviewCount ?? 0) + 1,
-                            nextReviewAt: addDays(todayStr(), Math.min((c.reviewDays ?? 3) * 2, 30)),
-                            reviewDays: Math.min((c.reviewDays ?? 3) * 2, 30),
-                          } : c));
-                          setReviewingCardId(null);
-                          showToast(`"${rc.title}" — เลื่อน review ออกไปแล้ว`);
-                        }}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 text-white text-[12px] font-bold hover:from-violet-600 hover:to-purple-600 transition-all shadow-sm hover:shadow-md"
-                      >
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        เข้าใจแล้ว — เลื่อน Review
-                      </button>
-                      <button
-                        onClick={() => {
-                          setLearningCards(prev => prev.map(c => c.id === rc.id ? {
-                            ...c,
-                            reviewCount: (c.reviewCount ?? 0) + 1,
-                            nextReviewAt: addDays(todayStr(), 1),
-                            reviewDays: 1,
-                          } : c));
-                          setReviewingCardId(null);
-                          showToast(`"${rc.title}" — ตั้ง review ใหม่พรุ่งนี้`);
-                        }}
-                        className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 text-[12px] font-bold hover:bg-rose-100 transition-colors"
-                      >
-                        <RefreshCw size={12} />
-                        ต้องเรียนซ้ำ
-                      </button>
-                      <button
-                        onClick={() => { setSelectedCardId(rc.id); setReviewingCardId(null); }}
-                        className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-600 text-[12px] font-semibold hover:bg-gray-100 transition-colors"
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        เปิดอ่าน
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })()}
-          </AnimatePresence>
 
         </motion.div>
       )}
@@ -8037,15 +7865,15 @@ function OverallTab({ showToast, learningCards, setLearningCards }: {
             <AreaChart data={MASTERY_DATA}>
               <defs>
                 <linearGradient id="masterG" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#a78bfa" stopOpacity={0.5} />
-                  <stop offset="100%" stopColor="#a78bfa" stopOpacity={0} />
+                  <stop offset="0%" stopColor={tc.primarySoft} stopOpacity={0.5} />
+                  <stop offset="100%" stopColor={tc.primarySoft} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0e9ff" />
+              <CartesianGrid strokeDasharray="3 3" stroke={tc.grid} />
               <XAxis dataKey="month" stroke="#94a3b8" fontSize={10} />
               <YAxis stroke="#94a3b8" fontSize={10} />
               <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
-              <Area type="monotone" dataKey="score" stroke="#7c5cbf" strokeWidth={2.5} fill="url(#masterG)" />
+              <Area type="monotone" dataKey="score" stroke={tc.primary} strokeWidth={2.5} fill="url(#masterG)" />
             </AreaChart>
           </ResponsiveContainer>
         </SectionCard>
@@ -8231,6 +8059,7 @@ function SkillRoadmapTab({ showToast }: { showToast: (msg: string) => void }) {
 
 // ─── Tab: Courses ─────────────────────────────────────────────────────
 function CoursesTab({ showToast }: { showToast: (msg: string) => void }) {
+  const tc = useThemeColors();
   const [search, setSearch] = useState('');
   const filtered = COURSES_LIST.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
   return (
@@ -8291,15 +8120,15 @@ function CoursesTab({ showToast }: { showToast: (msg: string) => void }) {
             <AreaChart data={PROGRESS_OVER_TIME}>
               <defs>
                 <linearGradient id="engG" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#a78bfa" stopOpacity={0.5} />
-                  <stop offset="100%" stopColor="#a78bfa" stopOpacity={0} />
+                  <stop offset="0%" stopColor={tc.primarySoft} stopOpacity={0.5} />
+                  <stop offset="100%" stopColor={tc.primarySoft} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0e9ff" />
+              <CartesianGrid strokeDasharray="3 3" stroke={tc.grid} />
               <XAxis dataKey="d" stroke="#94a3b8" fontSize={10} />
               <YAxis stroke="#94a3b8" fontSize={10} />
               <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
-              <Area type="monotone" dataKey="v" stroke="#7c5cbf" strokeWidth={2.5} fill="url(#engG)" />
+              <Area type="monotone" dataKey="v" stroke={tc.primary} strokeWidth={2.5} fill="url(#engG)" />
             </AreaChart>
           </ResponsiveContainer>
         </SectionCard>
@@ -9198,6 +9027,254 @@ function loadLearningCards(): LearningCard[] {
   return INIT_LEARNING_CARDS.map(normalizeCard);
 }
 
+// ─── Tab: Daily Review ───────────────────────────────────────────────
+function DailyReviewTab({ showToast, learningCards, setLearningCards }: {
+  showToast: (msg: string) => void;
+  learningCards: LearningCard[];
+  setLearningCards: React.Dispatch<React.SetStateAction<LearningCard[]>>;
+}) {
+  const dueCards = learningCards.filter(c => c.nextReviewAt && c.nextReviewAt <= todayStr());
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [reviewPhase, setReviewPhase] = useState<'recall' | 'reveal'>('recall');
+  const [recallText, setRecallText] = useState('');
+  const [doneIds, setDoneIds] = useState<Set<number>>(new Set());
+
+  const sessionDone = dueCards.length > 0 && doneIds.size >= dueCards.length;
+  const currentCard = !sessionDone ? (dueCards[currentIdx] ?? null) : null;
+
+  const handleRate = (days: number) => {
+    if (!currentCard) return;
+    setLearningCards(prev => prev.map(c => c.id === currentCard.id ? {
+      ...c,
+      reviewCount: (c.reviewCount ?? 0) + 1,
+      nextReviewAt: addDays(todayStr(), days),
+      reviewDays: days,
+    } : c));
+    const newDone = new Set([...doneIds, currentCard.id]);
+    setDoneIds(newDone);
+    setRecallText('');
+    setReviewPhase('recall');
+    if (newDone.size < dueCards.length) {
+      const next = dueCards.find((c, i) => i > currentIdx && !newDone.has(c.id))
+        ?? dueCards.find(c => !newDone.has(c.id));
+      if (next) setCurrentIdx(dueCards.indexOf(next));
+    }
+    showToast(`ทบทวนครั้งหน้าใน ${days} วัน — อัปเดตใน Library แล้ว`);
+  };
+
+  // ── Empty state
+  if (dueCards.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+          <CheckCircle2 size={28} className="text-emerald-500" />
+        </div>
+        <div className="text-center">
+          <h3 className="text-[16px] font-black text-gray-900">ไม่มี card ที่ต้องทบทวนวันนี้</h3>
+          <p className="text-[12px] text-gray-400 mt-1">เยี่ยมมาก! กลับมา review ใหม่เมื่อถึงกำหนด</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Session complete
+  if (sessionDone) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-violet-50 border border-violet-100 flex items-center justify-center">
+          <Zap size={28} className="text-violet-500" />
+        </div>
+        <div className="text-center">
+          <h3 className="text-[16px] font-black text-gray-900">Review session เสร็จสิ้น!</h3>
+          <p className="text-[12px] text-gray-400 mt-1">ทบทวน {doneIds.size} cards เรียบร้อย · next review dates อัปเดตใน Library แล้ว</p>
+        </div>
+        <button
+          onClick={() => { setDoneIds(new Set()); setCurrentIdx(0); setReviewPhase('recall'); setRecallText(''); }}
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-600 text-[12px] font-semibold hover:bg-gray-100 transition-colors mt-2"
+        >
+          <RefreshCw size={13} /> ทบทวนอีกรอบ
+        </button>
+      </div>
+    );
+  }
+
+  const rc = currentCard!;
+  const ctBadge = rc.contentType ? CONTENT_TYPES.find(c => c.key === rc.contentType) ?? null : null;
+  const CtIcon = ctBadge?.Icon ?? BookOpen;
+  const hasUnderstanding = rc.understanding && rc.understanding !== 'Notes not added yet.' && richTextToPlainText(rc.understanding).trim();
+  const hasApplication = rc.application && rc.application !== 'Application not added yet.' && richTextToPlainText(rc.application ?? '').trim();
+
+  return (
+    <div className="space-y-4">
+      {/* Session progress */}
+      <div className="bg-white rounded-2xl border border-purple-100 px-5 py-3.5 shadow-sm">
+        <div className="flex items-center gap-3">
+          <span className="text-[12px] font-bold text-gray-600 shrink-0">Session</span>
+          <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-violet-400 to-fuchsia-400 rounded-full transition-all duration-500"
+              style={{ width: `${(doneIds.size / dueCards.length) * 100}%` }}
+            />
+          </div>
+          <span className="text-[12px] font-black text-gray-700 shrink-0">{doneIds.size} / {dueCards.length}</span>
+          <span className="text-[11px] text-gray-400 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-full shrink-0 font-medium">
+            {dueCards.length - doneIds.size} remaining
+          </span>
+        </div>
+      </div>
+
+      {/* Two-column layout */}
+      <div className="grid grid-cols-[220px_1fr] gap-4 items-start">
+
+        {/* Queue panel */}
+        <div className="bg-white rounded-2xl border border-purple-100 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100">
+            <h3 className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Queue</h3>
+          </div>
+          <div className="p-2 space-y-0.5">
+            {dueCards.map((c, i) => {
+              const isDone = doneIds.has(c.id);
+              const isActive = i === currentIdx && !isDone;
+              const cardCt = c.contentType ? CONTENT_TYPES.find(ct => ct.key === c.contentType) ?? null : null;
+              const CardI = cardCt?.Icon ?? BookOpen;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => { if (!isDone) { setCurrentIdx(i); setReviewPhase('recall'); setRecallText(''); } }}
+                  disabled={isDone}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-all ${
+                    isDone ? 'opacity-40 cursor-default' :
+                    isActive ? 'bg-violet-50 border border-violet-200' :
+                    'hover:bg-gray-50 border border-transparent'
+                  }`}
+                >
+                  <span className={`shrink-0 text-[10px] font-black w-4 ${isActive ? 'text-violet-400' : 'text-gray-300'}`}>{i + 1}</span>
+                  <div className={`shrink-0 w-7 h-7 rounded-lg bg-gradient-to-br ${c.coverGradient} flex items-center justify-center`}>
+                    {isDone
+                      ? <Check size={12} className="text-white" />
+                      : <CardI size={12} className="text-white/90" />
+                    }
+                  </div>
+                  <span className={`flex-1 text-[11px] leading-tight truncate ${isDone ? 'line-through text-gray-400' : isActive ? 'font-bold text-violet-700' : 'text-gray-700'}`}>
+                    {c.title}
+                  </span>
+                  {isDone && <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Main review panel */}
+        <div className="bg-white rounded-2xl border border-purple-100 shadow-sm overflow-hidden">
+          {/* Card header */}
+          <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${rc.coverGradient} flex items-center justify-center shadow-sm shrink-0`}>
+              <CtIcon size={18} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="text-[14px] font-black text-gray-900 truncate">{rc.title}</h4>
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                {ctBadge && (
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${ctBadge.accentBg} ${ctBadge.accentText}`}>
+                    <CtIcon size={9} />{ctBadge.label}
+                  </span>
+                )}
+                {rc.provider && <span className="text-[11px] text-gray-400">{rc.provider}</span>}
+                {rc.reviewCount != null && rc.reviewCount > 0 && (
+                  <span className="text-[10px] text-gray-400 flex items-center gap-0.5"><RefreshCw size={9} />{rc.reviewCount}x reviewed</span>
+                )}
+              </div>
+            </div>
+            <div className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider ${reviewPhase === 'recall' ? 'bg-amber-100 text-amber-700' : 'bg-violet-100 text-violet-700'}`}>
+              {reviewPhase === 'recall' ? <><Brain size={10} /> Phase 1 — Recall</> : <><Eye size={10} /> Phase 2 — Reveal</>}
+            </div>
+          </div>
+
+          <div className="p-5">
+            {/* Phase 1: Blind Recall */}
+            {reviewPhase === 'recall' && (
+              <div className="space-y-3">
+                <div className="rounded-xl border border-amber-100 bg-amber-50/40 p-4">
+                  <p className="text-[11px] font-black text-amber-700 uppercase tracking-wider mb-1">เขียนสิ่งที่จำได้ก่อนเปิดดู</p>
+                  <p className="text-[11px] text-amber-600/70 mb-3">ปิดโน้ตในใจ → เขียนทุกอย่างที่นึกออก → กด "เปิดดูเฉลย"</p>
+                  <textarea
+                    value={recallText}
+                    onChange={e => setRecallText(e.target.value)}
+                    placeholder="เขียนทุกอย่างที่จำได้จาก card นี้..."
+                    rows={5}
+                    className="w-full text-[13px] text-gray-700 placeholder:text-amber-300 bg-white border border-amber-100 rounded-xl p-3 resize-none focus:outline-none focus:border-amber-300 leading-relaxed"
+                  />
+                  {recallText.trim().length > 0 && (
+                    <p className="text-[10px] text-amber-500 mt-1.5 text-right">{recallText.trim().split(/\s+/).length} คำ</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setReviewPhase('reveal')}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-400 text-white text-[13px] font-black hover:from-amber-500 hover:to-orange-500 transition-all shadow-[0_4px_16px_-4px_rgba(251,146,60,0.45)] hover:-translate-y-px"
+                >
+                  <Eye size={15} /> เปิดดูเฉลย
+                </button>
+              </div>
+            )}
+
+            {/* Phase 2: Reveal + Rating */}
+            {reviewPhase === 'reveal' && (
+              <div className="space-y-3">
+                {recallText.trim() && (
+                  <div className="rounded-xl border border-amber-100 bg-amber-50/30 p-3">
+                    <p className="text-[10px] font-black text-amber-500 uppercase tracking-wider mb-1.5 flex items-center gap-1"><Brain size={10} /> สิ่งที่คุณเขียน</p>
+                    <p className="text-[12.5px] text-gray-600 leading-relaxed whitespace-pre-line">{recallText}</p>
+                  </div>
+                )}
+                {hasUnderstanding ? (
+                  <div className="bg-violet-50/60 rounded-xl p-3 border border-violet-100/80">
+                    <p className="text-[10px] font-black text-violet-500 uppercase tracking-wider mb-1.5 flex items-center gap-1"><Lightbulb size={10} /> สิ่งที่เรียนรู้ (เฉลย)</p>
+                    <p className="text-[12.5px] text-gray-700 leading-relaxed whitespace-pre-line">{richTextToPlainText(rc.understanding)}</p>
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-xl p-3 border border-dashed border-gray-200">
+                    <p className="text-[11px] text-gray-400 italic">ยังไม่ได้เพิ่ม notes — เปิด card แล้วเพิ่มได้เลย</p>
+                  </div>
+                )}
+                {hasApplication && (
+                  <div className="bg-emerald-50/60 rounded-xl p-3 border border-emerald-100/80">
+                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-wider mb-1.5 flex items-center gap-1"><Check size={10} /> สิ่งที่นำไปใช้</p>
+                    <p className="text-[12.5px] text-gray-700 leading-relaxed whitespace-pre-line">{richTextToPlainText(rc.application ?? '')}</p>
+                  </div>
+                )}
+
+                {/* Self-rating — no emoji, use icons */}
+                <div className="pt-3 border-t border-gray-100">
+                  <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-3 text-center">Rate — จำได้แค่ไหน?</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {([
+                      { label: 'ลืมเลย',   days: 1,                                      cls: 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100',       Icon: X },
+                      { label: 'จำได้บ้าง', days: 3,                                      cls: 'bg-orange-50 border-orange-200 text-orange-600 hover:bg-orange-100', Icon: Minus },
+                      { label: 'จำได้ดี',  days: Math.min((rc.reviewDays ?? 3) * 2, 14), cls: 'bg-sky-50 border-sky-200 text-sky-600 hover:bg-sky-100',             Icon: Check },
+                      { label: 'แม่นมาก',  days: Math.min((rc.reviewDays ?? 3) * 3, 60), cls: 'bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-100', Icon: Zap },
+                    ] as const).map(({ label, days, cls, Icon: RIcon }) => (
+                      <button
+                        key={label}
+                        onClick={() => handleRate(days)}
+                        className={`flex flex-col items-center gap-1.5 py-4 px-1 rounded-xl border ${cls} text-[10px] font-bold transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-95`}
+                      >
+                        <RIcon size={22} strokeWidth={2} />
+                        <span className="font-black">{label}</span>
+                        <span className="opacity-60 font-medium">{days} วัน</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────
 export default function LearningPage() {
   const [activeTab, setActiveTab] = useState<LearningTab>('Overall');
@@ -9222,6 +9299,8 @@ export default function LearningPage() {
     setTimeout(() => setToast(''), 2200);
   };
 
+  const dueCount = learningCards.filter(c => c.nextReviewAt && c.nextReviewAt <= todayStr()).length;
+
   return (
     <>
       <TopBar title="Learning" subtitle="Build skills. Track progress. Master your craft." />
@@ -9231,13 +9310,18 @@ export default function LearningPage() {
         <div className="flex min-w-max items-center gap-2">
           {TABS.map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
-              className={`h-10 rounded-xl px-4 text-[12px] font-extrabold whitespace-nowrap transition ${
+              className={`h-10 rounded-xl px-4 text-[12px] font-extrabold whitespace-nowrap transition flex items-center gap-1.5 ${
                 activeTab === tab
                   ? 'bg-purple-100 text-purple-700 shadow-[inset_0_-2px_0_rgba(124,58,237,0.45)] dark:bg-purple-500/20 dark:text-purple-300'
                   : 'text-slate-500 hover:bg-purple-50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-purple-500/10'
               }`}
             >
               {tab}
+              {tab === 'Daily Review' && dueCount > 0 && (
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-r from-amber-400 to-rose-400 text-white text-[9px] font-black shadow-sm">
+                  {dueCount}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -9245,7 +9329,8 @@ export default function LearningPage() {
 
       {/* Tab content */}
       <div>
-        {activeTab === 'Overall'              && <OverallTab            showToast={showToast} learningCards={learningCards} setLearningCards={setLearningCards} />}
+        {activeTab === 'Overall'              && <OverallTab            showToast={showToast} learningCards={learningCards} setLearningCards={setLearningCards} onGoToReview={() => setActiveTab('Daily Review')} />}
+        {activeTab === 'Daily Review'         && <DailyReviewTab        showToast={showToast} learningCards={learningCards} setLearningCards={setLearningCards} />}
         {activeTab === 'Skill Roadmap'        && <SkillRoadmapTab       showToast={showToast} />}
         {activeTab === 'Courses'              && <CoursesTab            showToast={showToast} />}
         {activeTab === 'Course Builder'       && <CourseBuilderTab      showToast={showToast} />}

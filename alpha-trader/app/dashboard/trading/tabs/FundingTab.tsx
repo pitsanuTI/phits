@@ -1,5 +1,6 @@
 'use client';
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { useThemeColors } from '@/lib/useThemeColors';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -9,7 +10,7 @@ import {
   propFirmAccounts, fundingCostData, fundingIncomeData, capitalDistribution,
 } from '@/lib/mockData';
 import KpiCard from '@/components/KpiCard';
-import { CheckCircle, AlertTriangle, Wallet, Gift, RefreshCw, TrendingUp, Plus, Trash2, X, ChevronLeft, ChevronRight, BarChart3, Calendar, DollarSign, Target, Camera, Clock, CreditCard, Landmark, Lightbulb, ClipboardList, Sparkles, Zap, ChevronDown, Check } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Wallet, Gift, RefreshCw, TrendingUp, Plus, Trash2, X, ChevronLeft, ChevronRight, BarChart3, Calendar, DollarSign, Target, Camera, Clock, CreditCard, Landmark, Lightbulb, ClipboardList, Sparkles, Zap, ChevronDown, Check, Pencil } from 'lucide-react';
 import { Wise, Tether, Stripe, Binance, Tradingview, Bitcoin, Ethereum, Coinbase } from '@thesvg/react';
 import { PropFirmLogo } from '@/components/trading/PropFirmLogos';
 import { useEscClose } from '@/lib/useEscClose';
@@ -165,9 +166,11 @@ const mockEquityCurve = (accId: number) => {
 };
 
 export default function FundingTab() {
+  const tc = useThemeColors();
   const [accounts, setAccounts] = useState<FundingAccount[]>(propFirmAccounts as FundingAccount[]);
   const [showModal, setShowModal] = useState(false);
   const [editingFunding, setEditingFunding] = useState<NewFunding | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -177,13 +180,20 @@ export default function FundingTab() {
     setShowModal(true);
   };
 
+  const handleEditFunding = (acc: FundingAccount) => {
+    const { id, ...rest } = acc;
+    setEditingId(id);
+    setEditingFunding(rest);
+  };
+
   const handleSaveFunding = (data: NewFunding) => {
-    const newAccount: FundingAccount = {
-      ...data,
-      id: Math.max(0, ...accounts.map(a => a.id)) + 1,
-    };
-    setAccounts([...accounts, newAccount]);
+    if (editingId !== null) {
+      setAccounts(accounts.map(a => a.id === editingId ? { ...data, id: editingId } : a));
+    } else {
+      setAccounts([...accounts, { ...data, id: Math.max(0, ...accounts.map(a => a.id)) + 1 }]);
+    }
     setEditingFunding(null);
+    setEditingId(null);
   };
 
   const handleDeleteFunding = (id: number) => {
@@ -288,13 +298,33 @@ export default function FundingTab() {
                 </div>
               </div>
 
-              {/* Delete button - always visible */}
-              <button
-                onClick={(e) => { e.stopPropagation(); setDeletingId(acc.id); }}
-                className="w-full py-2 text-[11px] font-bold text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-200 transition"
-              >
-                <Trash2 size={12} className="inline mr-1" /> ลบบัญชีนี้
-              </button>
+              {/* Action buttons */}
+              <div className="flex gap-2 mt-1">
+                <motion.button
+                  onClick={(e) => { e.stopPropagation(); handleEditFunding(acc); }}
+                  whileHover={{ scale: 1.04, y: -1 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className="flex-1 py-2 text-[11px] font-bold text-purple-600 hover:bg-purple-50 rounded-xl border border-purple-200 flex items-center justify-center gap-1"
+                >
+                  <motion.span whileHover={{ rotate: -12 }} transition={{ type: 'spring', stiffness: 500, damping: 15 }}>
+                    <Pencil size={11} />
+                  </motion.span>
+                  แก้ไข
+                </motion.button>
+                <motion.button
+                  onClick={(e) => { e.stopPropagation(); setDeletingId(acc.id); }}
+                  whileHover={{ scale: 1.04, y: -1 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className="flex-1 py-2 text-[11px] font-bold text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-200 flex items-center justify-center gap-1"
+                >
+                  <motion.span whileHover={{ rotate: 12, scale: 1.2 }} transition={{ type: 'spring', stiffness: 500, damping: 15 }}>
+                    <Trash2 size={11} />
+                  </motion.span>
+                  ลบ
+                </motion.button>
+              </div>
               </div>{/* close p-5 */}
             </div>
           ))}
@@ -329,7 +359,8 @@ export default function FundingTab() {
       {editingFunding && (
         <AddFundingModal
           initial={editingFunding}
-          onClose={() => setEditingFunding(null)}
+          isEditing={editingId !== null}
+          onClose={() => { setEditingFunding(null); setEditingId(null); }}
           onSave={handleSaveFunding}
         />
       )}
@@ -558,9 +589,10 @@ function FundingModal({
 
 // Add/Edit Funding Modal
 function AddFundingModal({
-  initial, onClose, onSave,
+  initial, isEditing = false, onClose, onSave,
 }: {
   initial: NewFunding;
+  isEditing?: boolean;
   onClose: () => void;
   onSave: (data: NewFunding) => void;
 }) {
@@ -601,8 +633,8 @@ function AddFundingModal({
       <div className="relative z-10 w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-[#191a2c]">
         <div className="flex items-center justify-between px-6 py-4 border-b border-purple-100 dark:border-white/10">
           <div>
-            <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">Add Funding Account</h2>
-            <p className="text-[11px] text-gray-400 mt-0.5">เพิ่มบัญชีทุนสอบหรือ Funded Account ใหม่</p>
+            <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">{isEditing ? 'Edit Funding Account' : 'Add Funding Account'}</h2>
+            <p className="text-[11px] text-gray-400 mt-0.5">{isEditing ? 'แก้ไขข้อมูลบัญชีทุน' : 'เพิ่มบัญชีทุนสอบหรือ Funded Account ใหม่'}</p>
           </div>
           <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-white/10"><X size={16} /></button>
         </div>
@@ -731,7 +763,7 @@ function AddFundingModal({
 
         <div className="flex justify-end gap-2 border-t border-purple-100 px-6 py-4 dark:border-white/10">
           <button onClick={onClose} className="px-4 py-2 text-[12px] font-bold text-gray-600 hover:bg-gray-100 rounded-xl dark:text-gray-300 dark:hover:bg-white/10">Cancel</button>
-          <button onClick={handleSave} className="px-4 py-2 text-[12px] font-bold text-white bg-gradient-to-r from-purple-600 to-violet-500 rounded-xl">Save</button>
+          <button onClick={handleSave} className="px-4 py-2 text-[12px] font-bold text-white bg-gradient-to-r from-purple-600 to-violet-500 rounded-xl">{isEditing ? 'บันทึกการแก้ไข' : 'Save'}</button>
         </div>
       </div>
     </div>
@@ -764,6 +796,7 @@ function ConfirmDeleteModal({
 
 // Account Detail Popup — modal shown when clicking a card
 function AccountDetailPopup({ account, onClose }: { account: FundingAccount; onClose: () => void }) {
+  const tc = useThemeColors();
   useEscClose(onClose);
   const trades = mockAccountTrades(account.id);
   const equityCurve = mockEquityCurve(account.id);
@@ -865,16 +898,16 @@ function AccountDetailPopup({ account, onClose }: { account: FundingAccount; onC
                   <AreaChart data={equityCurve} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
                     <defs>
                       <linearGradient id={`eqGrad-${account.id}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
+                        <stop offset="5%" stopColor={tc.primary} stopOpacity={0.25} />
+                        <stop offset="95%" stopColor={tc.primary} stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0ebff" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={tc.grid} />
                     <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
                     <YAxis tickFormatter={v => `$${(v / 1000).toFixed(0)}K`} tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} width={48} />
                     <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12, border: '1px solid #ede9ff', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
                       formatter={(v: number) => [`$${v.toLocaleString()}`, 'Equity']} />
-                    <Area type="monotone" dataKey="equity" stroke="#7c3aed" strokeWidth={2.5} fill={`url(#eqGrad-${account.id})`} dot={{ fill: '#7c3aed', r: 4, strokeWidth: 2, stroke: '#fff' }} />
+                    <Area type="monotone" dataKey="equity" stroke={tc.primary} strokeWidth={2.5} fill={`url(#eqGrad-${account.id})`} dot={{ fill: tc.primary, r: 4, strokeWidth: 2, stroke: '#fff' }} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useThemeColors } from '@/lib/useThemeColors';
 import dynamic from 'next/dynamic';
 import { Samsung } from '@thesvg/react';
 import TopBar from '@/components/TopBar';
@@ -970,6 +971,7 @@ function TimeRangePicker({ start, end, onStart, onEnd }: {
 
 // ─── Tab: Overall ─────────────────────────────────────────────────────
 function OverallTab({ showToast, onSwitchToTasks }: { showToast: (msg: string) => void; onSwitchToTasks: (taskId?: string) => void }) {
+  const tc = useThemeColors();
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
@@ -2347,15 +2349,15 @@ function OverallTab({ showToast, onSwitchToTasks }: { showToast: (msg: string) =
             <AreaChart data={TASK_TREND}>
               <defs>
                 <linearGradient id="trendG" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#a78bfa" stopOpacity={0.5} />
-                  <stop offset="100%" stopColor="#a78bfa" stopOpacity={0} />
+                  <stop offset="0%" stopColor={tc.primarySoft} stopOpacity={0.5} />
+                  <stop offset="100%" stopColor={tc.primarySoft} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0e9ff" />
+              <CartesianGrid strokeDasharray="3 3" stroke={tc.grid} />
               <XAxis dataKey="d" stroke="#94a3b8" fontSize={10} />
               <YAxis stroke="#94a3b8" fontSize={10} />
               <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
-              <Area type="monotone" dataKey="v" stroke="#7c5cbf" strokeWidth={2.5} fill="url(#trendG)" />
+              <Area type="monotone" dataKey="v" stroke={tc.primary} strokeWidth={2.5} fill="url(#trendG)" />
             </AreaChart>
           </ResponsiveContainer>
         </SectionCard>
@@ -2465,6 +2467,7 @@ const STATUS_PROGRESS: Record<TaskItem['status'], number> = {
 };
 
 function TasksTab({ showToast, jumpTaskId, onClearJump }: { showToast: (msg: string) => void; jumpTaskId?: string | null; onClearJump?: () => void }) {
+  const tc = useThemeColors();
   const [search, setSearch] = useState('');
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [tasks, setTasks] = useState<TaskItem[]>(() => loadTasks());
@@ -2979,6 +2982,7 @@ function TasksTab({ showToast, jumpTaskId, onClearJump }: { showToast: (msg: str
 
 // ─── Tab: Estimator ───────────────────────────────────────────────────
 function EstimatorTab({ showToast }: { showToast: (msg: string) => void }) {
+  const tc = useThemeColors();
   const [device, setDevice] = useState('Galaxy Z Fold 6');
   const partsTotal = REPAIR_PARTS.reduce((s, p) => s + p.total, 0);
   const labor = 1500;
@@ -3114,11 +3118,11 @@ function EstimatorTab({ showToast }: { showToast: (msg: string) => void }) {
         <SectionCard title="Common Models" subtitle="Highest repair count">
           <ResponsiveContainer width="100%" height={160}>
             <BarChart data={COMMON_MODELS} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0e9ff" />
+              <CartesianGrid strokeDasharray="3 3" stroke={tc.grid} />
               <XAxis type="number" stroke="#94a3b8" fontSize={10} />
               <YAxis type="category" dataKey="name" stroke="#94a3b8" fontSize={10} width={60} />
               <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
-              <Bar dataKey="value" fill="#a78bfa" radius={[0, 6, 6, 0]} />
+              <Bar dataKey="value" fill={tc.primarySoft} radius={[0, 6, 6, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </SectionCard>
@@ -4876,6 +4880,7 @@ function aggregateTickets(rows: SMTicket[]): Omit<SMApiResponse,'raw'> {
 
 // v2 – real API + popup
 function SamsungMembersTab({ showToast }: { showToast: (msg: string) => void }) {
+  const tc = useThemeColors();
   const [apiData, setApiData]     = useState<SMApiResponse | null>(null);
   const [loading, setLoading]     = useState(true);
   const [apiError, setApiError]   = useState(false);
@@ -5096,11 +5101,11 @@ function SamsungMembersTab({ showToast }: { showToast: (msg: string) => void }) 
               margin={{ top: 24, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="smBarG2" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%"   stopColor="#a78bfa" stopOpacity={1}    />
-                  <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.80} />
+                  <stop offset="0%"   stopColor={tc.primarySoft} stopOpacity={1}    />
+                  <stop offset="100%" stopColor={tc.primary} stopOpacity={0.80} />
                 </linearGradient>
                 <filter id="barShadow">
-                  <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#a78bfa" floodOpacity="0.22" />
+                  <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor={tc.primarySoft} floodOpacity="0.22" />
                 </filter>
               </defs>
               <CartesianGrid strokeDasharray="2 6" stroke="#ede9fe" vertical={false} />
@@ -6258,6 +6263,7 @@ function ProjectsTimelineTab({ showToast }: { showToast: (msg: string) => void }
 
 // ─── Main page ────────────────────────────────────────────────────────
 export default function WorkPage() {
+  const tc = useThemeColors();
   const [activeTab, setActiveTab] = useState<WorkTab>('Overall');
   const [jumpTaskId, setJumpTaskId] = useState<string | null>(null);
   const [toast, setToast] = useState('');

@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect, useId, useMemo, useState } from 'react';
+import { useThemeColors } from '@/lib/useThemeColors';
 import { motion, AnimatePresence } from 'framer-motion';
 import TopBar from '@/components/TopBar';
 import CompoundingJournal from './CompoundingJournal';
@@ -361,6 +362,7 @@ const PAGE_TABS = [
 type PageTab = (typeof PAGE_TABS)[number]['id'];
 
 export default function CompoundingPage() {
+  const tc = useThemeColors();
   const [pageTab, setPageTab] = useState<PageTab>('overview');
 
   // ── Single Exness account state ──
@@ -662,8 +664,8 @@ export default function CompoundingPage() {
                     <AreaChart data={projection} margin={{ top: 16, right: 12, bottom: 0, left: -8 }}>
                       <defs>
                         <linearGradient id="grow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#7c3aed" stopOpacity={0.42} />
-                          <stop offset="100%" stopColor="#a855f7" stopOpacity={0.02} />
+                          <stop offset="0%" stopColor={tc.primary} stopOpacity={0.42} />
+                          <stop offset="100%" stopColor={tc.primarySoft} stopOpacity={0.02} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -673,11 +675,11 @@ export default function CompoundingPage() {
                       <Tooltip formatter={(v: number) => [`$${fmt0(v)}`, 'Balance']} labelFormatter={(v: number) => (v === 0 ? 'Now' : `${(+v).toFixed(1)} Years`)} />
                       <ReferenceLine y={GOAL} stroke="#10b981" strokeDasharray="5 4"
                         label={{ value: '$1,000,000', position: 'insideTopRight', fontSize: 9, fill: '#10b981', fontWeight: 700 }} />
-                      <Area type="monotone" dataKey="balance" stroke="#7c3aed" strokeWidth={2.4} fill="url(#grow)" dot={false} />
+                      <Area type="monotone" dataKey="balance" stroke={tc.primary} strokeWidth={2.4} fill="url(#grow)" dot={false} />
                       <ReferenceDot x={0} y={balance} r={5} fill="#f97316" stroke="#fff" strokeWidth={2} />
                       {goalReached && (
-                        <ReferenceDot x={yearsTo1M} y={GOAL} r={6} fill="#7c3aed" stroke="#fff" strokeWidth={2}
-                          label={{ value: `${yearsTo1M.toFixed(1)}yrs → $1M`, position: 'top', fontSize: 9, fill: '#7c3aed', fontWeight: 700 }} />
+                        <ReferenceDot x={yearsTo1M} y={GOAL} r={6} fill={tc.primary} stroke="#fff" strokeWidth={2}
+                          label={{ value: `${yearsTo1M.toFixed(1)}yrs → $1M`, position: 'top', fontSize: 9, fill: tc.primary, fontWeight: 700 }} />
                       )}
                     </AreaChart>
                   </ResponsiveContainer>

@@ -123,6 +123,9 @@ export function applyColorTheme(theme: ColorTheme) {
 
   // Persist
   try { localStorage.setItem('colorTheme', theme); } catch {}
+
+  // Notify chart components to re-read theme colors
+  try { window.dispatchEvent(new CustomEvent('alpha-theme-change', { detail: theme })); } catch {}
 }
 
 export function initColorTheme() {

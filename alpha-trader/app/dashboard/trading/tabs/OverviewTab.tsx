@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useThemeColors } from '@/lib/useThemeColors';
 import { useRouter } from 'next/navigation';
 import {
   AreaChart, Area, LineChart, Line, XAxis, YAxis,
@@ -500,6 +501,7 @@ function ForexFactoryNewsTable() {
 // Main OverviewTab
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function OverviewTab() {
+  const tc = useThemeColors();
   const { trades } = useTradingData();
   const router = useRouter();
   const goTab = (tab: string) => router.replace(`/dashboard/trading?tab=${tab}`, { scroll: false });
@@ -647,15 +649,15 @@ export default function OverviewTab() {
             <AreaChart data={curve} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="eqMain" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.22} />
-                  <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
+                  <stop offset="5%" stopColor={tc.primary} stopOpacity={0.22} />
+                  <stop offset="95%" stopColor={tc.primary} stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="eqSma" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.10} />
-                  <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
+                  <stop offset="5%" stopColor={tc.accent} stopOpacity={0.10} />
+                  <stop offset="95%" stopColor={tc.accent} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0ebff" />
+              <CartesianGrid strokeDasharray="3 3" stroke={tc.grid} />
               <XAxis dataKey="date"
                 tick={{ fontSize: 9, fill: '#9ca3af' }}
                 axisLine={false} tickLine={false}
@@ -672,9 +674,9 @@ export default function OverviewTab() {
                 labelStyle={{ color: '#6b7280' }}
               />
               <ReferenceLine y={100000} stroke="#94a3b8" strokeDasharray="4 4" strokeWidth={1} />
-              <Area type="monotone" dataKey="sma" stroke="#38bdf8" strokeWidth={1.5}
+              <Area type="monotone" dataKey="sma" stroke={tc.accent} strokeWidth={1.5}
                 fill="url(#eqSma)" dot={false} strokeDasharray="4 3" />
-              <Area type="monotone" dataKey="equity" stroke="#7c3aed" strokeWidth={2.2}
+              <Area type="monotone" dataKey="equity" stroke={tc.primary} strokeWidth={2.2}
                 fill="url(#eqMain)" dot={false} />
             </AreaChart>
           </ResponsiveContainer>
@@ -682,10 +684,10 @@ export default function OverviewTab() {
           {/* Chart legend */}
           <div className="mt-2 flex items-center gap-4 text-[10px] text-gray-400">
             <span className="flex items-center gap-1">
-              <span className="inline-block w-6 h-0.5 rounded" style={{ background: '#7c3aed' }} /> Equity
+              <span className="inline-block w-6 h-0.5 rounded" style={{ background: tc.primary }} /> Equity
             </span>
             <span className="flex items-center gap-1">
-              <span className="inline-block w-6 h-0.5 rounded border-t-2 border-dashed" style={{ borderColor: '#38bdf8' }} /> SMA-10
+              <span className="inline-block w-6 h-0.5 rounded border-t-2 border-dashed" style={{ borderColor: tc.accent }} /> SMA-10
             </span>
             <span className="flex items-center gap-1">
               <span className="inline-block w-6 h-0.5 rounded border-t-2 border-dashed" style={{ borderColor: '#94a3b8' }} /> Start Capital
